@@ -1,0 +1,12 @@
+Django>=4.2
+PyMySQL
+Pillow
+django-allauth
+requests
+requests-oauthlib
+PyJWT
+cryptography
+gunicorn
+whitenoise
+python-dotenv
+resend

@@ -1,0 +1,134 @@
+{% extends 'yonetim/base_yonetim.html' %}
+
+{% block page_title %}{{ title }}{% endblock %}
+{% block page_subtitle %}Yorum içeriğini buradan düzenleyin.{% endblock %}
+
+{% block extra_css %}
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-group label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.form-control {
+    background-color: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+    color: white;
+    font-size: 0.875rem;
+    outline: none;
+    transition: all 0.3s ease;
+    width: 100%;
+}
+
+.form-control:focus {
+    border-color: var(--primary);
+    background-color: rgba(255, 255, 255, 0.05);
+    box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
+}
+
+select.form-control {
+    cursor: pointer;
+}
+
+select.form-control option {
+    background-color: var(--panel-bg);
+    color: white;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    border-top: 1px solid var(--border-color);
+    padding-top: 1.5rem;
+}
+{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 750px; margin: 0 auto;">
+    <form method="POST" action="">
+        {% csrf_token %}
+        
+        <div class="form-grid">
+            <!-- Content / Article Selection (Only on Create) -->
+            {% if not comment_data %}
+            <div class="form-group">
+                <label for="icerik_id">İçerik Başlığı <span style="color: var(--danger)">*</span></label>
+                <select id="icerik_id" name="icerik_id" class="form-control" required>
+                    <option value="" disabled selected>Yorum Yapılacak İçeriği Seçin</option>
+                    {% for i in icerikler %}
+                        <option value="{{ i.id }}">
+                            {{ i.baslik }} [{{ i.tur|upper }}]
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Author Selection (Only on Create) -->
+            <div class="form-group">
+                <label for="yazar_id">Yorumu Yapan Yazar <span style="color: var(--danger)">*</span></label>
+                <select id="yazar_id" name="yazar_id" class="form-control" required>
+                    <option value="" disabled selected>Yazarı Seçin</option>
+                    {% for y in yazarlar %}
+                        <option value="{{ y.id }}" {% if request.user.id == y.id %}selected{% endif %}>
+                            {{ y.username }} ({{ y.email }})
+                        </option>
+                    {% endfor %}
+                </select>
+                <small style="color: var(--text-secondary)">Tetikleyici Testi: Eğer pasif bir kullanıcı seçilirse veritabanı triggerı eklemeyi engelleyecektir.</small>
+            </div>
+
+            <!-- Parent Comment ID (Only on Create) -->
+            <div class="form-group">
+                <label for="parent_id">Üst Yorum ID (Parent ID - Yanıt için)</label>
+                <input type="number" id="parent_id" name="parent_id" class="form-control" placeholder="Boş bırakılırsa ana yorum olur">
+            </div>
+
+            <!-- Depth (Only on Create) -->
+            <div class="form-group">
+                <label for="depth">Derinlik (Depth)</label>
+                <input type="number" id="depth" name="depth" class="form-control" value="0" min="0">
+            </div>
+            {% else %}
+            <!-- Read-Only Displays on Edit -->
+            <div class="form-group">
+                <label>İçerik Başlığı</label>
+                <input type="text" class="form-control" readonly style="opacity: 0.7; cursor: not-allowed;" value="{{ comment_data.icerik_basligi }}">
+            </div>
+            <div class="form-group">
+                <label>Yorumu Yapan</label>
+                <input type="text" class="form-control" readonly style="opacity: 0.7; cursor: not-allowed;" value="{{ comment_data.yazar_adi }}">
+            </div>
+            {% endif %}
+
+            <!-- Comment Message -->
+            <div class="form-group">
+                <label for="mesaj">Yorum Mesajı <span style="color: var(--danger)">*</span></label>
+                <textarea id="mesaj" name="mesaj" class="form-control" rows="6" required placeholder="Yorumunuzu buraya yazın..." style="resize: vertical;">{% if comment_data %}{{ comment_data.mesaj }}{% endif %}</textarea>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <a href="{% url 'yonetim_yorumlar' %}" class="btn btn-secondary">İptal</a>
+            <button type="submit" class="btn btn-primary">
+                <i class="fa-solid fa-floppy-disk"></i> Kaydet
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yönetim Sistemi | FitRehber</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --panel-bg: #111827;
+            --card-bg: #1f2937;
+            --border-color: #374151;
+            --text-primary: #f9fafb;
+            --text-secondary: #9ca3af;
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --primary-gradient: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+            --danger: #ef4444;
+            --danger-hover: #dc2626;
+            --success: #10b981;
+            --warning: #f59e0b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+        }
+
+        /* Sidebar Styling */
+        aside {
+            width: 280px;
+            background-color: var(--panel-bg);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            padding: 2rem 1.5rem;
+            position: fixed;
+            height: 100vh;
+            left: 0;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 3rem;
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .logo i {
+            -webkit-text-fill-color: #6366f1;
+        }
+
+        .menu-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .menu-item a {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.875rem 1rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .menu-item a:hover {
+            color: var(--text-primary);
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .menu-item.active a {
+            background: var(--primary-gradient);
+            color: white;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        }
+
+        .menu-footer {
+            margin-top: auto;
+            border-top: 1px solid var(--border-color);
+            padding-top: 1.5rem;
+        }
+
+        .menu-footer a {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .menu-footer a:hover {
+            color: var(--danger);
+        }
+
+        /* Main Content Styling */
+        main {
+            flex-grow: 1;
+            margin-left: 280px;
+            padding: 2.5rem;
+            max-width: 1400px;
+        }
+
+        /* Header / Navbar */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .page-title h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .page-title p {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            background-color: var(--panel-bg);
+            padding: 0.5rem 1rem 0.5rem 0.5rem;
+            border-radius: 2rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+        }
+
+        .user-details {
+            font-size: 0.875rem;
+        }
+
+        .user-details span {
+            display: block;
+            font-weight: 600;
+        }
+
+        /* Messages */
+        .alert {
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 500;
+            border-left: 4px solid transparent;
+        }
+
+        .alert-success {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+            border-left-color: var(--success);
+        }
+
+        .alert-error {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            border-left-color: var(--danger);
+        }
+
+        /* Common Elements: Cards, Tables, Forms */
+        .card {
+            background-color: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.625rem 1.25rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            border: none;
+        }
+
+        .btn-primary {
+            background: var(--primary-gradient);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+
+        .btn-secondary:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .btn-danger {
+            background-color: var(--danger);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: var(--danger-hover);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.625rem;
+            border-radius: 1rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-success {
+            background-color: rgba(16, 185, 129, 0.15);
+            color: var(--success);
+        }
+
+        .badge-danger {
+            background-color: rgba(239, 68, 68, 0.15);
+            color: var(--danger);
+        }
+
+        .badge-info {
+            background-color: rgba(99, 102, 241, 0.15);
+            color: #818cf8;
+        }
+
+        /* Custom Responsive Layout */
+        @media (max-width: 1024px) {
+            aside {
+                width: 80px;
+                padding: 2rem 0.5rem;
+                align-items: center;
+            }
+            .logo span, .menu-item span, .menu-footer span {
+                display: none;
+            }
+            .logo i {
+                margin: 0;
+                font-size: 1.75rem;
+            }
+            main {
+                margin-left: 80px;
+            }
+        }
+        
+        {% block extra_css %}{% endblock %}
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <aside>
+        <div class="logo">
+            <i class="fa-solid fa-database"></i>
+            <span>FitRehber Panel</span>
+        </div>
+        
+        <ul class="menu-list">
+            <li class="menu-item {% if active_tab == 'dashboard' %}active{% endif %}">
+                <a href="{% url 'yonetim_dashboard' %}">
+                    <i class="fa-solid fa-chart-pie"></i>
+                    <span>Genel Durum</span>
+                </a>
+            </li>
+            <li class="menu-item {% if active_tab == 'kullanicilar' %}active{% endif %}">
+                <a href="{% url 'yonetim_kullanicilar' %}">
+                    <i class="fa-solid fa-users"></i>
+                    <span>Kullanıcılar</span>
+                </a>
+            </li>
+            <li class="menu-item {% if active_tab == 'kategoriler' %}active{% endif %}">
+                <a href="{% url 'yonetim_kategoriler' %}">
+                    <i class="fa-solid fa-tags"></i>
+                    <span>Kategoriler</span>
+                </a>
+            </li>
+            <li class="menu-item {% if active_tab == 'icerikler' %}active{% endif %}">
+                <a href="{% url 'yonetim_icerikler' %}">
+                    <i class="fa-solid fa-newspaper"></i>
+                    <span>İçerikler</span>
+                </a>
+            </li>
+            <li class="menu-item {% if active_tab == 'yorumlar' %}active{% endif %}">
+                <a href="{% url 'yonetim_yorumlar' %}">
+                    <i class="fa-solid fa-comments"></i>
+                    <span>Yorumlar</span>
+                </a>
+            </li>
+            <li class="menu-item {% if active_tab == 'profiller' %}active{% endif %}">
+                <a href="{% url 'yonetim_profiller' %}">
+                    <i class="fa-solid fa-id-card"></i>
+                    <span>Profiller</span>
+                </a>
+            </li>
+            <li style="padding: 0.5rem 1rem 0.25rem; font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-secondary); opacity: 0.6;">Etkileşimler</li>
+            <li class="menu-item {% if active_tab == 'icerik_begenileri' %}active{% endif %}">
+                <a href="{% url 'yonetim_icerik_begenileri' %}">
+                    <i class="fa-solid fa-heart"></i>
+                    <span>İçerik Beğenileri</span>
+                </a>
+            </li>
+            <li class="menu-item {% if active_tab == 'icerik_kaydetmeleri' %}active{% endif %}">
+                <a href="{% url 'yonetim_icerik_kaydetmeleri' %}">
+                    <i class="fa-solid fa-bookmark"></i>
+                    <span>İçerik Kaydetmeler</span>
+                </a>
+            </li>
+            <li class="menu-item {% if active_tab == 'yorum_begenileri' %}active{% endif %}">
+                <a href="{% url 'yonetim_yorum_begenileri' %}">
+                    <i class="fa-solid fa-thumbs-up"></i>
+                    <span>Yorum Beğenileri</span>
+                </a>
+            </li>
+        </ul>
+        
+        <div class="menu-footer">
+            <a href="/">
+                <i class="fa-solid fa-arrow-left-long"></i>
+                <span>Siteden Çıkış Yap</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main>
+        <!-- Top Navbar -->
+        <header>
+            <div class="page-title">
+                <h1>{% block page_title %}Kontrol Paneli{% endblock %}</h1>
+                <p>{% block page_subtitle %}Sistem durumunu ve verilerini yönetin.{% endblock %}</p>
+            </div>
+            
+            <div class="user-info">
+                <div class="user-avatar">
+                    {{ request.user.username|make_list|first|upper }}
+                </div>
+                <div class="user-details">
+                    <span>{{ request.user.username }}</span>
+                    <small style="color: var(--text-secondary)">Süper Yönetici</small>
+                </div>
+            </div>
+        </header>
+
+        <!-- Django Alert Messages -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert {% if message.tags == 'success' %}alert-success{% else %}alert-error{% endif %}">
+                    {% if message.tags == 'success' %}
+                        <i class="fa-solid fa-circle-check"></i>
+                    {% else %}
+                        <i class="fa-solid fa-circle-exclamation"></i>
+                    {% endif %}
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- Custom Content Block -->
+        {% block content %}{% endblock %}
+    </main>
+
+</body>
+</html>

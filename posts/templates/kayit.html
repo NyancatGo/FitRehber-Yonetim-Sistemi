@@ -1,0 +1,538 @@
+{% extends "base.html" %}
+
+{% block title %}Kayıt Ol | FitRehber{% endblock %}
+{% block meta_description %}FitRehber topluluğuna katılın.{% endblock %}
+{% block meta_robots %}noindex,follow{% endblock %}
+
+{% block extra_css %}
+<style>
+    body {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+        min-height: 100vh;
+    }
+
+    .auth-container {
+        min-height: calc(100vh - 80px);
+        display: flex;
+        align-items: center;
+        padding: 20px 0;
+    }
+
+    .auth-wrapper {
+        display: flex;
+        background: white;
+        border-radius: 24px;
+        overflow: hidden;
+        box-shadow: 0 25px 80px rgba(0, 0, 0, 0.4);
+        max-width: 950px;
+        margin: 0 auto;
+    }
+
+    .auth-visual {
+        flex: 0 0 320px;
+        background: linear-gradient(160deg, #10b981 0%, #059669 50%, #047857 100%);
+        padding: 40px 35px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .auth-visual::before {
+        content: '';
+        position: absolute;
+        width: 200px;
+        height: 200px;
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 50%;
+        top: -80px;
+        right: -80px;
+    }
+
+    .visual-content {
+        position: relative;
+        z-index: 2;
+    }
+
+    .visual-icon {
+        width: 60px;
+        height: 60px;
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 20px;
+    }
+
+    .visual-icon i {
+        font-size: 1.8rem;
+        color: white;
+    }
+
+    .auth-visual h2 {
+        color: white;
+        font-size: 1.6rem;
+        font-weight: 800;
+        margin-bottom: 12px;
+        line-height: 1.3;
+    }
+
+    .auth-visual p {
+        color: rgba(255, 255, 255, 0.85);
+        font-size: 0.9rem;
+        line-height: 1.6;
+        margin-bottom: 25px;
+    }
+
+    .feature-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .feature-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: white;
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+
+    .feature-check {
+        width: 22px;
+        height: 22px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.7rem;
+        flex-shrink: 0;
+    }
+
+    .auth-form-side {
+        flex: 1;
+        padding: 35px 45px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .auth-header {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .auth-header h3 {
+        font-weight: 800;
+        font-size: 1.4rem;
+        color: #0f172a;
+        margin-bottom: 5px;
+    }
+
+    .auth-header p {
+        color: #64748b;
+        font-size: 0.85rem;
+    }
+
+    .form-group {
+        margin-bottom: 12px;
+    }
+
+    .form-label-custom {
+        display: block;
+        font-weight: 600;
+        font-size: 0.8rem;
+        color: #374151;
+        margin-bottom: 5px;
+    }
+
+    .form-input {
+        width: 100%;
+        border-radius: 10px;
+        border: 2px solid #e5e7eb;
+        padding: 10px 14px;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+        background: #f9fafb;
+    }
+
+    .form-input:focus {
+        outline: none;
+        border-color: #10b981;
+        background: white;
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+    }
+
+    .input-row {
+        display: flex;
+        gap: 12px;
+    }
+
+    .input-row .form-group {
+        flex: 1;
+    }
+
+    .password-strength {
+        background: #f0fdf4;
+        border: 1px solid #bbf7d0;
+        border-radius: 10px;
+        padding: 10px 12px;
+        margin-top: 8px;
+    }
+
+    .password-strength-title {
+        font-weight: 700;
+        font-size: 0.75rem;
+        color: #166534;
+        margin-bottom: 6px;
+    }
+
+    .password-rule {
+        font-size: 0.75rem;
+        color: #6b7280;
+        margin-bottom: 3px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .password-rule .check-icon {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: #e5e7eb;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.55rem;
+        color: #9ca3af;
+    }
+
+    .password-rule.met {
+        color: #059669;
+        font-weight: 500;
+    }
+
+    .password-rule.met .check-icon {
+        background: #10b981;
+        color: white;
+    }
+
+    .btn-register {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        border: none;
+        border-radius: 10px;
+        padding: 12px;
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: white;
+        width: 100%;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        margin-top: 8px;
+    }
+
+    .btn-register:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+    }
+
+    .divider {
+        display: flex;
+        align-items: center;
+        margin: 15px 0;
+        color: #9ca3af;
+        font-size: 0.75rem;
+    }
+
+    .divider::before,
+    .divider::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: #e5e7eb;
+    }
+
+    .divider span {
+        padding: 0 15px;
+    }
+
+    .social-buttons {
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn-social {
+        flex: 1;
+        padding: 10px;
+        border-radius: 10px;
+        border: 2px solid #e5e7eb;
+        background: white;
+        font-weight: 600;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .btn-social:hover {
+        border-color: #d1d5db;
+        background: #f9fafb;
+        transform: translateY(-1px);
+    }
+
+    .btn-social.google {
+        color: #ea4335;
+    }
+
+    .btn-social.github {
+        color: #24292e;
+    }
+
+    .auth-footer {
+        text-align: center;
+        margin-top: 15px;
+        color: #6b7280;
+        font-size: 0.85rem;
+    }
+
+    .auth-footer a {
+        color: #10b981;
+        font-weight: 700;
+        text-decoration: none;
+    }
+
+    .alert-error {
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        border-radius: 10px;
+        color: #b91c1c;
+        padding: 10px 14px;
+        font-size: 0.8rem;
+        margin-bottom: 15px;
+    }
+
+    /* --- KAYIT EKRANI MOBİL AYARLARI --- */
+    @media (max-width: 768px) {
+        body {
+            background: white !important;
+        }
+
+        .auth-container {
+            padding: 0 !important;
+            align-items: flex-start !important;
+        }
+
+        .auth-wrapper {
+            margin: 0 !important;
+            border-radius: 0 !important;
+            box-shadow: none !important;
+            flex-direction: column;
+        }
+
+        .auth-visual {
+            display: none !important;
+        }
+
+        .auth-form-side {
+            padding: 20px !important;
+        }
+
+        .auth-header h3 {
+            font-size: 2rem !important;
+            margin-top: 20px;
+        }
+
+        .form-input {
+            height: 55px !important;
+            font-size: 1.1rem !important;
+            background-color: #f8fafc !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+        }
+
+        .btn-register {
+            height: 60px !important;
+            font-size: 1.2rem !important;
+            margin-top: 15px !important;
+            border-radius: 15px !important;
+            width: 100% !important;
+        }
+
+        .input-row {
+            flex-direction: column !important;
+            gap: 12px !important;
+            width: 100% !important;
+        }
+
+        /* Container genişlik sınırları */
+
+        .auth-container, .auth-container > .container, .auth-wrapper {
+            width: 100% !important;
+            max-width: 100% !important;
+            box-sizing: border-box !important;
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+            margin-left: 0 !important;
+            margin-right: 0 !important;
+        }
+
+        .auth-wrapper {
+            overflow: hidden !important;
+            border-radius: 0 !important;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="container">
+        <div class="auth-wrapper">
+            <div class="auth-visual">
+                <div class="visual-content">
+                    <div class="visual-icon">
+                        <i class="bi bi-person-plus-fill"></i>
+                    </div>
+                    <h2>Sağlıklı Yaşama<br>İlk Adım!</h2>
+                    <p>Ücretsiz hesap oluştur ve topluluğa katıl.</p>
+                    <div class="feature-list">
+                        <div class="feature-item">
+                            <div class="feature-check">✓</div>
+                            <span>Özel içerikler ve makaleler</span>
+                        </div>
+                        <div class="feature-item">
+                            <div class="feature-check">✓</div>
+                            <span>Forum tartışmalarına katılım</span>
+                        </div>
+                        <div class="feature-item">
+                            <div class="feature-check">✓</div>
+                            <span>İçerik kaydetme ve favoriler</span>
+                        </div>
+                        <div class="feature-item">
+                            <div class="feature-check">✓</div>
+                            <span>Kişisel profil oluşturma</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="auth-form-side">
+                <div class="auth-header">
+                    <h3>Hesap Oluştur 🚀</h3>
+                    <p>Hızlı ve kolay kayıt ol</p>
+                </div>
+
+                {% if form.errors %}
+                <div class="alert-error">
+                    <strong>⚠️ Hata:</strong>
+                    {% for field in form %}
+                        {% for error in field.errors %}
+                            <div>{{ error }}</div>
+                        {% endfor %}
+                    {% endfor %}
+                    {% for error in form.non_field_errors %}
+                        <div>{{ error }}</div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <form method="post">
+                    {% csrf_token %}
+
+                    <div class="form-group">
+                        <label class="form-label-custom">Kullanıcı Adı <span class="text-danger">*</span></label>
+                        <input type="text" class="form-input" id="id_username" name="username"
+                            placeholder="örn: fitkral" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label-custom">E-Posta <span class="text-danger">*</span></label>
+                        <input type="email" class="form-input" id="id_email" name="email" placeholder="ornek@email.com"
+                            value="{{ form.email.value|default:'' }}"
+                            required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label-custom">Şifre <span class="text-danger">*</span></label>
+                        <input type="password" class="form-input" id="id_password1" name="password1"
+                            placeholder="••••••••" required>
+                        <div class="password-strength">
+                            <div class="password-strength-title">Şifre Gereksinimleri</div>
+                            <div class="password-rule" id="rule-length">
+                                <span class="check-icon">✓</span>
+                                <span>En az 8 karakter</span>
+                            </div>
+                            <div class="password-rule" id="rule-numeric">
+                                <span class="check-icon">✓</span>
+                                <span>Sadece rakamlardan oluşamaz</span>
+                            </div>
+                            <div class="password-rule" id="rule-match">
+                                <span class="check-icon">✓</span>
+                                <span>Kullanıcı adı ile benzer olamaz</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label-custom">Şifre Tekrar <span class="text-danger">*</span></label>
+                        <input type="password" class="form-input" id="id_password2" name="password2"
+                            placeholder="••••••••" required>
+                    </div>
+
+                    <button type="submit" class="btn-register">Kayıt Ol</button>
+                </form>
+
+                <div class="divider"><span>veya</span></div>
+
+                <!-- Social buttons removed per user request -->
+
+                <div class="auth-footer">
+                    Hesabın var mı? <a href="{% url 'giris' %}">Giriş Yap</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if verification_pending %}
+    {% include '_email_verify_modal.html' %}
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const passwordInput = document.getElementById('id_password1');
+    const usernameInput = document.getElementById('id_username');
+    const ruleLength = document.getElementById('rule-length');
+    const ruleNumeric = document.getElementById('rule-numeric');
+    const ruleMatch = document.getElementById('rule-match');
+
+    passwordInput.addEventListener('input', function () {
+        const val = passwordInput.value;
+        const usernameVal = usernameInput.value;
+
+        if (val.length >= 8) { ruleLength.classList.add('met'); }
+        else { ruleLength.classList.remove('met'); }
+
+        if (isNaN(val) && val.length > 0) { ruleNumeric.classList.add('met'); }
+        else { ruleNumeric.classList.remove('met'); }
+
+        if (usernameVal && val.toLowerCase().includes(usernameVal.toLowerCase()) && usernameVal.length > 3) {
+            ruleMatch.classList.remove('met');
+        } else if (val.length > 0) {
+            ruleMatch.classList.add('met');
+        } else {
+            ruleMatch.classList.remove('met');
+        }
+    });
+</script>
+{% endblock %}

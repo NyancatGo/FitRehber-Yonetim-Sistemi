@@ -1,0 +1,273 @@
+{% extends "base.html" %}
+
+{% block title %}{{ seo_title }}{% endblock %}
+{% block meta_description %}{{ seo_description }}{% endblock %}
+{% block og_title %}{{ seo_title }}{% endblock %}
+{% block og_description %}{{ seo_description }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    body {
+        background-color: #f8fafc;
+    }
+    
+    /* HEADER DESIGN */
+    .rules-header {
+        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        padding: 40px 0 60px;
+        margin-bottom: -30px;
+        color: white;
+        border-radius: 0 0 30px 30px;
+        position: relative;
+        z-index: 1;
+        overflow: hidden;
+    }
+
+    /* Pattern Overlay */
+    .rules-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-image: radial-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+        background-size: 30px 30px;
+        opacity: 0.3;
+    }
+    
+    /* Floating Shapes */
+    .shape {
+        position: absolute;
+        background: rgba(255,255,255,0.05);
+        border-radius: 50%;
+        backdrop-filter: blur(5px);
+    }
+    .shape-1 { width: 150px; height: 150px; top: -20px; right: 10%; }
+    .shape-2 { width: 100px; height: 100px; bottom: 20px; left: 10%; }
+
+    /* CONTENT CARD */
+    .rules-card {
+        background: white;
+        border-radius: 24px;
+        border: none;
+        box-shadow: 0 20px 40px -10px rgba(0,0,0,0.1);
+        overflow: hidden;
+        position: relative;
+        z-index: 2;
+        padding: 10px;
+    }
+    
+    /* RULE ITEM */
+    .rule-item {
+        padding: 30px;
+        border-radius: 16px;
+        transition: all 0.3s ease;
+        border: 1px solid transparent;
+        margin-bottom: 5px;
+        background: white;
+    }
+    
+    .rule-item:hover {
+        background-color: #f8fafc;
+        transform: translateY(-2px);
+        border-color: #e2e8f0;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    }
+    
+    /* ICONS */
+    .rule-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.6rem;
+        flex-shrink: 0;
+        box-shadow: 0 8px 16px -4px currentColor;
+        transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    
+    .rule-item:hover .rule-icon {
+        transform: scale(1.1) rotate(-5deg);
+    }
+    
+    .icon-wrapper { filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1)); }
+    
+    .bg-danger-subtle { background: #fee2e2; color: #dc2626; box-shadow: 0 8px 16px -4px rgba(220, 38, 38, 0.3); }
+    .bg-warning-subtle { background: #fef3c7; color: #d97706; box-shadow: 0 8px 16px -4px rgba(217, 119, 6, 0.3); }
+    .bg-info-subtle { background: #e0f2fe; color: #0284c7; box-shadow: 0 8px 16px -4px rgba(2, 132, 199, 0.3); }
+    .bg-success-subtle { background: #dcfce7; color: #16a34a; box-shadow: 0 8px 16px -4px rgba(22, 163, 74, 0.3); }
+    .bg-primary-subtle { background: #e0e7ff; color: #4f46e5; box-shadow: 0 8px 16px -4px rgba(79, 70, 229, 0.3); }
+    
+    /* TYPOGRAPHY */
+    .rule-badge {
+        font-size: 0.75rem;
+        font-weight: 800;
+        padding: 5px 12px;
+        border-radius: 50px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: inline-block;
+        margin-bottom: 10px;
+    }
+    
+    .rule-title {
+        font-weight: 800;
+        font-size: 1.25rem;
+        color: #0f172a;
+        margin-bottom: 8px;
+        letter-spacing: -0.5px;
+    }
+    
+    .rule-desc {
+        color: #64748b;
+        font-size: 1.05rem;
+        line-height: 1.6;
+        margin: 0;
+    }
+
+    /* ANIMATIONS */
+    .fade-up {
+        opacity: 0;
+        transform: translateY(20px);
+        animation: fadeUp 0.6s ease forwards;
+    }
+
+    @keyframes fadeUp {
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Stagger Delays */
+    .delay-1 { animation-delay: 0.1s; }
+    .delay-2 { animation-delay: 0.2s; }
+    .delay-3 { animation-delay: 0.3s; }
+    .delay-4 { animation-delay: 0.4s; }
+    .delay-5 { animation-delay: 0.5s; }
+
+    @media (max-width: 768px) {
+        .rules-header { padding: 50px 0 80px; }
+        .display-5 { font-size: 2rem; }
+        .rule-item { padding: 20px; }
+        .rule-icon { width: 48px; height: 48px; font-size: 1.3rem; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Header Section -->
+<!-- Header Section -->
+<header class="rules-header text-center">
+    <div class="shape shape-1"></div>
+    <div class="shape shape-2"></div>
+    <div class="container position-relative">
+        <div class="mb-2 display-4">📜</div>
+        <h1 class="fw-bold mb-3 display-6">Topluluk Kuralları</h1>
+        <p class="fs-6 opacity-75 fw-light mb-0 mx-auto" style="max-width: 600px; line-height: 1.6;">
+            Sağlıklı, saygılı ve keyifli bir ortam için<br>temel ilkelerimiz.
+        </p>
+    </div>
+</header>
+
+<div class="container pb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="rules-card fade-up">
+                
+                <!-- Kural 1: Saygı ve Üslup -->
+                <div class="d-flex rule-item fade-up delay-1">
+                    <div class="rule-icon bg-primary-subtle me-3 me-md-4">
+                        <i class="bi bi-chat-heart-fill"></i>
+                    </div>
+                    <div>
+                        <span class="rule-badge bg-primary-subtle text-primary">Kural 1</span>
+                        <h3 class="rule-title">Saygı ve Üslup</h3>
+                        <p class="rule-desc">
+                            Topluluk içerisinde saygılı bir dil kullanmak esastır. Hakaret, küfür, aşağılayıcı ifadeler veya nefret söylemi kesinlikle yasaktır. Eleştirilerinizi yapıcı bir dille belirtmeye özen gösterin.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Kural 2: Konu Açma ve Arama -->
+                <div class="d-flex rule-item fade-up delay-2">
+                    <div class="rule-icon bg-info-subtle me-3 me-md-4">
+                        <i class="bi bi-search"></i>
+                    </div>
+                    <div>
+                        <span class="rule-badge bg-info-subtle text-info">Kural 2</span>
+                        <h3 class="rule-title">Araştırma ve Paylaşım</h3>
+                        <p class="rule-desc">
+                            Yeni bir konu açmadan önce forumda arama yapın; benzer bir tartışma daha önce yapılmış olabilir. Konu başlıklarınızın içeriği net bir şekilde ifade etmesine dikkat edin.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Kural 3: Sağlık ve Bilgi -->
+                <div class="d-flex rule-item fade-up delay-3">
+                    <div class="rule-icon bg-success-subtle me-3 me-md-4">
+                        <i class="bi bi-activity"></i>
+                    </div>
+                    <div>
+                        <span class="rule-badge bg-success-subtle text-success">Kural 3</span>
+                        <h3 class="rule-title">Bilinçli Bilgi Paylaşımı</h3>
+                        <p class="rule-desc">
+                            Burada paylaşılan bilgiler tavsiye niteliğindedir. Tıbbi konularda kesin hüküm vermekten kaçının ve kaynağı olmayan sağlık tavsiyelerine karşı dikkatli olun. Her vücut farklıdır.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Kural 4: Reklam ve Spam -->
+                <div class="d-flex rule-item fade-up delay-4">
+                    <div class="rule-icon bg-warning-subtle me-3 me-md-4">
+                        <i class="bi bi-exclamation-octagon-fill"></i>
+                    </div>
+                    <div>
+                        <span class="rule-badge bg-warning-subtle text-warning">Kural 4</span>
+                        <h3 class="rule-title">Reklam ve Spam</h3>
+                        <p class="rule-desc">
+                            İzinsiz reklam yapmak, ürün pazarlamak veya aynı mesajı art arda göndererek (spam) görüntü kirliliği oluşturmak yasaktır. Bu tür içerikler kaldırılacaktır.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Kural 5: Yasal Sorumluluk -->
+                <div class="d-flex rule-item fade-up delay-5">
+                    <div class="rule-icon bg-danger-subtle me-3 me-md-4">
+                        <i class="bi bi-shield-lock-fill"></i>
+                    </div>
+                    <div>
+                        <span class="rule-badge bg-danger-subtle text-danger">Kural 5</span>
+                        <h3 class="rule-title">Güvenlik ve Yasalar</h3>
+                        <p class="rule-desc">
+                            Türkiye Cumhuriyeti yasalarına aykırı, telif hakkı ihlali içeren veya topluluk güvenliğini tehdit eden paylaşımlar yapmak yasaktır. Kişisel sağlık verilerinizi herkesle paylaşırken dikkatli olun.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Kural 6: Profil Düzeni -->
+                <div class="d-flex rule-item fade-up delay-5">
+                    <div class="rule-icon bg-primary-subtle me-3 me-md-4">
+                        <i class="bi bi-person-badge-fill"></i>
+                    </div>
+                    <div>
+                        <span class="rule-badge bg-primary-subtle text-primary">Kural 6</span>
+                        <h3 class="rule-title">Hesap Kullanımı</h3>
+                        <p class="rule-desc">
+                            Her kullanıcı tek bir hesaba sahip olabilir. Profil bilgilerinizde veya avatarınızda rahatsız edici, siyasi veya uygunsuz içerikler kullanılmasına izin verilmez.
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="text-center mt-5 fade-up delay-5">
+                <a href="{% url 'forum' %}" class="btn btn-primary rounded-pill px-4 fw-bold shadow-lg">
+                    <i class="bi bi-arrow-left me-2"></i>Foruma Dön
+                </a>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

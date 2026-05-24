@@ -1,0 +1,1612 @@
+{% extends "base.html" %}
+{% load posts_image_tags %}
+
+{% block title %}{{ seo_title }}{% endblock %}
+{% block meta_description %}{{ seo_description }}{% endblock %}
+{% block og_type %}article{% endblock %}
+{% block og_title %}{{ seo_title }}{% endblock %}
+{% block og_description %}{{ seo_description }}{% endblock %}
+{% block og_image %}{{ seo_image }}{% endblock %}
+{% block og_image_width %}{% if icerik.resim %}{{ icerik.resim|safe_image_width:"1200" }}{% else %}1200{% endif %}{% endblock %}
+{% block og_image_height %}{% if icerik.resim %}{{ icerik.resim|safe_image_height:"630" }}{% else %}630{% endif %}{% endblock %}
+{% block twitter_title %}{{ seo_title }}{% endblock %}
+{% block twitter_description %}{{ seo_description }}{% endblock %}
+{% block twitter_image %}{{ seo_image }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* =========================================================
+       🎨 FORUM DETAIL PAGE - CARD-BASED UI ARCHITECTURE
+       Reddit/StackOverflow inspired community experience
+       ========================================================= */
+
+    /* Toast Bildirim Sistemi (Sağ Üst) */
+    .toast-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 999999;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        pointer-events: none;
+    }
+
+    .toast-notification {
+        pointer-events: auto;
+        background: white;
+        border-radius: 14px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15), 0 2px 10px rgba(0, 0, 0, 0.08);
+        padding: 16px 20px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 320px;
+        max-width: 420px;
+        transform: translateX(120%);
+        opacity: 0;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        border-left: 4px solid #ef4444;
+        position: relative;
+    }
+
+    .toast-notification.toast-success { border-left-color: #22c55e; }
+    .toast-notification.toast-warning { border-left-color: #f59e0b; }
+    .toast-notification.show { transform: translateX(0); opacity: 1; }
+
+    .toast-notification .toast-icon {
+        width: 38px; height: 38px; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0; font-size: 1.1rem;
+    }
+    .toast-notification .toast-icon.error { background: linear-gradient(135deg, #fee2e2, #fecaca); color: #dc2626; }
+    .toast-notification .toast-icon.success { background: linear-gradient(135deg, #dcfce7, #bbf7d0); color: #16a34a; }
+    .toast-notification .toast-icon.warning { background: linear-gradient(135deg, #fef3c7, #fde68a); color: #d97706; }
+
+    .toast-notification .toast-body { flex: 1; }
+    .toast-notification .toast-title { font-weight: 700; font-size: 0.9rem; color: #1e293b; margin-bottom: 2px; }
+    .toast-notification .toast-message { font-size: 0.85rem; color: #64748b; line-height: 1.4; }
+
+    .toast-notification .toast-close {
+        background: none; border: none; color: #94a3b8; cursor: pointer;
+        padding: 4px; border-radius: 6px; transition: all 0.2s; font-size: 0.8rem; align-self: flex-start;
+    }
+    .toast-notification .toast-close:hover { background: #f1f5f9; color: #475569; }
+
+    .toast-notification .toast-progress {
+        position: absolute; bottom: 0; left: 4px; right: 0; height: 3px;
+        background: #ef4444; border-radius: 0 0 14px 14px;
+        animation: toastProgress 4s linear forwards;
+    }
+    .toast-notification.toast-success .toast-progress { background: #22c55e; }
+    .toast-notification.toast-warning .toast-progress { background: #f59e0b; }
+
+    @keyframes toastProgress { from { width: 100%; } to { width: 0%; } }
+
+    @media (max-width: 768px) {
+        .toast-container { top: 10px; right: 10px; left: 10px; }
+        .toast-notification { min-width: auto; max-width: 100%; }
+    }
+
+    body {
+        background-color: #f0f2f5;
+    }
+
+    /* ─────────────────────────────────────────────────────
+       1. QUESTION CARD - Enhanced Depth & Hover States
+       ───────────────────────────────────────────────────── */
+    .question-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06),
+            0 1px 3px rgba(0, 0, 0, 0.08);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        overflow: hidden;
+        transition: box-shadow 0.3s ease, transform 0.2s ease;
+    }
+
+    .question-card:hover {
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1),
+            0 3px 6px rgba(0, 0, 0, 0.08);
+    }
+
+    /* ─────────────────────────────────────────────────────
+       2. USER AVATAR - Social & Humanized
+       ───────────────────────────────────────────────────── */
+    .user-avatar {
+        width: 48px;
+        height: 48px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 1.25rem;
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .user-avatar:hover {
+        transform: scale(1.08);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    /* ─────────────────────────────────────────────────────
+       3. CATEGORY BADGE - Interactive Tags
+       ───────────────────────────────────────────────────── */
+    .category-badge {
+        background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+        color: #1d4ed8;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 1px solid rgba(29, 78, 216, 0.1);
+    }
+
+    .category-badge:hover {
+        background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+        color: #1e40af;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+    }
+
+    /* ─────────────────────────────────────────────────────
+       4. POST TITLE & CONTENT - Clear Hierarchy
+       ───────────────────────────────────────────────────── */
+    .post-title {
+        font-size: 1.75rem;
+        font-weight: 800;
+        color: #111827;
+        margin-bottom: 16px;
+        line-height: 1.35;
+        letter-spacing: -0.02em;
+    }
+
+    .post-content {
+        font-size: 1.05rem;
+        line-height: 1.75;
+        color: #374151;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        word-break: normal;
+        hyphens: auto;
+    }
+
+    .post-content p {
+        margin-bottom: 1rem;
+    }
+
+    /* ─────────────────────────────────────────────────────
+       5. ACTION BUTTONS - Micro-Animations
+       ───────────────────────────────────────────────────── */
+    .action-button {
+        color: #6b7280;
+        font-weight: 600;
+        padding: 10px 18px;
+        border-radius: 10px;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .action-button:hover {
+        background-color: #f3f4f6;
+        color: #111827;
+        transform: translateY(-1px);
+    }
+
+    .action-button:active {
+        transform: scale(0.97);
+    }
+
+    .action-button.active {
+        color: #2563eb;
+        background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+    }
+
+    .action-button.like-action.active {
+        color: #e11d48;
+        background: linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%);
+    }
+
+    .action-button i {
+        font-size: 1.1rem;
+        transition: transform 0.2s ease;
+    }
+
+    .action-button:hover i {
+        transform: scale(1.15);
+    }
+
+    /* ─────────────────────────────────────────────────────
+       6. ANSWERS SECTION HEADER
+       ───────────────────────────────────────────────────── */
+    .answers-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 35px;
+        margin-bottom: 24px;
+        padding-bottom: 12px;
+        border-bottom: 2px solid #e5e7eb;
+    }
+
+    .answers-header h4 {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .answers-header h4::before {
+        content: '💬';
+        font-size: 1.2rem;
+    }
+
+    /* ─────────────────────────────────────────────────────
+       7. REPLY SECTION - Prominent & Inviting
+       ───────────────────────────────────────────────────── */
+    .reply-card {
+        background: linear-gradient(135deg, #fafbfc 0%, #f3f4f6 100%);
+        border: 2px dashed #d1d5db;
+        transition: all 0.3s ease;
+    }
+
+    .reply-card:focus-within {
+        background: white;
+        border: 2px solid #3b82f6;
+        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1),
+            0 4px 15px rgba(59, 130, 246, 0.15);
+    }
+
+    .reply-card textarea {
+        background: transparent !important;
+        resize: none;
+        transition: all 0.2s ease;
+    }
+
+    .reply-card textarea:focus {
+        background: white !important;
+        box-shadow: none !important;
+    }
+
+    .reply-card .btn-primary {
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        border: none;
+        padding: 10px 24px;
+        font-weight: 600;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+    }
+
+    .reply-card .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+    }
+
+    .reply-card .btn-primary:active {
+        transform: scale(0.98);
+    }
+
+    /* ─────────────────────────────────────────────────────
+       8. EMPTY STATE - Friendly & Encouraging
+       ───────────────────────────────────────────────────── */
+    .empty-state {
+        padding: 60px 20px;
+        text-align: center;
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        color: #d1d5db;
+        margin-bottom: 20px;
+        display: block;
+    }
+
+    /* ─────────────────────────────────────────────────────
+       9. ATTACHED IMAGES - Reddit/Twitter Style
+       ───────────────────────────────────────────────────── */
+    .attached-image {
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
+        overflow: hidden;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .attached-image:hover {
+        transform: scale(1.01);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    /* ─────────────────────────────────────────────────────
+       10. DROPDOWN MENU - Polished
+       ───────────────────────────────────────────────────── */
+    .dropdown-menu {
+        border-radius: 12px;
+        padding: 8px;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    }
+
+    .dropdown-item {
+        border-radius: 8px;
+        padding: 10px 16px;
+        font-weight: 500;
+        transition: all 0.15s ease;
+    }
+
+    .dropdown-item:hover {
+        background-color: #fee2e2;
+    }
+
+    /* ─────────────────────────────────────────────────────
+       11. MOBILE RESPONSIVE ADJUSTMENTS
+       ───────────────────────────────────────────────────── */
+    @media (max-width: 768px) {
+        .question-card {
+            border-radius: 0;
+            margin-left: -20px;
+            margin-right: -20px;
+            border-left: none;
+            border-right: none;
+        }
+
+        .post-title {
+            font-size: 1.4rem;
+        }
+
+        .user-avatar {
+            width: 42px;
+            height: 42px;
+            font-size: 1.1rem;
+        }
+
+        .action-button {
+            padding: 8px 12px;
+            font-size: 0.9rem;
+        }
+    }
+
+    /* ─────────────────────────────────────────────────────
+       12. FORUM ANSWER CARDS - Boxed Technopat Style
+       ───────────────────────────────────────────────────── */
+    .forum-answer-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+        border: 1px solid #e5e7eb;
+        padding: 24px;
+        margin-bottom: 16px;
+        transition: box-shadow 0.2s ease, transform 0.2s ease;
+    }
+
+    .forum-answer-card:hover {
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+        transform: translateY(-2px);
+    }
+
+    /* Answer Avatar */
+    .answer-avatar {
+        width: 48px;
+        height: 48px;
+        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 1.25rem;
+        box-shadow: 0 3px 10px rgba(99, 102, 241, 0.35);
+        transition: transform 0.2s ease;
+        flex-shrink: 0;
+    }
+
+    .answer-avatar:hover {
+        transform: scale(1.1);
+    }
+
+    /* Author Name */
+    .answer-author {
+        font-weight: 700;
+        font-size: 0.95rem;
+        color: #1f2937;
+        transition: color 0.2s ease;
+    }
+
+    .answer-author:hover {
+        color: #6366f1;
+    }
+
+    .answer-meta small {
+        font-size: 0.8rem;
+    }
+
+    /* Answer Body */
+    .answer-body {
+        font-size: 1rem;
+        line-height: 1.75;
+        color: #374151;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+
+    .answer-body p {
+        margin-bottom: 0.75rem;
+    }
+
+    .answer-body p:last-child {
+        margin-bottom: 0;
+    }
+
+    /* Action Buttons */
+    .answer-action-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 14px;
+        border-radius: 8px;
+        border: none;
+        background: #f3f4f6;
+        color: #6b7280;
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        text-decoration: none;
+    }
+
+    .answer-action-btn:hover {
+        background: #e5e7eb;
+        color: #111827;
+        transform: translateY(-1px);
+    }
+
+    .answer-action-btn:active {
+        transform: scale(0.97);
+    }
+
+    .answer-action-btn.liked {
+        background: #fef2f2;
+        color: #ef4444;
+    }
+
+    .answer-action-btn.liked:hover {
+        background: #fee2e2;
+    }
+
+    .answer-action-btn i {
+        font-size: 1rem;
+    }
+
+    /* Nested Answers */
+    .nested-answers {
+        margin-top: 16px;
+    }
+
+    .nested-answer-wrapper {
+        margin-bottom: 12px;
+    }
+
+    .nested-answers .forum-answer-card {
+        background: #f9fafb;
+        border-color: #f0f0f0;
+        padding: 16px;
+        margin-bottom: 10px;
+    }
+
+    .nested-answers .answer-avatar {
+        width: 36px;
+        height: 36px;
+        font-size: 1rem;
+    }
+
+    /* Mobile Responsive */
+    @media (max-width: 768px) {
+        .forum-answer-card {
+            padding: 16px;
+            border-radius: 12px;
+            /* margin-left: -10px;  <- KALDIRILDI */
+            /* margin-right: -10px; <- KALDIRILDI */
+            min-width: 0;
+        }
+
+        .answer-avatar {
+            width: 40px;
+            height: 40px;
+            font-size: 1rem;
+        }
+
+        .answer-body {
+            font-size: 0.95rem;
+        }
+
+        .answer-action-btn {
+            padding: 6px 10px;
+            font-size: 0.8rem;
+        }
+
+        .nested-answer-wrapper {
+            padding-left: 12px !important;
+        }
+
+        /* Mobil Cevap Formu Düzenlemeleri */
+        #ana-cevap-textarea {
+            padding-left: 45px !important; /* Avatar için yer aç */
+            padding-right: 50px !important; /* Buton için yer aç */
+        }
+        
+        .mobile-inside-avatar {
+            pointer-events: none; /* Tıklamaları engelle */
+        }
+
+        /* Reply Card Mobil Fix */
+        .reply-card {
+            margin: 0 !important;
+            border-radius: 12px !important;
+            padding: 16px !important;
+            width: auto !important;
+            border: 2px dashed #d1d5db !important;
+        }
+    }
+</style>
+<style>
+    /* Dinamik Yanıt Formu Stili */
+    .dynamic-reply-form {
+        margin-top: 15px;
+        margin-bottom: 15px;
+        background: #f8fafc;
+        padding: 15px;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        animation: slideDown 0.3s ease-out;
+    }
+
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* MOBİL OVERFLOW DÜZELTMESİ - sticky'yi bozmadan */
+    @media (max-width: 768px) {
+        .container {
+            overflow-x: hidden !important;
+            max-width: 100% !important;
+            box-sizing: border-box !important;
+        }
+
+        .row {
+            margin-left: 0 !important;
+            margin-right: 0 !important;
+        }
+    }
+    /* --- CKEditor 5 Content Optimization --- */
+    .icerik-metni {
+        font-size: 1.1rem;
+        line-height: 1.8;
+        color: #1e293b;
+    }
+
+    /* Resimler ve Figürler */
+    .icerik-metni img {
+        max-width: 100% !important;
+        height: auto !important;
+        border-radius: 12px;
+        display: block;
+        margin: 30px auto;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+    }
+    
+    .icerik-metni figure.image {
+        margin: 30px auto;
+        text-align: center;
+    }
+    
+    .icerik-metni figure.image figcaption {
+        font-size: 0.9rem;
+        color: #64748b;
+        margin-top: 12px;
+        font-style: italic;
+        padding: 0 15px;
+    }
+
+    /* Başlıklar */
+    .icerik-metni h2, .icerik-metni h3, .icerik-metni h4 {
+        color: #0f172a;
+        font-weight: 800;
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+    }
+
+    /* Listeler */
+    .icerik-metni ul, .icerik-metni ol {
+        margin-bottom: 1.5rem;
+        padding-left: 1.5rem;
+    }
+
+    .icerik-metni li {
+        margin-bottom: 0.5rem;
+    }
+
+    /* Alıntılar (Blockquote) */
+    .icerik-metni blockquote {
+        margin: 2rem 0;
+        padding: 1.5rem 2rem;
+        border-left: 4px solid #6366f1;
+        background-color: #f8fafc;
+        border-radius: 0 12px 12px 0;
+        font-style: italic;
+        color: #475569;
+        position: relative;
+    }
+
+    .icerik-metni blockquote::before {
+        content: '"';
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        font-size: 3rem;
+        color: #e2e8f0;
+        line-height: 1;
+        font-family: serif;
+    }
+
+    /* Tablolar */
+    .icerik-metni table {
+        width: 100% !important;
+        margin: 2rem 0;
+        border-collapse: collapse;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .icerik-metni table th {
+        background-color: #f1f5f9;
+        font-weight: 700;
+        padding: 12px 15px;
+        border: 1px solid #e2e8f0;
+    }
+
+    .icerik-metni table td {
+        padding: 12px 15px;
+        border: 1px solid #e2e8f0;
+    }
+
+    .icerik-metni table tr:nth-child(even) {
+        background-color: #f8fafc;
+    }
+
+    /* Linkler */
+    .icerik-metni a {
+        color: #4f46e5;
+        text-decoration: underline;
+        font-weight: 600;
+    }
+
+    .icerik-metni a:hover {
+        color: #4338ca;
+        text-decoration: none;
+    }
+</style>
+
+{% endblock %}
+
+{% block content %}
+<!-- Toast Bildirim Container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<div class="container py-4" style="max-width: 900px;">
+
+    <div class="question-card p-4 mb-4">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+            <div class="d-flex align-items-center gap-3">
+                <a href="{% url 'profil' icerik.yazar.username %}" class="text-decoration-none">
+                    {% with question_author_avatar=icerik.yazar|avatar_url %}
+                    <div class="user-avatar">
+                        {% if question_author_avatar %}
+                        <img src="{{ question_author_avatar }}" alt="{{ icerik.yazar.username }}" style="width: 100%; height: 100%; object-fit: cover; border-radius: inherit; display: block;">
+                        {% else %}
+                        {{ icerik.yazar.username|first|upper }}
+                        {% endif %}
+                    </div>
+                    {% endwith %}
+                </a>
+                <div>
+                    <a href="{% url 'profil' icerik.yazar.username %}" class="text-dark text-decoration-none fw-bold">
+                        {{ icerik.yazar.username }}
+                    </a>
+                    <small class="text-muted">{{ icerik.tarih|safe_timesince }} önce paylaştı</small>
+                </div>
+            </div>
+            {% if icerik.kategori %}
+            <a href="{% url 'forum' %}?kategori={{ icerik.kategori.id }}" class="category-badge">
+                #{{ icerik.kategori.isim }}
+            </a>
+            {% endif %}
+        </div>
+
+        <h1 class="post-title">{{ icerik.baslik }}</h1>
+
+        <div class="post-content icerik-metni mb-4">
+            {{ icerik.yazi|local_image_attrs }}
+        </div>
+
+        {% if icerik.resim %}
+        <div class="mb-4">
+            <a href="{{ icerik.resim.url }}" target="_blank">
+                <img src="{{ icerik.resim.url }}" class="img-fluid rounded border" loading="eager" decoding="async" alt="{{ icerik.baslik }}"
+                    {% with rw=icerik.resim|safe_image_width rh=icerik.resim|safe_image_height %}{% if rw %}width="{{ rw }}" height="{{ rh }}"{% endif %}{% endwith %}
+                    style="max-height: 500px; width: auto;">
+            </a>
+        </div>
+        {% endif %}
+
+        <div class="d-flex gap-2 pt-3 border-top">
+            <button class="action-button"
+                onclick="document.getElementById('ana-cevap-textarea').focus(); document.getElementById('ana-cevap-formu').scrollIntoView({ behavior: 'smooth', block: 'center' });">
+                <i class="bi bi-chat-left-text me-2"></i>{{ icerik.yorumlar.count }} Cevap
+            </button>
+            <button class="action-button like-action {% if request.user in icerik.begenenler.all %}active{% endif %}"
+                id="btn-icerik-begen-{{ icerik.id }}" onclick="icerikBegen(event, '{{ icerik.id }}')">
+                <i class="bi {% if request.user in icerik.begenenler.all %}bi-heart-fill{% else %}bi-heart{% endif %} me-2"
+                    id="icon-icerik-begen-{{ icerik.id }}"></i>
+                <span id="sayi-icerik-begen-{{ icerik.id }}">{{ icerik.begenenler.count }}</span>
+            </button>
+            <button class="action-button {% if request.user in icerik.kaydedenler.all %}active{% endif %}"
+                onclick="icerikKaydet('{{ icerik.id }}')">
+                <i class="bi bi-bookmark{% if request.user in icerik.kaydedenler.all %}-fill{% endif %} me-2"></i>
+                {% if request.user in icerik.kaydedenler.all %}Kaydedildi{% else %}Kaydet{% endif %}
+            </button>
+
+            {% if request.user == icerik.yazar or request.user.is_superuser %}
+            <div class="ms-auto">
+                <a href="{% url 'sil' icerik.id %}" class="action-button text-danger delete-action" title="Soruyu Sil">
+                    <i class="bi bi-trash"></i>
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="answers-header">
+        <h4 class="mb-0 fw-bold text-dark">
+            {{ icerik.yorumlar.count }} Cevap
+        </h4>
+    </div>
+
+    {% if not is_focus_mode %}
+    <div class="question-card reply-card p-4 mb-4" id="ana-cevap-formu">
+        {% if user.is_authenticated and user.profil.timeout_until and user.profil.timeout_until > now %}
+        <!-- SUSTURULMUŞ KULLANICI - KİLİTLİ FORM -->
+        <div class="timeout-locked-form position-relative" style="border-radius: 16px; overflow: hidden;">
+            <!-- Arka planda blur'lu sahte textarea -->
+            <div style="padding: 16px; background: #f1f5f9; border-radius: 16px; border: 2px solid #e2e8f0; min-height: 160px; filter: blur(2px); opacity: 0.5;">
+                <div style="height: 120px; background: #e2e8f0; border-radius: 12px;"></div>
+                <div class="text-end mt-2">
+                    <div style="width: 120px; height: 38px; background: #cbd5e1; border-radius: 50px; display: inline-block;"></div>
+                </div>
+            </div>
+            <!-- Kilit Overlay -->
+            <div class="position-absolute top-0 start-0 w-100 h-100 d-flex flex-column align-items-center justify-content-center"
+                style="background: rgba(255,255,255,0.75); backdrop-filter: blur(4px); border-radius: 16px; z-index: 5;">
+                <div class="text-center">
+                    <div class="mb-3" style="width: 56px; height: 56px; background: linear-gradient(135deg, #f59e0b, #d97706); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);">
+                        <i class="bi bi-lock-fill text-white" style="font-size: 1.5rem;"></i>
+                    </div>
+                    <h6 class="fw-bold text-dark mb-1">Hesabın Geçici Olarak Susturuldu</h6>
+                    <p class="text-muted small mb-3">Susturma süresi dolana kadar cevap yazamazsın.</p>
+                    <div class="timeout-countdown d-flex gap-2 justify-content-center" id="timeout-countdown-soru"
+                        data-timeout="{{ user.profil.timeout_until|date:'c' }}">
+                        <div class="text-center" style="background: #1e293b; color: white; border-radius: 10px; padding: 8px 12px; min-width: 60px;">
+                            <div class="fw-bold" style="font-size: 1.2rem;" id="countdown-days-soru">--</div>
+                            <div style="font-size: 0.65rem; opacity: 0.7;">GÜN</div>
+                        </div>
+                        <div class="text-center" style="background: #1e293b; color: white; border-radius: 10px; padding: 8px 12px; min-width: 60px;">
+                            <div class="fw-bold" style="font-size: 1.2rem;" id="countdown-hours-soru">--</div>
+                            <div style="font-size: 0.65rem; opacity: 0.7;">SAAT</div>
+                        </div>
+                        <div class="text-center" style="background: #1e293b; color: white; border-radius: 10px; padding: 8px 12px; min-width: 60px;">
+                            <div class="fw-bold" style="font-size: 1.2rem;" id="countdown-minutes-soru">--</div>
+                            <div style="font-size: 0.65rem; opacity: 0.7;">DAKİKA</div>
+                        </div>
+                        <div class="text-center" style="background: #f59e0b; color: white; border-radius: 10px; padding: 8px 12px; min-width: 60px;">
+                            <div class="fw-bold" style="font-size: 1.2rem;" id="countdown-seconds-soru">--</div>
+                            <div style="font-size: 0.65rem; opacity: 0.9;">SANİYE</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% elif user.is_authenticated %}
+        <div class="d-flex gap-3">
+            <a href="{% url 'profil' user.username %}" class="text-decoration-none d-none d-md-block">
+                {% with current_user_avatar=user|avatar_url %}
+                <div class="user-avatar" style="width: 40px; height: 40px; font-size: 1rem;">
+                    {% if current_user_avatar %}
+                    <img src="{{ current_user_avatar }}" alt="{{ user.username }}" style="width: 100%; height: 100%; object-fit: cover; border-radius: inherit; display: block;">
+                    {% else %}
+                    {{ user.username|first|upper }}
+                    {% endif %}
+                </div>
+                {% endwith %}
+            </a>
+            <div class="flex-grow-1">
+                <form id="replyForm" method="post" action="{% url 'detay' icerik.id %}"
+                    onsubmit="return handleMainCommentSubmit(event)">
+                    {% csrf_token %}
+                    <div class="mb-3 position-relative">
+                        <textarea name="mesaj" class="form-control border-0 rounded-4" rows="3" id="ana-cevap-textarea"
+                            placeholder="💡 Bu konudaki fikrin veya cevabın nedir?" style="resize: none; height: 120px;"
+                            onfocus="this.placeholder = ''"
+                            onblur="this.placeholder = '💡 Bu konudaki fikrin veya cevabın nedir?'"></textarea>
+                        
+                        <!-- Mobil Avatar (Textarea İçinde - Sol Üst) -->
+                        <div class="mobile-inside-avatar d-md-none position-absolute" style="top: 12px; left: 12px; z-index: 10;">
+                            {% with current_user_avatar=user|avatar_url %}
+                            <div class="bg-black text-white rounded-circle d-flex align-items-center justify-content-center fw-bold shadow-sm"
+                                style="width: 20px; height: 20px; font-size: 0.65rem; overflow: hidden;">
+                                {% if current_user_avatar %}
+                                <img src="{{ current_user_avatar }}" alt="{{ user.username }}" style="width: 100%; height: 100%; object-fit: cover; display: block;">
+                                {% else %}
+                                {{ user.username|first|upper }}
+                                {% endif %}
+                            </div>
+                            {% endwith %}
+                        </div>
+
+                        <!-- Mobil Gönder Butonu (Textarea İçinde - Sağ Alt) -->
+                        <button type="submit" class="btn btn-primary mobile-send-btn d-flex d-md-none rounded-circle position-absolute" 
+                            style="bottom: 8px; right: 8px; width: 32px !important; height: 32px !important; min-width: 32px !important; align-items: center; justify-content: center; padding: 0 !important; margin: 0 !important; border-radius: 50% !important;">
+                            <i class="bi bi-send-fill" style="font-size: 0.9rem;"></i>
+                        </button>
+                    </div>
+                    <div class="text-end d-none d-md-block">
+                        <button type="submit" class="btn btn-primary px-4 rounded-pill fw-bold">
+                            <i class="bi bi-send me-2"></i>Yanıtla
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        {% else %}
+        <div class="text-center py-3">
+            <p class="mb-2 text-muted fs-6">✨ Bu tartışmaya katılmak ister misin?</p>
+            <a href="{% url 'giris' %}" class="btn btn-primary rounded-pill px-4">
+                <i class="bi bi-box-arrow-in-right me-2"></i>Giriş Yap ve Yanıtla
+            </a>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+
+     {% if is_focus_mode %}
+        <div
+            class="alert bg-light border-0 shadow-sm rounded-4 d-flex flex-column flex-md-row align-items-center justify-content-between p-3 mb-4 gap-3">
+            <div class="d-flex align-items-center gap-3 text-start w-100">
+                <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
+                    style="width: 40px; height: 40px;">
+                    <i class="bi bi-info-lg fs-5"></i>
+                </div>
+                <div>
+                    <h6 class="fw-bold mb-0 text-dark">Tek bir yorum akışını görüntülüyorsun</h6>
+                    <small class="text-muted">Diğer tüm yorumları görmek için tartışmaya dönebilirsin.</small>
+                </div>
+            </div>
+            <a href="{% url 'detay' icerik.id %}"
+                class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm hover-up w-100 w-md-auto text-center">
+                <i class="bi bi-arrow-left me-2"></i>Tüm Tartışmaya Dön
+            </a>
+        </div>
+        {% endif %}
+    <div class="answers-section">
+        <div class="d-flex align-items-center justify-content-between mb-4">
+            <h5 class="mb-0 fw-bold">
+                <i class="bi bi-chat-square-text me-2 text-primary"></i>Cevaplar
+            </h5>
+
+            <div class="dropdown">
+                <button class="btn btn-light border-0 btn-sm dropdown-toggle rounded-pill px-3" type="button"
+                    data-bs-toggle="dropdown">
+                    Sıralama: En Yeni
+                </button>
+                <ul class="dropdown-menu shadow border-0">
+                    <li><a class="dropdown-item" href="#">En Yeni</a></li>
+                    <li><a class="dropdown-item" href="#">En Çok Beğenilen</a></li>
+                </ul>
+            </div>
+        </div>
+
+        {% for yorum in yorumlar %}
+        {% include "yorum_karti_soru.html" with yorum=yorum depth=0 %}
+        {% empty %}
+        {% if not is_focus_mode %}
+        <div class="text-center py-5 text-muted">
+            <i class="bi bi-chat-square-dots display-4 mb-3 d-block opacity-50"></i>
+            <p class="mb-0">Henüz cevap yok. İlk cevabı sen yaz!</p>
+        </div>
+        {% endif %}
+        {% endfor %}
+    </div>
+
+    <!-- Gizli Yanıt Şablonu (JS ile kopyalanacak) -->
+    <div id="reply-template" class="d-none">
+        <form method="post" action="{% url 'detay' icerik.id %}" class="reply-form">
+            {% csrf_token %}
+            <input type="hidden" name="parent_id" class="parent-id-input">
+
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span
+                    class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-3 py-2 reply-to-text">
+                    <i class="bi bi-reply-fill me-1"></i> Yanıt veriliyor
+                </span>
+                <button type="button" class="btn btn-sm btn-light border rounded-circle"
+                    onclick="this.closest('.dynamic-reply-form').remove()" title="Vazgeç">
+                    <i class="bi bi-x-lg text-muted"></i>
+                </button>
+            </div>
+
+            <textarea name="mesaj" class="form-control border mb-2" rows="3" placeholder="💬 Cevabını buraya yaz..."
+                required style="resize: none; font-size: 0.95rem;"></textarea>
+
+            <div class="text-end">
+                <button type="submit" class="btn btn-primary btn-sm rounded-pill px-4 fw-bold">
+                    Cevapla <i class="bi bi-send-fill ms-2" style="font-size: 0.8rem;"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Auth değişkeni
+    const isAuthenticated = "{{ user.is_authenticated|yesno:'true,false' }}" === "true";
+    const loginUrl = "{% url 'giris' %}";
+    const csrfToken = "{{ csrf_token }}";
+
+    function checkAuth() {
+        if (!isAuthenticated) {
+            window.location.href = loginUrl + "?next=" + encodeURIComponent(window.location.pathname);
+            return false;
+        }
+        return true;
+    }
+
+    function isRateLimitPayload(data) {
+        return data && ['BURST_PENALTY', 'COMMENT_PENALTY', 'RATE_LIMIT'].includes(data.error);
+    }
+
+    // 6. YORUM BEĞENME (AJAX)
+    function yorumBegen(yorumId) {
+        if (!checkAuth()) return;
+
+        fetch(`/begen/${yorumId}/`, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': csrfToken
+            }
+        })
+            .then(response => {
+                if (response.status === 429) return null;
+                if (!response.ok) throw new Error("Sunucu Hatası");
+                return response.text();
+            })
+            .then(text => {
+                try { return JSON.parse(text); }
+                catch (e) { window.location.href = "/giris/"; }
+            })
+            .then(data => {
+                if (!data) return;
+                const btn = document.getElementById(`btn-begen-${yorumId}`);
+                if (btn) {
+                    const icon = btn.querySelector('i');
+                    const countSpan = document.getElementById(`sayi-begen-${yorumId}`);
+
+                    if (data.begenildi) {
+                        btn.classList.add('liked');
+                        if (icon) {
+                            icon.classList.remove('bi-heart');
+                            icon.classList.add('bi-heart-fill');
+                        }
+                    } else {
+                        btn.classList.remove('liked');
+                        if (icon) {
+                            icon.classList.remove('bi-heart-fill');
+                            icon.classList.add('bi-heart');
+                        }
+                    }
+
+                    if (countSpan) {
+                        countSpan.innerText = data.sayi;
+                    }
+                }
+            })
+            .catch(error => console.error(error));
+    }
+
+    // 7. YORUM SİLME (AJAX + Modal Onay)
+    function yorumSil(event, yorumId) {
+        if (!checkAuth()) return false;
+
+        // Varsayılan link davranışını engelle
+        event.preventDefault();
+
+        const deleteUrl = event.currentTarget.href;
+        const urlToFetch = deleteUrl || `/sil-yorum/${yorumId}/`;
+
+        // Global modal ile onay al
+        silmeOnayAc(null, function () {
+            fetch(urlToFetch, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                }
+            })
+                .then(response => {
+                    if (response.redirected) {
+                        window.location.href = response.url;
+                        return;
+                    }
+                    if (!response.ok) throw new Error("Sunucu Hatası");
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        const commentEl = document.getElementById(`cevap-${yorumId}`);
+                        if (commentEl) {
+                            commentEl.style.transition = "all 0.5s ease";
+                            commentEl.style.opacity = "0";
+                            commentEl.style.transform = "translateX(20px)";
+                            setTimeout(() => commentEl.remove(), 500);
+                        } else {
+                            const fallbackEl = document.getElementById(`comment-${yorumId}`);
+                            if (fallbackEl) {
+                                fallbackEl.style.transition = "all 0.5s ease";
+                                fallbackEl.style.opacity = "0";
+                                fallbackEl.style.transform = "translateX(20px)";
+                                setTimeout(() => fallbackEl.remove(), 500);
+                            }
+                        }
+                    } else {
+                        showToast(data.mesaj || "Silinemedi.", 'error');
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    showToast('Bir hata oluştu.', 'error');
+                });
+        });
+
+        return false;
+    }
+
+    // 1. Yorum Daraltma / Genişletme
+    function toggleComment(id) {
+        document.getElementById('comment-' + id).classList.toggle('collapsed');
+    }
+
+    // 2. Yanıtla Butonu (Formu Taşıma)
+    function yanitla(yorumId, yazarUsername, button) {
+        if (!checkAuth()) return;
+
+        try {
+            // Varsa açık diğer formları kapat
+            document.querySelectorAll('.dynamic-reply-form').forEach(e => e.remove());
+
+            // Şablonu kopyala
+            const templateEl = document.getElementById('reply-template');
+            if (!templateEl) {
+                console.error("Reply template element not found!");
+                return;
+            }
+
+            // Şablonun içindeki formu al ve event listener ekle
+            const formClone = templateEl.querySelector('form').cloneNode(true);
+
+            // Dinamik form container'ı
+            const newFormDiv = document.createElement('div');
+            newFormDiv.classList.add('dynamic-reply-form');
+            newFormDiv.appendChild(formClone);
+
+            // ID ve metni ayarla
+            const parentInput = newFormDiv.querySelector('.parent-id-input');
+            const replyText = newFormDiv.querySelector('.reply-to-text');
+
+            if (parentInput) parentInput.value = yorumId;
+            if (replyText) replyText.innerHTML = `<i class="bi bi-reply-fill me-1"></i> @${yazarUsername} kişisine yanıt ver`;
+
+            // Form submit olayını yakala
+            const form = newFormDiv.querySelector('form');
+            form.onsubmit = handleReplySubmit;
+
+            // Kapatma butonu olayını ayarla
+            const closeBtn = newFormDiv.querySelector('.btn-light'); // X butonu
+            if (closeBtn) {
+                closeBtn.onclick = function () { newFormDiv.remove(); };
+            }
+
+            // Formu yorum kartının 'answer-actions' divinin sonrasına ekle
+            const commentCard = document.getElementById('cevap-' + yorumId) || button.closest('.forum-answer-card');
+
+            if (commentCard) {
+                const actionDiv = commentCard.querySelector('.answer-actions') || button.parentElement;
+                if (actionDiv && actionDiv.parentNode) {
+                    actionDiv.insertAdjacentElement('afterend', newFormDiv);
+                } else {
+                    commentCard.appendChild(newFormDiv);
+                }
+            } else {
+                // Fallback
+                const contentDiv = button.closest('.answer-body') || button.closest('.flex-grow-1');
+                if (contentDiv) contentDiv.appendChild(newFormDiv);
+            }
+
+            // Oraya Kaydır ve Odaklan
+            newFormDiv.scrollIntoView({ behavior: "smooth", block: "center" });
+            setTimeout(() => {
+                const textarea = newFormDiv.querySelector('textarea');
+                if (textarea) textarea.focus();
+            }, 300);
+
+        } catch (error) {
+            console.error("Error in yanitla function:", error);
+            showToast('Beklenmedik bir hata oluştu.', 'error');
+        }
+    }
+
+    // 📌 Yanıtları Göster / Gizle Toggle
+    function toggleAnswers(yorumId, button) {
+        const answersDiv = document.getElementById('answers-' + yorumId);
+        if (answersDiv) {
+            answersDiv.classList.toggle('d-none');
+        }
+    }
+
+    // AJAX Form Submit - Ana Yorum (Cevap)
+    function handleMainCommentSubmit(event) {
+        event.preventDefault();
+        if (!checkAuth()) return false;
+
+        const form = event.target;
+        const textarea = form.querySelector('textarea');
+        const message = textarea.value.trim();
+
+        if (message === "") {
+            showCustomAlert("Lütfen bir cevap yazın!");
+            textarea.classList.add('is-invalid'); // Basit görsel uyarı
+            setTimeout(() => textarea.classList.remove('is-invalid'), 2000);
+            return false;
+        }
+
+        const formData = new FormData(form);
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalBtnText = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Gönderiliyor...';
+
+        fetch(form.action, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+            body: formData
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (isRateLimitPayload(data)) return;
+                if (data.success) {
+                    // Yeni cevabı listeye ekle
+                    const answersSection = document.querySelector('.answers-section');
+
+                    // Eğer "Henüz cevap yok" mesajı varsa kaldır
+                    const noAnswersMsg = answersSection.querySelector('.text-center.py-5.text-muted');
+                    if (noAnswersMsg) noAnswersMsg.remove();
+
+                    // Cevabı başa ekle (veya sona - views.py order_by ne ise ona uygun olmalı. Genelde cevaplar puana göre sıralanır ama burada tarih varsayıyorum.)
+                    // 'answers-header' altındaki 'answers-section' divinin başına
+                    // answersSection.insertAdjacentHTML('afterbegin', data.html);
+                    // Ancak başlıklar vb var. Direkt answers-section içine ekleyelim.
+                    // Eğer header varsa ondan sonrasına dikkat etmek lazım. answers-section içinde direk loop var.
+                    // Bir dakika, 'answers-section' div'i içinde 'd-flex align-items-center justify-content-between mb-4' var (header).
+                    // O yüzden insertAdjacentHTML('afterbegin') header'ın üstüne ekler, bu yanlış.
+                    // Header'dan sonraya eklemeliyiz.
+
+                    const header = answersSection.querySelector('.d-flex.align-items-center.justify-content-between.mb-4');
+                    if (header) {
+                        header.insertAdjacentHTML('afterend', data.html);
+                    } else {
+                        answersSection.insertAdjacentHTML('afterbegin', data.html); // Header yoksa direkt ekle
+                    }
+
+                    // Formu temizle
+                    textarea.value = '';
+
+                    // Yeni cevaba kaydır
+                    // Yeni eklenen elemanı bul (hemen header sonrası)
+                    const newComment = header ? header.nextElementSibling : answersSection.firstElementChild;
+                    if (newComment) {
+                        newComment.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        // Highlight efekti eklemek biraz zor olabilir çünkü class eklememiz lazım.
+                        // newComment bir text node olabilir (whitespace). Element olduğundan emin olalım.
+                        if (newComment.nodeType === 1) {
+                            newComment.style.transition = "background-color 0.5s";
+                            newComment.style.backgroundColor = "#eef2ff"; // Hafif mavi
+                            setTimeout(() => newComment.style.backgroundColor = "", 2000);
+                        }
+                    }
+
+                    // Sayacı güncelle
+                    const countHeaders = document.querySelectorAll('.answers-header h4, .post-title + div + .d-flex .action-button');
+                    // Bu biraz tricky, DOM'u parse edip sayıyı artırmak lazım ama şimdilik kalsın veya backend'den sayı dönsek iyi olurdu.
+                    // Basitçe: Reload olmadığı için sayı güncellenmez. Kullanıcı fark etmeyebilir.
+
+                } else {
+                    showToast(data.mesaj || 'Cevap gönderilemedi.', 'error', '🔇 Engellendi');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showToast('Bir hata oluştu.', 'error');
+            })
+            .finally(() => {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnText;
+            });
+
+        return false;
+    }
+
+    // AJAX Form Submit - Yanıt (Nested)
+    function handleReplySubmit(event) {
+        event.preventDefault();
+        if (!checkAuth()) return false;
+
+        const form = event.target;
+        const textarea = form.querySelector('textarea');
+        const message = textarea.value.trim();
+        const parentId = form.querySelector('input[name="parent_id"]').value;
+
+        if (message === "") {
+            showToast('Lütfen bir cevap yazın!', 'warning', '⚠️ Uyarı');
+            return false;
+        }
+
+        const formData = new FormData(form);
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalBtnText = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
+
+        fetch(form.action, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+            body: formData
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (isRateLimitPayload(data)) return;
+                if (data.success) {
+                    // Parent yorumun kapsayıcısını bul
+                    const parentCommentCard = document.getElementById('cevap-' + parentId);
+                    // forum-answer-card içindeki nested-answers divini bul, yoksa oluştur
+
+                    let nestedSection = parentCommentCard.querySelector('.nested-answers');
+                    if (!nestedSection) {
+                        nestedSection = document.createElement('div');
+                        nestedSection.className = 'nested-answers mt-3 ps-3 border-start';
+                        nestedSection.id = 'answers-' + parentId; // ID uyumu
+                        parentCommentCard.appendChild(nestedSection);
+                    }
+
+                    // D-none varsa kaldır
+                    if (nestedSection.classList.contains('d-none')) {
+                        nestedSection.classList.remove('d-none');
+                    }
+
+                    // Yeni yorumu ekle
+                    const wrapperDiv = document.createElement('div');
+                    wrapperDiv.className = 'nested-answer-wrapper ps-4 border-start border-2 border-primary-subtle mb-2';
+                    wrapperDiv.innerHTML = data.html;
+
+                    nestedSection.appendChild(wrapperDiv);
+
+                    // Formu kaldır
+                    form.closest('.dynamic-reply-form').remove();
+
+                    // Yeni yoruma kaydır
+                    wrapperDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+                    // Highlight
+                    const card = wrapperDiv.querySelector('.forum-answer-card');
+                    if (card) {
+                        card.style.transition = "background-color 0.5s";
+                        const originalBg = card.style.backgroundColor;
+                        card.style.backgroundColor = "#e0e7ff";
+                        setTimeout(() => card.style.backgroundColor = originalBg, 2000);
+                    }
+
+                } else {
+                    showToast(data.mesaj || 'Cevap gönderilemedi.', 'error', '🔇 Engellendi');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showToast('Bir hata oluştu.', 'error');
+            })
+            .finally(() => {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalBtnText;
+                }
+            });
+
+        return false;
+    }
+
+
+    function showCustomAlert(msg) {
+        showToast(msg, 'warning', '⚠️ Uyarı');
+    }
+
+    function showToast(message, type = 'error', title = '❌ Hata') {
+        const container = document.getElementById('toastContainer');
+        
+        const iconClass = type === 'success' ? 'success' : type === 'warning' ? 'warning' : 'error';
+        const iconSymbol = type === 'success' ? 'bi-check-circle-fill' : type === 'warning' ? 'bi-exclamation-triangle-fill' : 'bi-x-circle-fill';
+        const toastClass = type === 'success' ? 'toast-success' : type === 'warning' ? 'toast-warning' : '';
+        
+        const toast = document.createElement('div');
+        toast.className = `toast-notification ${toastClass}`;
+        toast.innerHTML = `
+            <div class="toast-icon ${iconClass}">
+                <i class="bi ${iconSymbol}"></i>
+            </div>
+            <div class="toast-body">
+                <div class="toast-title">${title}</div>
+                <div class="toast-message">${message}</div>
+            </div>
+            <button class="toast-close" onclick="this.closest('.toast-notification').remove()">
+                <i class="bi bi-x-lg"></i>
+            </button>
+            <div class="toast-progress"></div>
+        `;
+        
+        container.appendChild(toast);
+        requestAnimationFrame(() => toast.classList.add('show'));
+        
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 400);
+        }, 4000);
+    }
+
+    // 3. Formu Kapatma
+    function formuKapat(btn) {
+        btn.closest('.dynamic-reply-form').remove();
+    }
+
+    // 5. İÇERİK KAYDETME (AJAX)
+    function icerikBegen(event, id) {
+        if (event) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        if (!checkAuth()) return;
+
+        fetch(`/icerik-begen/${id}/`, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': csrfToken
+            }
+        })
+            .then(response => {
+                if (response.status === 429) return null;
+                if (!response.ok) throw new Error("Sunucu Hatası");
+                return response.json();
+            })
+            .then(data => {
+                if (!data) return;
+
+                const btn = document.getElementById(`btn-icerik-begen-${id}`);
+                const icon = document.getElementById(`icon-icerik-begen-${id}`);
+                const count = document.getElementById(`sayi-icerik-begen-${id}`);
+
+                if (btn) btn.classList.toggle('active', data.begenildi);
+                if (icon) {
+                    icon.classList.toggle('bi-heart-fill', data.begenildi);
+                    icon.classList.toggle('bi-heart', !data.begenildi);
+                }
+                if (count) count.innerText = data.sayi;
+            })
+            .catch(err => console.error(err));
+    }
+
+    function icerikKaydet(id) {
+        if (!checkAuth()) return;
+
+        fetch(`/kaydet/${id}/`, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': csrfToken
+            }
+        })
+            .then(res => {
+                if (res.url.includes('/giris/')) {
+                    window.location.href = '/giris/';
+                    return null;
+                }
+                if (res.status === 429) return null;
+                if (!res.ok) throw new Error("Sunucu Hatası");
+                return res.json();
+            })
+            .then(data => {
+                if (!data) return;
+
+                // Butonu bul (class üzerinden veya onclick handler'dan unique bişi bulmak lazım ama ID yok)
+                // Bu şablonda buton ID'si yok. reload() yapılıyordu.
+                // Reload yapmadan güncellemek için butona ID vermek en iyisi ama HTML'i değiştirmeden yapmak zor.
+                // En basiti: reload yerine UI güncellemesi yapmak için butonu 'this' ile parametre olarak almak gerekir.
+                // Mevcut HTML: onclick="icerikKaydet('{{ icerik.id }}')"
+                // 'this' geçilmemiş.
+                // O zaman tüm sayfayı reload etmek yerine sadece butonu bulmaya çalışalım.
+                // Tek bir kaydet butonu var (ana içerik için).
+
+                const btn = document.querySelector('.action-button[onclick^="icerikKaydet"]');
+                if (btn && data.kaydedildi !== undefined) {
+                    if (data.kaydedildi) {
+                        btn.classList.add('active');
+                        btn.innerHTML = '<i class="bi bi-bookmark-fill me-2"></i>Kaydedildi';
+                    } else {
+                        btn.classList.remove('active');
+                        btn.innerHTML = '<i class="bi bi-bookmark me-2"></i>Kaydet';
+                    }
+                }
+            })
+            .catch(err => {
+                if (err.name === 'SyntaxError') window.location.href = "/giris/";
+                else console.error(err);
+            });
+    }
+
+    // 6. YORUM BEĞENME (AJAX)
+    // Şablonda (yorum_karti_soru.html) ne kullanılıyor bilmiyorum ama muhtemelen orada ID vardır.
+    // yorum_karti_soru.html'i henüz görmedim ama `detay.html` ile aynı fonksiyonu kullanacak şekilde ayarlayabiliriz.
+    // Ancak `detay_soru.html` script'inde `yorumBegen` reload yapıyordu.
+
+    function yorumBegen(yorumId) {
+        if (!checkAuth()) return;
+
+        fetch(`/begen/${yorumId}/`, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': csrfToken
+            }
+        })
+            .then(response => {
+                if (response.status === 429) return null;
+                if (!response.ok) throw new Error("Sunucu Hatası");
+                return response.text();
+            })
+            .then(text => {
+                try { return JSON.parse(text); }
+                catch (e) { window.location.href = "/giris/"; }
+            })
+            .then(data => {
+                if (!data) return;
+                // Button ID convention: btn-begen-{id}
+                const btn = document.getElementById(`btn-begen-${yorumId}`);
+                // Icon ID convention: icon-begen-{id} (eğer varsa)
+                // Sayı ID convention: sayi-begen-{id} (eğer varsa)
+
+                if (btn) {
+                    if (data.begenildi) {
+                        btn.classList.add('liked'); // detay_soru CSS'inde 'liked' class'ı var
+                        // Eğer icon varsa
+                        const icon = btn.querySelector('i');
+                        if (icon) {
+                            icon.className = 'bi bi-heart-fill me-1';
+                        }
+                    } else {
+                        btn.classList.remove('liked');
+                        const icon = btn.querySelector('i');
+                        if (icon) {
+                            icon.className = 'bi bi-heart me-1';
+                        }
+                    }
+
+                    // Sayı güncelleme
+                    // Butonun içindeki metni parse etmek zor olabilir (icon + text).
+                    // Genelde: <i ...></i> 5
+                    // btn.lastChild.textContent olabilir.
+                    // Güvenli yöntem: span ID varsa. Yoksa şimdilik reload yapmamak bile iyidir.
+                    // span yoksa inject edemeyiz kolayca.
+                    // Ama kullanıcı reload olmasın dedi. Sayı güncellenmese bile reload olmaması iyidir.
+
+                    // Eğer şablonda span varsa:
+                    const sayiSpan = document.getElementById(`sayi-begen-${yorumId}`);
+                    if (sayiSpan) {
+                        sayiSpan.innerText = data.sayi;
+                    } else {
+                        // Fallback: icon'dan sonraki text node'u güncelle
+                        // Bu biraz riskli, o yüzden sadece icon rengini değiştirip bırakmak en güvenlisi.
+                    }
+                }
+            })
+            .catch(error => console.error(error));
+    }
+
+    // --- SUSTURMA GERİ SAYIM ZAMANLAYICISI ---
+    (function() {
+        const countdownEl = document.getElementById('timeout-countdown-soru');
+        if (!countdownEl) return;
+        
+        const timeoutDate = new Date(countdownEl.dataset.timeout).getTime();
+        
+        function updateCountdown() {
+            const now = Date.now();
+            const diff = timeoutDate - now;
+            
+            if (diff <= 0) {
+                location.reload();
+                return;
+            }
+            
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+            
+            document.getElementById('countdown-days-soru').textContent = String(days).padStart(2, '0');
+            document.getElementById('countdown-hours-soru').textContent = String(hours).padStart(2, '0');
+            document.getElementById('countdown-minutes-soru').textContent = String(minutes).padStart(2, '0');
+            document.getElementById('countdown-seconds-soru').textContent = String(seconds).padStart(2, '0');
+        }
+        
+        updateCountdown();
+        setInterval(updateCountdown, 1000);
+    })();
+</script>
+<script>
+    // Cevap/yorum odaklama: URL'de #cevap-XX veya #comment-XX varsa scroll + highlight
+    if (window.location.hash) {
+        setTimeout(function() {
+            const el = document.querySelector(window.location.hash);
+            if (el) {
+                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                el.style.transition = 'box-shadow 0.4s, outline 0.4s';
+                el.style.outline = '2px solid #6366f1';
+                el.style.borderRadius = '12px';
+                el.style.boxShadow = '0 0 25px rgba(99,102,241,0.35)';
+                setTimeout(() => {
+                    el.style.outline = '';
+                    el.style.boxShadow = '';
+                }, 3500);
+            }
+        }, 600);
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,75 @@
+{% load posts_image_tags %}
+<div class="comment-wrapper mb-2" id="comment-{{ yorum.id }}">
+    <div class="d-flex position-relative">
+
+        <div class="d-flex flex-column align-items-center me-2">
+            <a href="{% url 'profil' yorum.yazar.username %}" class="text-decoration-none">
+                {% with comment_avatar=yorum.yazar|avatar_url %}
+                <div class="user-avatar-sm rounded-circle d-flex align-items-center justify-content-center fw-bold text-white mb-1" style="background-color: #ff4500; width: 28px; height: 28px; font-size: 14px; overflow: hidden;">
+                    {% if comment_avatar %}
+                    <img src="{{ comment_avatar }}" alt="{{ yorum.yazar.username }}" style="width: 100%; height: 100%; object-fit: cover; display: block;">
+                    {% else %}
+                    {{ yorum.yazar.username|make_list|first|upper }}
+                    {% endif %}
+                </div>
+                {% endwith %}
+            </a>
+            <div class="thread-line-container h-100 d-flex justify-content-center" onclick="toggleComment('{{ yorum.id }}')">
+                <div class="thread-line"></div>
+            </div>
+        </div>
+
+        <div class="w-100">
+            <div class="d-flex align-items-center mb-1 comment-header">
+                <a href="{% url 'profil' yorum.yazar.username %}" class="text-decoration-none fw-bold me-2" style="font-size: 0.9rem; color: #1c1c1c;">{{ yorum.yazar.username }}</a>
+                {% if yorum.yazar == icerik.yazar %}
+                <span class="badge rounded-pill bg-primary me-2" style="font-size: 0.65rem;">YAZAR</span>
+                {% endif %}
+                <small class="text-muted" style="font-size: 0.75rem;">• {{ yorum.tarih|safe_timesince }} önce</small>
+                <button class="btn btn-sm p-0 ms-2 expand-btn d-none" onclick="toggleComment('{{ yorum.id }}')"><i class="bi bi-arrows-angle-expand text-primary"></i></button>
+            </div>
+
+            <div class="comment-content-area">
+                <div class="comment-text comment-readable-text text-dark mb-0" style="font-size: 0.95rem; line-height: 1.5;">{{ yorum.mesaj }}</div>
+
+                <div class="action-buttons d-flex align-items-center mt-1 gap-4">
+                    <button class="btn btn-link text-decoration-none p-0 text-secondary d-flex align-items-center" onclick="yanitla('{{ yorum.id }}', '{{ yorum.yazar.username }}', this)"><i class="bi bi-chat" style="font-size: 1.1rem;"></i><span class="d-none d-md-inline ms-1">Yanıtla</span></button>
+
+                    {% if yorum.yanitlar.count > 0 %}
+                    <button class="btn btn-link text-decoration-none p-0 text-secondary d-flex align-items-center" onclick="toggleAnswers('{{ yorum.id }}', this)">
+                        <i class="bi bi-chevron-down" style="font-size: 1.1rem;"></i>
+                        <span class="ms-1 fw-bold" style="font-size: 0.9rem;">{{ yorum.total_replies }}</span>
+                    </button>
+                    {% endif %}
+
+                    <button class="btn btn-link text-decoration-none p-0 d-flex align-items-center {% if request.user in yorum.begenenler.all %}text-danger{% else %}text-secondary{% endif %}" id="btn-begen-{{ yorum.id }}" onclick="yorumBegen('{{ yorum.id }}')"><i class="bi {% if request.user in yorum.begenenler.all %}bi-heart-fill{% else %}bi-heart{% endif %}" id="icon-begen-{{ yorum.id }}" style="font-size: 1.1rem;"></i><span id="sayi-begen-{{ yorum.id }}" class="ms-1" style="font-size: 0.9rem;">{{ yorum.begenenler.count }}</span></button>
+
+                    {% if request.user == yorum.yazar or request.user.is_superuser %}
+                    <a href="{% url 'yorum_sil' yorum.id %}" class="text-danger text-decoration-none d-flex align-items-center ms-auto delete-action" title="Yorumu Sil">
+                        <i class="bi bi-trash" style="font-size: 1.1rem;"></i>
+                        <span class="d-none d-md-inline ms-1">Sil</span>
+                    </a>
+                    {% endif %}
+                </div>
+
+                {% if yorum.yanitlar.all %}
+                <div class="children-comments">
+                    <div class="nested-comments mt-2 ps-1 d-none" id="answers-{{ yorum.id }}">
+                        {% if depth < 2 %}
+                            {% for yanit in yorum.yanitlar.all %}
+                            <div class="nested-answer-wrapper mb-1">
+                                {% include "yorum_karti.html" with yorum=yanit depth=depth|add:1 %}
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="ps-3 py-2">
+                                <a href="{% url 'detay' icerik.id %}?odak={{ yorum.id }}" class="btn btn-sm btn-light text-primary border rounded-pill"><i class="bi bi-arrow-right-circle me-1"></i> Bu tartışmanın devamını gör</a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>

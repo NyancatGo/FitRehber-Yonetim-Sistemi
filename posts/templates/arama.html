@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block title %}{% if query %}{{ query }} araması | FitRehber{% else %}FitRehber Arama{% endif %}{% endblock %}
+{% block meta_description %}FitRehber içinde antrenman, beslenme, supplement ve sağlıklı yaşam içeriklerini arayın.{% endblock %}
+{% block meta_robots %}noindex,follow{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Arama sonuçları mobil optimizasyonu */
+    @media (max-width: 768px) {
+
+        /* Başlığı 2 satırla sınırla */
+        .card h4,
+        .card h4 a {
+            display: -webkit-box !important;
+            -webkit-line-clamp: 2 !important;
+            line-clamp: 2 !important;
+            -webkit-box-orient: vertical !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+            font-size: 1.1rem !important;
+        }
+
+        /* Açıklama metnini 2 satırla sınırla */
+        .card p.text-muted {
+            display: -webkit-box !important;
+            -webkit-line-clamp: 2 !important;
+            line-clamp: 2 !important;
+            -webkit-box-orient: vertical !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+            font-size: 0.9rem !important;
+        }
+
+        /* Kart padding'ini azalt */
+        .card .card-body {
+            padding: 16px !important;
+        }
+
+        /* Sayfa başlığını küçült */
+        h2.fw-bold {
+            font-size: 1.3rem !important;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+
+    <div class="row justify-content-center mb-5">
+        <div class="col-lg-8 text-center">
+            <h2 class="fw-bold mb-3">
+                {% if query %}
+                "{{ query }}" için arama sonuçları
+                {% else %}
+                Arama Yap
+                {% endif %}
+            </h2>
+            <p class="text-muted">
+                {% if sonuclar %}
+                Toplam {{ toplam_sonuc }} sonuç bulundu.
+                {% else %}
+                Aradığınız kriterlere uygun içerik bulunamadı.
+                {% endif %}
+            </p>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            {% if sonuclar %}
+            {% for icerik in sonuclar %}
+            <div class="card border-0 shadow-sm mb-4 rounded-4 overflow-hidden">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <span class="badge rounded-pill 
+                                {% if icerik.tur == 'haber' %}bg-primary{% else %}bg-warning text-dark{% endif %}">
+                            {{ icerik.get_tur_display }}
+                        </span>
+                        <small class="text-muted">{{ icerik.tarih|date:"d M Y" }}</small>
+                        <a href="{% url 'profil' icerik.yazar.username %}" class="text-muted fw-bold ms-auto text-decoration-none hover-link">
+                            @{{ icerik.yazar.username }}
+                        </a>
+                    </div>
+
+                    <h4 class="fw-bold">
+                        <a href="{% url 'detay' icerik.id %}" class="text-decoration-none text-dark stretched-link">
+                            {{ icerik.baslik }}
+                        </a>
+                    </h4>
+
+                    <p class="text-muted mb-0">
+                        {{ icerik.yazi|striptags|truncatewords:30 }}
+                    </p>
+                </div>
+            </div>
+            {% endfor %}
+            {% if sonuclar.has_other_pages %}
+            <nav class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if sonuclar.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?q={{ query }}&sayfa={{ sonuclar.previous_page_number }}">Önceki</a>
+                    </li>
+                    {% endif %}
+                    <li class="page-item disabled">
+                        <span class="page-link">{{ sonuclar.number }} / {{ sonuclar.paginator.num_pages }}</span>
+                    </li>
+                    {% if sonuclar.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?q={{ query }}&sayfa={{ sonuclar.next_page_number }}">Sonraki</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+            {% else %}
+            <div class="text-center py-5">
+                <div class="mb-3">
+                    <i class="bi bi-search display-1 text-muted opacity-25"></i>
+                </div>
+                <h4>Sonuç Bulunamadı 😔</h4>
+                <p class="text-muted">Farklı anahtar kelimelerle tekrar deneyebilir veya ana sayfaya dönebilirsin.</p>
+                <a href="{% url 'anasayfa' %}" class="btn btn-outline-primary rounded-pill px-4 mt-3">Ana Sayfaya
+                    Dön</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}

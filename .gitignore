@@ -1,0 +1,53 @@
+# Development environment and IDE files
+.vscode/
+.vs/
+.idea/
+.claude/
+.github/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+desktop.ini
+~$*.docx
+
+# Python and Django basics
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.env
+.env.*
+.venv/
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Django local databases
+db.sqlite3
+db.sqlite3-journal
+*.sqlite3
+
+# User/generated assets
+media/
+staticfiles/
+
+# Logs and local runtime files
+*.log
+celerybeat-schedule
+celerybeat.pid
+
+# Local/debug scripts and generated artifacts
+debug_*.py
+cleanup_*.py
+reset_*.py
+read_docs.py
+check_output.txt
+*.legacy.txt
+SECURITY_REVIEW.md
+posts/templates/{% static 'images/
+backups/
+.test_media/
+.test_tmp/

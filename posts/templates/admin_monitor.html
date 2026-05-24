@@ -1,0 +1,1084 @@
+{% extends "base.html" %}
+
+{% block title %}Yönetim Paneli{% endblock %}
+{% block meta_robots %}noindex,nofollow{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --admin-bg: #0f172a;
+        --admin-surface: #1e293b;
+        --admin-border: #334155;
+        --admin-accent: #6366f1;
+        --admin-accent-dark: #4f46e5;
+        --admin-text: #f8fafc;
+        --admin-muted: #94a3b8;
+        --admin-success: #10b981;
+        --admin-danger: #ef4444;
+        --admin-warning: #f59e0b;
+    }
+
+    html, body {
+        overflow-x: hidden;
+        position: relative;
+        max-width: 100vw;
+    }
+
+    body {
+        background: var(--admin-bg) !important;
+    }
+
+    .admin-dashboard {
+        min-height: 100vh;
+        padding: 30px 0;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        overflow-x: hidden;
+    }
+
+    /* HEADER */
+    .admin-header {
+        background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%);
+        border-radius: 24px;
+        padding: 35px 40px;
+        margin-bottom: 25px;
+        position: relative;
+        overflow: hidden;
+        border: 1px solid rgba(99, 102, 241, 0.2);
+    }
+
+    .admin-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: 
+            radial-gradient(circle at 10% 80%, rgba(99, 102, 241, 0.25) 0%, transparent 50%),
+            radial-gradient(circle at 90% 20%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
+    }
+
+    .admin-header-content {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .admin-header h1 {
+        font-size: 1.8rem;
+        font-weight: 900;
+        color: white;
+        margin: 0;
+        letter-spacing: -0.5px;
+    }
+
+    .admin-header h1 i {
+        margin-right: 10px;
+        color: #a5b4fc;
+    }
+
+    .admin-header p {
+        color: #a5b4fc;
+        margin: 5px 0 0;
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    .admin-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        padding: 8px 18px;
+        border-radius: 50px;
+        color: white;
+        font-weight: 600;
+        font-size: 0.85rem;
+    }
+
+    /* STATS */
+    .stats-row {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-bottom: 25px;
+    }
+
+    .stat-card {
+        background: var(--admin-surface);
+        border: 1px solid var(--admin-border);
+        border-radius: 18px;
+        padding: 22px;
+        position: relative;
+        overflow: hidden;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+    }
+
+    .stat-card.blue::before { background: linear-gradient(90deg, #6366f1, #818cf8); }
+    .stat-card.red::before { background: linear-gradient(90deg, #ef4444, #f87171); }
+    .stat-card.amber::before { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+    .stat-card.green::before { background: linear-gradient(90deg, #10b981, #34d399); }
+
+    .stat-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        margin-bottom: 14px;
+    }
+
+    .stat-card.blue .stat-icon { background: rgba(99, 102, 241, 0.15); color: #818cf8; }
+    .stat-card.red .stat-icon { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+    .stat-card.amber .stat-icon { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+    .stat-card.green .stat-icon { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 900;
+        color: var(--admin-text);
+        line-height: 1;
+        margin-bottom: 4px;
+    }
+
+    .stat-label {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--admin-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* SEARCH & FILTER BAR */
+    .toolbar {
+        background: var(--admin-surface);
+        border: 1px solid var(--admin-border);
+        border-radius: 18px;
+        padding: 18px 22px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        flex-wrap: wrap;
+    }
+
+    .search-box {
+        flex: 1;
+        min-width: 250px;
+        position: relative;
+    }
+
+    .search-box i {
+        position: absolute;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--admin-muted);
+        font-size: 1rem;
+    }
+
+    .search-box input {
+        width: 100%;
+        background: var(--admin-bg);
+        border: 1px solid var(--admin-border);
+        border-radius: 12px;
+        padding: 12px 14px 12px 42px;
+        color: var(--admin-text);
+        font-size: 0.9rem;
+        font-weight: 500;
+        transition: border-color 0.2s;
+    }
+
+    .search-box input:focus {
+        outline: none;
+        border-color: var(--admin-accent);
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+    }
+
+    .search-box input::placeholder {
+        color: #475569;
+    }
+
+    .filter-pills {
+        display: flex;
+        gap: 6px;
+    }
+
+    .filter-pill {
+        padding: 10px 18px;
+        border-radius: 10px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-decoration: none;
+        transition: all 0.2s;
+        border: 1px solid var(--admin-border);
+        background: var(--admin-bg);
+        color: var(--admin-muted);
+        white-space: nowrap;
+    }
+
+    .filter-pill:hover {
+        color: var(--admin-text);
+        border-color: #475569;
+    }
+
+    .filter-pill.active {
+        background: var(--admin-accent);
+        border-color: var(--admin-accent);
+        color: white;
+    }
+
+    .filter-pill .count {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 20px;
+        height: 20px;
+        border-radius: 6px;
+        font-size: 0.7rem;
+        font-weight: 800;
+        margin-left: 6px;
+        padding: 0 5px;
+    }
+
+    .filter-pill.active .count {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+    }
+
+    .filter-pill:not(.active) .count {
+        background: rgba(148, 163, 184, 0.15);
+        color: var(--admin-muted);
+    }
+
+    /* USER TABLE */
+    .users-table-container {
+        background: var(--admin-surface);
+        border: 1px solid var(--admin-border);
+        border-radius: 18px;
+        overflow: hidden;
+    }
+
+    .users-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .users-table thead th {
+        background: rgba(15, 23, 42, 0.5);
+        padding: 14px 18px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--admin-muted);
+        text-align: left;
+        border-bottom: 1px solid var(--admin-border);
+    }
+
+    .users-table tbody tr {
+        border-bottom: 1px solid rgba(51, 65, 85, 0.5);
+        transition: background 0.15s;
+    }
+
+    .users-table tbody tr:last-child {
+        border-bottom: none;
+    }
+
+    .users-table tbody tr:hover {
+        background: rgba(99, 102, 241, 0.05);
+    }
+
+    .users-table td {
+        padding: 16px 18px;
+        vertical-align: middle;
+    }
+
+    /* USER CELL */
+    .user-cell {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .user-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, var(--admin-accent), #8b5cf6);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        color: white;
+        font-size: 1rem;
+        flex-shrink: 0;
+    }
+
+    .user-info .user-name {
+        font-weight: 700;
+        color: var(--admin-text);
+        font-size: 0.9rem;
+    }
+
+    .user-info .user-name a {
+        color: var(--admin-text);
+        text-decoration: none;
+        transition: color 0.2s;
+    }
+
+    .user-info .user-name a:hover {
+        color: var(--admin-accent);
+    }
+
+    .user-info .user-email {
+        font-size: 0.8rem;
+        color: var(--admin-muted);
+    }
+
+    /* STATUS BADGE */
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 12px;
+        border-radius: 8px;
+        font-size: 0.75rem;
+        font-weight: 700;
+    }
+
+    .status-badge.normal {
+        background: rgba(16, 185, 129, 0.12);
+        color: #34d399;
+    }
+
+    .status-badge.banli {
+        background: rgba(239, 68, 68, 0.12);
+        color: #f87171;
+    }
+
+    .status-badge.susturulmus {
+        background: rgba(245, 158, 11, 0.12);
+        color: #fbbf24;
+    }
+
+    .status-badge.pasif {
+        background: rgba(148, 163, 184, 0.15);
+        color: #cbd5e1;
+    }
+
+    .status-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+    }
+
+    .status-badge.normal .status-dot { background: #34d399; }
+    .status-badge.banli .status-dot { background: #f87171; }
+    .status-badge.susturulmus .status-dot { background: #fbbf24; }
+    .status-badge.pasif .status-dot { background: #94a3b8; }
+
+    /* TABLE META */
+    .table-meta {
+        font-size: 0.85rem;
+        color: var(--admin-muted);
+    }
+
+    .table-meta strong {
+        color: var(--admin-text);
+        font-weight: 700;
+    }
+
+    /* ACTION BUTTONS */
+    .action-btns {
+        display: flex;
+        gap: 6px;
+    }
+
+    .action-btn {
+        width: 34px;
+        height: 34px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid var(--admin-border);
+        background: var(--admin-bg);
+        color: var(--admin-muted);
+        font-size: 0.85rem;
+        transition: all 0.2s;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .action-btn:hover {
+        border-color: var(--admin-accent);
+        color: var(--admin-accent);
+        background: rgba(99, 102, 241, 0.1);
+    }
+
+    .action-btn.ban-btn:hover {
+        border-color: var(--admin-danger);
+        color: var(--admin-danger);
+        background: rgba(239, 68, 68, 0.1);
+    }
+
+    .action-btn.timeout-btn:hover {
+        border-color: var(--admin-warning);
+        color: var(--admin-warning);
+        background: rgba(245, 158, 11, 0.1);
+    }
+
+    .action-btn.delete-btn:hover {
+        border-color: #ef4444;
+        color: #ef4444;
+        background: rgba(239, 68, 68, 0.1);
+    }
+
+    .action-btn.profile-btn:hover {
+        border-color: var(--admin-accent);
+        color: var(--admin-accent);
+        background: rgba(99, 102, 241, 0.1);
+    }
+
+    /* TOOLTIP for action buttons */
+    .action-btn {
+        position: relative;
+    }
+
+    .action-btn::after {
+        content: attr(data-tooltip);
+        position: absolute;
+        bottom: calc(100% + 8px);
+        left: 50%;
+        transform: translateX(-50%);
+        background: #0f172a;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 6px;
+        font-size: 0.7rem;
+        white-space: nowrap;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.2s;
+        z-index: 100;
+    }
+
+    .action-btn:hover::after {
+        opacity: 1;
+    }
+
+    /* PAGINATION */
+    .pagination-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 22px;
+        border-top: 1px solid var(--admin-border);
+    }
+
+    .pagination-info {
+        font-size: 0.85rem;
+        color: var(--admin-muted);
+    }
+
+    .pagination-btns {
+        display: flex;
+        gap: 6px;
+    }
+
+    .page-btn {
+        padding: 8px 14px;
+        border-radius: 8px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-decoration: none;
+        border: 1px solid var(--admin-border);
+        background: var(--admin-bg);
+        color: var(--admin-muted);
+        transition: all 0.2s;
+    }
+
+    .page-btn:hover, .page-btn.active {
+        background: var(--admin-accent);
+        border-color: var(--admin-accent);
+        color: white;
+    }
+
+    /* EMPTY STATE */
+    .empty-state-dark {
+        text-align: center;
+        padding: 60px 20px;
+    }
+
+    .empty-state-dark i {
+        font-size: 3rem;
+        color: #334155;
+        margin-bottom: 15px;
+    }
+
+    .empty-state-dark h4 {
+        color: var(--admin-muted);
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+
+    .empty-state-dark p {
+        color: #475569;
+        font-size: 0.9rem;
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 991px) {
+        .stats-row {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .admin-header {
+            padding: 25px;
+        }
+
+        .admin-header h1 {
+            font-size: 1.4rem;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .stats-row {
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .toolbar {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .filter-pills {
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            min-width: 100%;
+        }
+
+        .users-table-container {
+            overflow-x: auto;
+        }
+
+        .users-table {
+            min-width: 700px;
+        }
+
+        .admin-header {
+            padding: 20px 15px;
+            margin-bottom: 20px;
+        }
+
+        .admin-header h1 {
+            font-size: 1.4rem;
+        }
+        
+        .admin-header p {
+            font-size: 0.8rem;
+        }
+
+        .header-actions-container {
+            width: 100%;
+            gap: 8px !important;
+        }
+
+        .header-actions-container {
+            width: 100%;
+        }
+
+        .header-actions-container .btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .stats-row {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .stat-card {
+            padding: 16px;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+        }
+
+        .admin-dashboard {
+            padding: 15px 0;
+        }
+
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-dashboard">
+    <div class="container">
+
+
+        <!-- HEADER -->
+        <div class="admin-header">
+            <div class="admin-header-content">
+                <div>
+                    <h1><i class="bi bi-shield-check"></i> Yönetim Paneli</h1>
+                    <p>Tüm kullanıcıları yönet, aktiviteleri takip et</p>
+                </div>
+                <div class="header-actions-container" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                    <a href="{% url 'admin_security_logs' %}" class="btn btn-sm fw-bold border-0" style="padding: 8px 16px; border-radius: 50px; background: rgba(239, 68, 68, 0.2); color: #fca5a5; backdrop-filter: blur(10px); display: inline-flex; align-items: center;">
+                        <i class="bi bi-radioactive me-1"></i> Güvenlik Günlükleri
+                    </a>
+                    <a href="{% url 'admin_export_data' %}" class="btn btn-light btn-sm fw-bold border-0" style="padding: 8px 16px; border-radius: 50px; background: rgba(255,255,255,0.2); color: white; backdrop-filter: blur(10px); display: inline-flex; align-items: center;">
+                        <i class="bi bi-download me-1"></i> Verileri İndir
+                    </a>
+                    <div class="admin-badge">
+                        <i class="bi bi-person-gear"></i> {{ request.user.username }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- STATS -->
+        <div class="stats-row">
+            <div class="stat-card blue">
+                <div class="stat-icon"><i class="bi bi-people-fill"></i></div>
+                <div class="stat-value">{{ toplam_kullanici }}</div>
+                <div class="stat-label">Toplam Kullanıcı</div>
+            </div>
+            <div class="stat-card red">
+                <div class="stat-icon"><i class="bi bi-shield-x"></i></div>
+                <div class="stat-value">{{ banli_sayisi }}</div>
+                <div class="stat-label">Banlı</div>
+            </div>
+            <div class="stat-card amber">
+                <div class="stat-icon"><i class="bi bi-clock-history"></i></div>
+                <div class="stat-value">{{ susturulmus_sayisi }}</div>
+                <div class="stat-label">Susturulmuş</div>
+            </div>
+            <div class="stat-card green">
+                <div class="stat-icon"><i class="bi bi-lightning-charge-fill"></i></div>
+                <div class="stat-value">{{ bugun_aktif }}</div>
+                <div class="stat-label">Bugün Aktif</div>
+            </div>
+        </div>
+
+
+        <!-- TOOLBAR -->
+        <form method="GET" class="toolbar" id="filterForm">
+            <div class="search-box">
+                <i class="bi bi-search"></i>
+                <input type="text" name="q" value="{{ arama }}" placeholder="Kullanıcı adı veya e-posta ara...">
+            </div>
+            <div class="filter-pills">
+                <a href="?filtre=hepsi{% if arama %}&q={{ arama }}{% endif %}" class="filter-pill {% if filtre == 'hepsi' %}active{% endif %}">
+                    Tümü <span class="count">{{ toplam_kullanici }}</span>
+                </a>
+                <a href="?filtre=normal{% if arama %}&q={{ arama }}{% endif %}" class="filter-pill {% if filtre == 'normal' %}active{% endif %}">
+                    Aktif
+                </a>
+                <a href="?filtre=banli{% if arama %}&q={{ arama }}{% endif %}" class="filter-pill {% if filtre == 'banli' %}active{% endif %}">
+                    <i class="bi bi-shield-x" style="font-size: 0.7rem;"></i> Banlı <span class="count">{{ banli_sayisi }}</span>
+                </a>
+                <a href="?filtre=susturulmus{% if arama %}&q={{ arama }}{% endif %}" class="filter-pill {% if filtre == 'susturulmus' %}active{% endif %}">
+                    <i class="bi bi-clock-history" style="font-size: 0.7rem;"></i> Susturulmuş <span class="count">{{ susturulmus_sayisi }}</span>
+                </a>
+                <a href="?filtre=pasif{% if arama %}&q={{ arama }}{% endif %}" class="filter-pill {% if filtre == 'pasif' %}active{% endif %}">
+                    <i class="bi bi-person-slash" style="font-size: 0.7rem;"></i> Pasif <span class="count">{{ pasif_sayisi }}</span>
+                </a>
+            </div>
+        </form>
+
+        <!-- USER TABLE -->
+        <div class="users-table-container" id="userListContainer">
+            {% include '_admin_user_list.html' %}
+        </div>
+
+    </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════ -->
+<!--          YASAKLAMA ONAY MODALI (BAN)          -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="modal fade" id="banModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 440px;">
+        <div class="modal-content" style="border: none; border-radius: 24px; overflow: hidden; box-shadow: 0 25px 60px rgba(0,0,0,0.4);">
+            <!-- Üst Gradient Bölüm -->
+            <div class="text-center" style="background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%); padding: 35px 30px 25px; position: relative; overflow: hidden;">
+                <div style="position: absolute; top: -30%; left: -30%; width: 160%; height: 160%; background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 60%);"></div>
+                <div style="position: relative; z-index: 2;">
+                    <div style="width: 70px; height: 70px; background: rgba(255,255,255,0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; backdrop-filter: blur(10px); border: 2px solid rgba(255,255,255,0.2);">
+                        <i class="bi bi-shield-x" style="font-size: 2rem; color: white;"></i>
+                    </div>
+                    <h5 id="banModalTitle" style="color: white; font-weight: 800; margin-bottom: 6px;">Kullanıcıyı Yasakla</h5>
+                    <p id="banModalDesc" style="color: rgba(255,255,255,0.8); font-size: 0.9rem; margin: 0;">Bu işlem kullanıcının erişimini kalıcı olarak kısıtlar.</p>
+                </div>
+            </div>
+            <!-- İçerik Bölümü -->
+            <div style="padding: 25px 30px 20px; background: white;">
+                <div style="display: flex; align-items: center; gap: 12px; padding: 14px 16px; background: #fef2f2; border-radius: 14px; border: 1px solid #fecaca; margin-bottom: 20px;">
+                    <div style="width: 42px; height: 42px; background: linear-gradient(135deg, #4f46e5, #3b82f6); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        <span id="banModalAvatar" style="color: white; font-weight: 800; font-size: 1.1rem;"></span>
+                    </div>
+                    <div>
+                        <div id="banModalUsername" style="font-weight: 700; color: #1e293b; font-size: 0.95rem;"></div>
+                        <div id="banModalEmail" style="font-size: 0.8rem; color: #94a3b8;"></div>
+                    </div>
+                </div>
+                <div id="banModalConsequences" style="background: #f8fafc; border-radius: 12px; padding: 14px 16px; margin-bottom: 20px;">
+                    <div style="font-size: 0.75rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">Sonuçlar</div>
+                    <div style="display: flex; align-items: center; gap: 8px; padding: 6px 0; font-size: 0.85rem; color: #64748b;">
+                        <i class="bi bi-x-circle-fill" style="color: #ef4444;"></i> Siteye erişimi kısıtlanacak
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px; padding: 6px 0; font-size: 0.85rem; color: #64748b;">
+                        <i class="bi bi-x-circle-fill" style="color: #ef4444;"></i> İçerik paylaşamayacak
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px; padding: 6px 0; font-size: 0.85rem; color: #64748b;">
+                        <i class="bi bi-x-circle-fill" style="color: #ef4444;"></i> Yorum ve cevap yazamayacak
+                    </div>
+                </div>
+            </div>
+            <!-- Butonlar -->
+            <div style="padding: 0 30px 25px; background: white;">
+                <form id="banForm" method="POST" style="display: flex; gap: 10px;">
+                    {% csrf_token %}
+                    <button type="button" class="btn" data-bs-dismiss="modal" style="flex: 1; padding: 14px; border-radius: 14px; font-weight: 700; background: #f1f5f9; color: #64748b; border: none; font-size: 0.95rem;">
+                        Vazgeç
+                    </button>
+                    <button type="submit" id="banModalBtn" style="flex: 1; padding: 14px; border-radius: 14px; font-weight: 700; background: linear-gradient(135deg, #dc2626, #b91c1c); color: white; border: none; font-size: 0.95rem; text-align: center; box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3);">
+                        <i class="bi bi-shield-x me-1"></i> <span id="banModalBtnText">Yasakla</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════ -->
+<!--         SUSTURMA MODALI (TIMEOUT)              -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="modal fade" id="timeoutModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 440px;">
+        <div class="modal-content" style="border: none; border-radius: 24px; overflow: hidden; box-shadow: 0 25px 60px rgba(0,0,0,0.4);">
+            <!-- Üst Gradient Bölüm -->
+            <div class="text-center" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); padding: 35px 30px 25px; position: relative; overflow: hidden;">
+                <div style="position: absolute; top: -30%; left: -30%; width: 160%; height: 160%; background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 60%);"></div>
+                <div style="position: relative; z-index: 2;">
+                    <div style="width: 70px; height: 70px; background: rgba(255,255,255,0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; backdrop-filter: blur(10px); border: 2px solid rgba(255,255,255,0.2);">
+                        <i class="bi bi-clock-history" style="font-size: 2rem; color: white;"></i>
+                    </div>
+                    <h5 style="color: white; font-weight: 800; margin-bottom: 6px;">Kullanıcıyı Sustur</h5>
+                    <p style="color: rgba(255,255,255,0.85); font-size: 0.9rem; margin: 0;">Geçici olarak içerik ve yorum paylaşımı kısıtlanır.</p>
+                </div>
+            </div>
+            <!-- İçerik Bölümü -->
+            <form id="timeoutForm" method="POST">
+                {% csrf_token %}
+                <div style="padding: 25px 30px 20px; background: white;">
+                    <div style="display: flex; align-items: center; gap: 12px; padding: 14px 16px; background: #fffbeb; border-radius: 14px; border: 1px solid #fde68a; margin-bottom: 20px;">
+                        <div style="width: 42px; height: 42px; background: linear-gradient(135deg, #4f46e5, #3b82f6); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <span id="timeoutModalAvatar" style="color: white; font-weight: 800; font-size: 1.1rem;"></span>
+                        </div>
+                        <div>
+                            <div id="timeoutModalUsername" style="font-weight: 700; color: #1e293b; font-size: 0.95rem;"></div>
+                            <div style="font-size: 0.8rem; color: #94a3b8;">Geçici susturma uygulanacak</div>
+                        </div>
+                    </div>
+                    <label style="display: block; font-size: 0.75rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">Susturma Süresi</label>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 8px;">
+                        <label class="timeout-option" style="display: flex; align-items: center; gap: 10px; padding: 12px 14px; background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 12px; cursor: pointer; transition: all 0.2s;">
+                            <input type="radio" name="duration" value="1" checked style="accent-color: #f59e0b; width: 18px; height: 18px;">
+                            <div>
+                                <div style="font-weight: 700; font-size: 0.9rem; color: #1e293b;">1 Gün</div>
+                                <div style="font-size: 0.7rem; color: #94a3b8;">24 saat</div>
+                            </div>
+                        </label>
+                        <label class="timeout-option" style="display: flex; align-items: center; gap: 10px; padding: 12px 14px; background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 12px; cursor: pointer; transition: all 0.2s;">
+                            <input type="radio" name="duration" value="3" style="accent-color: #f59e0b; width: 18px; height: 18px;">
+                            <div>
+                                <div style="font-weight: 700; font-size: 0.9rem; color: #1e293b;">3 Gün</div>
+                                <div style="font-size: 0.7rem; color: #94a3b8;">72 saat</div>
+                            </div>
+                        </label>
+                        <label class="timeout-option" style="display: flex; align-items: center; gap: 10px; padding: 12px 14px; background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 12px; cursor: pointer; transition: all 0.2s;">
+                            <input type="radio" name="duration" value="7" style="accent-color: #f59e0b; width: 18px; height: 18px;">
+                            <div>
+                                <div style="font-weight: 700; font-size: 0.9rem; color: #1e293b;">1 Hafta</div>
+                                <div style="font-size: 0.7rem; color: #94a3b8;">7 gün</div>
+                            </div>
+                        </label>
+                        <label class="timeout-option" style="display: flex; align-items: center; gap: 10px; padding: 12px 14px; background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 12px; cursor: pointer; transition: all 0.2s;">
+                            <input type="radio" name="duration" value="30" style="accent-color: #f59e0b; width: 18px; height: 18px;">
+                            <div>
+                                <div style="font-weight: 700; font-size: 0.9rem; color: #1e293b;">1 Ay</div>
+                                <div style="font-size: 0.7rem; color: #94a3b8;">30 gün</div>
+                            </div>
+                        </label>
+                    </div>
+                    <label class="timeout-option" style="display: flex; align-items: center; gap: 10px; padding: 12px 14px; background: #f0fdf4; border: 2px solid #bbf7d0; border-radius: 12px; cursor: pointer; transition: all 0.2s;">
+                        <input type="radio" name="duration" value="remove" style="accent-color: #10b981; width: 18px; height: 18px;">
+                        <div>
+                            <div style="font-weight: 700; font-size: 0.9rem; color: #1e293b;"><i class="bi bi-unlock-fill text-success me-1"></i>Susturmayı Kaldır</div>
+                            <div style="font-size: 0.7rem; color: #94a3b8;">Tüm kısıtlamaları kaldır</div>
+                        </div>
+                    </label>
+                </div>
+                <!-- Butonlar -->
+                <div style="padding: 0 30px 25px; background: white; display: flex; gap: 10px;">
+                    <button type="button" class="btn" data-bs-dismiss="modal" style="flex: 1; padding: 14px; border-radius: 14px; font-weight: 700; background: #f1f5f9; color: #64748b; border: none; font-size: 0.95rem;">
+                        Vazgeç
+                    </button>
+                    <button type="submit" style="flex: 1; padding: 14px; border-radius: 14px; font-weight: 700; background: linear-gradient(135deg, #f59e0b, #d97706); color: white; border: none; font-size: 0.95rem; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);">
+                        <i class="bi bi-check-lg me-1"></i> Uygula
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .timeout-option:has(input:checked) {
+        border-color: #f59e0b !important;
+        background: #fffbeb !important;
+    }
+    .timeout-option:hover {
+        border-color: #cbd5e1 !important;
+        background: #f1f5f9 !important;
+    }
+</style>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!--         KULLANICI SİLME ONAY MODALI           -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 440px;">
+        <div class="modal-content" style="border: none; border-radius: 24px; overflow: hidden; box-shadow: 0 25px 60px rgba(0,0,0,0.4);">
+            <div class="text-center" style="background: linear-gradient(135deg, #7f1d1d 0%, #450a0a 100%); padding: 35px 30px 25px; position: relative; overflow: hidden;">
+                <div style="position: absolute; top: -30%; left: -30%; width: 160%; height: 160%; background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 60%);"></div>
+                <div style="position: relative; z-index: 2;">
+                    <div style="width: 70px; height: 70px; background: rgba(255,255,255,0.12); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; backdrop-filter: blur(10px); border: 2px solid rgba(255,255,255,0.15);">
+                        <i class="bi bi-trash3" style="font-size: 2rem; color: #fca5a5;"></i>
+                    </div>
+                    <h5 style="color: white; font-weight: 800; margin-bottom: 6px;">Kalıcı Olarak Sil</h5>
+                    <p style="color: rgba(255,255,255,0.7); font-size: 0.85rem; margin: 0;">Bu işlem geri alınamaz!</p>
+                </div>
+            </div>
+            <div style="padding: 25px 30px 20px; background: white;">
+                <div style="display: flex; align-items: center; gap: 12px; padding: 14px 16px; background: #fef2f2; border-radius: 14px; border: 1px solid #fecaca; margin-bottom: 20px;">
+                    <div style="width: 42px; height: 42px; background: linear-gradient(135deg, #dc2626, #991b1b); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        <span id="deleteModalAvatar" style="color: white; font-weight: 800; font-size: 1.1rem;"></span>
+                    </div>
+                    <div>
+                        <div id="deleteModalUsername" style="font-weight: 700; color: #1e293b; font-size: 0.95rem;"></div>
+                        <div id="deleteModalEmail" style="font-size: 0.8rem; color: #94a3b8;"></div>
+                    </div>
+                </div>
+                <div style="background: #fef2f2; border-radius: 12px; padding: 14px 16px; margin-bottom: 20px;">
+                    <div style="font-size: 0.75rem; font-weight: 700; color: #ef4444; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">⚠️ Silinecek Veriler</div>
+                    <div style="display: flex; align-items: center; gap: 8px; padding: 5px 0; font-size: 0.85rem; color: #64748b;">
+                        <i class="bi bi-x-circle-fill" style="color: #ef4444;"></i> Kullanıcı hesabı
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px; padding: 5px 0; font-size: 0.85rem; color: #64748b;">
+                        <i class="bi bi-x-circle-fill" style="color: #ef4444;"></i> Tüm içerikleri ve yorumları
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px; padding: 5px 0; font-size: 0.85rem; color: #64748b;">
+                        <i class="bi bi-x-circle-fill" style="color: #ef4444;"></i> Profil ve aktivite kayıtları
+                    </div>
+                </div>
+            </div>
+            <div style="padding: 0 30px 25px; background: white;">
+                <form id="deleteForm" method="POST" style="display: flex; gap: 10px;">
+                    {% csrf_token %}
+                    <button type="button" class="btn" data-bs-dismiss="modal" style="flex: 1; padding: 14px; border-radius: 14px; font-weight: 700; background: #f1f5f9; color: #64748b; border: none; font-size: 0.95rem;">
+                        Vazgeç
+                    </button>
+                    <button type="submit" style="flex: 1; padding: 14px; border-radius: 14px; font-weight: 700; background: linear-gradient(135deg, #7f1d1d, #450a0a); color: #fca5a5; border: none; font-size: 0.95rem; box-shadow: 0 4px 15px rgba(127, 29, 29, 0.4);">
+                        <i class="bi bi-trash3 me-1"></i> Kalıcı Sil
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Ban Modal - Dynamic content
+    const banModal = document.getElementById('banModal');
+    if (banModal) {
+        banModal.addEventListener('show.bs.modal', function(event) {
+            const btn = event.relatedTarget;
+            const userId = btn.getAttribute('data-user-id');
+            const username = btn.getAttribute('data-username');
+            const email = btn.getAttribute('data-email');
+            const isBanned = btn.getAttribute('data-is-banned') === 'true';
+
+            document.getElementById('banModalAvatar').textContent = username.charAt(0).toUpperCase();
+            document.getElementById('banModalUsername').textContent = username;
+            document.getElementById('banModalEmail').textContent = email;
+            document.getElementById('banForm').action = '/admin/islem/ban/' + userId + '/';
+
+            const btnText = isBanned ? 'Yasağı Kaldır' : 'Yasakla';
+            const btnBg = isBanned ? 'linear-gradient(135deg, #10b981, #059669)' : 'linear-gradient(135deg, #dc2626, #b91c1c)';
+            
+            document.getElementById('banModalTitle').textContent = isBanned ? 'Yasağı Kaldır' : 'Kullanıcıyı Yasakla';
+            document.getElementById('banModalDesc').textContent = isBanned ? 'Bu kullanıcının erişim yasağını kaldırmak üzeresin.' : 'Bu işlem kullanıcının erişimini kalıcı olarak kısıtlar.';
+            document.getElementById('banModalBtnText').textContent = btnText;
+            document.getElementById('banModalBtn').style.background = btnBg;
+            document.getElementById('banModalConsequences').style.display = isBanned ? 'none' : 'block';
+        });
+    }
+
+    // Timeout Modal - Dynamic content
+    const timeoutModal = document.getElementById('timeoutModal');
+    if (timeoutModal) {
+        timeoutModal.addEventListener('show.bs.modal', function(event) {
+            const btn = event.relatedTarget;
+            const userId = btn.getAttribute('data-user-id');
+            const username = btn.getAttribute('data-username');
+
+            document.getElementById('timeoutModalAvatar').textContent = username.charAt(0).toUpperCase();
+            document.getElementById('timeoutModalUsername').textContent = username;
+            document.getElementById('timeoutForm').action = '/admin/islem/timeout/' + userId + '/';
+        });
+    }
+
+    // AJAX User Filtering
+    function loadUserList(url) {
+        const container = document.getElementById('userListContainer');
+        container.style.opacity = '0.5';
+        container.style.pointerEvents = 'none';
+
+        fetch(url, {
+            headers: {
+                'x-requested-with': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.text())
+        .then(html => {
+            container.innerHTML = html;
+            container.style.opacity = '1';
+            container.style.pointerEvents = 'auto';
+            
+            // Re-bind pagination events
+            bindPagination();
+            
+            // Update URL bar without reload
+            window.history.pushState({}, '', url);
+        })
+        .catch(err => {
+            console.error('AJAX Hatası:', err);
+            container.style.opacity = '1';
+            container.style.pointerEvents = 'auto';
+        });
+    }
+
+    function bindPagination() {
+        document.querySelectorAll('.ajax-page').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                loadUserList(this.href);
+            });
+        });
+    }
+
+    // Filter pill click
+    document.querySelectorAll('.filter-pill').forEach(pill => {
+        pill.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // UI Update
+            document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Get filter type from href or data attribute
+            const urlObj = new URL(this.href, window.location.origin);
+            const filterType = urlObj.searchParams.get('filtre');
+            
+            // Construct new URL based on CURRENT browser state to preserve 'q'
+            const currentUrl = new URL(window.location.href);
+            currentUrl.searchParams.set('filtre', filterType);
+            currentUrl.searchParams.delete('sayfa'); // Reset to page 1 on filter change
+            
+            loadUserList(currentUrl.toString());
+        });
+    });
+
+    // Search logic (AJAX)
+    const searchInput = document.querySelector('.search-box input');
+    if (searchInput) {
+        let timeout = null;
+        searchInput.addEventListener('input', function() {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => {
+                const q = this.value.trim();
+                const url = new URL(window.location);
+                if (q) url.searchParams.set('q', q);
+                else url.searchParams.delete('q');
+                
+                url.searchParams.delete('sayfa'); // Search resets to page 1
+                
+                // Keep the current filter if any
+                loadUserList(url.toString());
+            }, 500); // 500ms debounce
+        });
+
+        // Prevent form submit
+        searchInput.closest('form').addEventListener('submit', function(e) {
+            e.preventDefault();
+        });
+    }
+
+    // Delete Modal - Dynamic content
+    const deleteModal = document.getElementById('deleteModal');
+    if (deleteModal) {
+        deleteModal.addEventListener('show.bs.modal', function(event) {
+            const btn = event.relatedTarget;
+            const userId = btn.getAttribute('data-user-id');
+            const username = btn.getAttribute('data-username');
+            const email = btn.getAttribute('data-email');
+
+            document.getElementById('deleteModalAvatar').textContent = username.charAt(0).toUpperCase();
+            document.getElementById('deleteModalUsername').textContent = username;
+            document.getElementById('deleteModalEmail').textContent = email;
+            document.getElementById('deleteForm').action = '/admin/islem/sil/' + userId + '/';
+        });
+    }
+
+    // Initial bind
+    bindPagination();
+</script>
+{% endblock %}

@@ -1,0 +1,157 @@
+{% load posts_image_tags %}
+{% for icerik in icerikler %}
+<div class="col-md-6 col-lg-4 fade-in-up" id="icerik-{{ icerik.id }}">
+    <div class="blog-card h-100 d-flex flex-column">
+        <div class="card-img-wrapper">
+            <span class="category-badge">
+                <i class="bi bi-hash"></i> {{ icerik.kategori }}
+            </span>
+
+            {% if request.user.is_superuser or request.user == icerik.yazar %}
+            <a href="{% url 'sil' icerik.id %}" class="delete-btn-overlay delete-action" title="Sil">
+                <i class="bi bi-trash-fill"></i>
+            </a>
+            {% endif %}
+
+            {% if icerik.kapak_fotografi %}
+            <img src="{{ icerik.kapak_fotografi }}" class="card-img-top" alt="{{ icerik.baslik }}" loading="lazy" decoding="async">
+            {% else %}
+            <div class="card-img-top d-flex align-items-center justify-content-center bg-light text-muted">
+                <i class="bi bi-image fs-1 opacity-25"></i>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="card-body p-4 d-flex flex-column flex-grow-1">
+            <a href="{% url 'detay' icerik.id %}" class="text-decoration-none text-dark stretched-link">
+                <h5 class="card-title">{{ icerik.baslik }}</h5>
+            </a>
+
+            <p class="card-text mb-4">
+                {{ icerik.mizanpajli_ozet|truncatechars:150 }}
+            </p>
+
+            <div class="card-action-row">
+                <button type="button"
+                    class="content-like-btn {% if request.user in icerik.begenenler.all %}liked{% endif %}"
+                    id="btn-icerik-begen-{{ icerik.id }}"
+                    onclick="icerikBegen(event, '{{ icerik.id }}')"
+                    title="Beğen">
+                    <i class="bi {% if request.user in icerik.begenenler.all %}bi-heart-fill{% else %}bi-heart{% endif %}"
+                        id="icon-icerik-begen-{{ icerik.id }}"></i>
+                    <span id="sayi-icerik-begen-{{ icerik.id }}">{{ icerik.begenenler.count }}</span>
+                </button>
+                <a class="content-like-btn comment-count"
+                    href="{% url 'detay' icerik.id %}#ana-yorum-formu"
+                    title="Yorumlar">
+                    <i class="bi bi-chat-left-text"></i>
+                    <span>{{ icerik.yorumlar.count }}</span>
+                </a>
+                <button type="button"
+                    class="content-like-btn save-action {% if request.user in icerik.kaydedenler.all %}saved{% endif %}"
+                    id="btn-kaydet-{{ icerik.id }}"
+                    onclick="icerikKaydet(event, '{{ icerik.id }}')"
+                    title="Kaydet">
+                    <i class="bi {% if request.user in icerik.kaydedenler.all %}bi-bookmark-fill{% else %}bi-bookmark{% endif %}"
+                        id="icon-kaydet-{{ icerik.id }}"></i>
+                </button>
+            </div>
+
+            <div class="author-box d-flex align-items-center mt-auto">
+                <a href="{% url 'profil' icerik.yazar.username %}" class="text-decoration-none">
+                    {% with author_avatar=icerik.yazar|avatar_url %}
+                    <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold me-3"
+                        style="width: 40px; height: 40px; background-color: #6366f1; font-size: 14px; overflow: hidden;">
+                        {% if author_avatar %}
+                        <img src="{{ author_avatar }}" alt="{{ icerik.yazar.username }}" style="width: 100%; height: 100%; object-fit: cover; display: block;">
+                        {% else %}
+                        {{ icerik.yazar.username|make_list|first|upper }}
+                        {% endif %}
+                    </div>
+                    {% endwith %}
+                </a>
+
+                <div class="d-flex flex-column">
+                    <a href="{% url 'profil' icerik.yazar.username %}" class="text-decoration-none text-dark fw-bold">
+                        @{{ icerik.yazar.username }}
+                    </a>
+                    <span class="text-muted" style="font-size: 12px;">{{ icerik.tarih|date:"d M Y" }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% empty %}
+<div class="col-12 text-center py-5">
+    <img src="https://cdni.iconscout.com/illustration/premium/thumb/empty-state-2130362-1800926.png"
+        alt="İçerik Bulunamadı" style="max-width: 300px; opacity: 0.8;">
+    <h4 class="fw-bold mt-4 text-muted">Bu kategoride henüz içerik yok.</h4>
+    {% if request.user.is_superuser %}
+    <p class="text-muted">İlk içeriği sen eklemek ister misin?</p>
+    <a href="{% url 'ekle' %}" class="btn btn-primary rounded-pill px-4 mt-2">
+        <i class="bi bi-plus-lg me-2"></i>İçerik Ekle
+    </a>
+    {% else %}
+    {% endif %}
+</div>
+{% endfor %}
+
+{% if icerikler.has_other_pages %}
+<div class="col-12 mt-4">
+    <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center gap-2">
+
+            {% if icerikler.has_previous %}
+            <li class="page-item">
+                <a class="page-link rounded-start-pill border-0 shadow-sm fw-bold px-3 ajax-page-link"
+                    href="?page={{ icerikler.previous_page_number }}{% if secili_kategori %}&kategori={{ secili_kategori }}{% endif %}"
+                    style="color: #4f46e5;">
+                    <i class="bi bi-chevron-left me-1"></i> Önceki
+                </a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+                <span class="page-link rounded-start-pill border-0 bg-light text-muted px-3">
+                    <i class="bi bi-chevron-left me-1"></i> Önceki
+                </span>
+            </li>
+            {% endif %}
+
+            {% for i in icerikler.paginator.page_range %}
+            {% if icerikler.number == i %}
+            <li class="page-item active">
+                <span class="page-link border-0 shadow-sm fw-bold px-3"
+                    style="background: #4f46e5; border-color: #4f46e5;">
+                    {{ i }}
+                </span>
+            </li>
+            {% else %}
+            <li class="page-item">
+                <a class="page-link border-0 shadow-sm fw-bold text-dark px-3 ajax-page-link"
+                    href="?page={{ i }}{% if secili_kategori %}&kategori={{ secili_kategori }}{% endif %}">
+                    {{ i }}
+                </a>
+            </li>
+            {% endif %}
+            {% endfor %}
+
+            {% if icerikler.has_next %}
+            <li class="page-item">
+                <a class="page-link rounded-end-pill border-0 shadow-sm fw-bold px-3 ajax-page-link"
+                    href="?page={{ icerikler.next_page_number }}{% if secili_kategori %}&kategori={{ secili_kategori }}{% endif %}"
+                    style="color: #4f46e5;">
+                    Sonraki <i class="bi bi-chevron-right ms-1"></i>
+                </a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+                <span class="page-link rounded-end-pill border-0 bg-light text-muted px-3">
+                    Sonraki <i class="bi bi-chevron-right ms-1"></i>
+                </span>
+            </li>
+            {% endif %}
+
+        </ul>
+    </nav>
+</div>
+{% endif %}

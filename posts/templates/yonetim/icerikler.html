@@ -1,0 +1,159 @@
+{% extends 'yonetim/base_yonetim.html' %}
+
+{% block page_title %}İçerik Yönetimi{% endblock %}
+{% block page_subtitle %}Sitedeki tüm blog yazılarını, makaleleri ve forum sorularını yönetin.{% endblock %}
+
+{% block extra_css %}
+.table-header-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.table-container {
+    overflow-x: auto;
+    width: 100%;
+}
+
+.custom-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.custom-table th {
+    background-color: rgba(255, 255, 255, 0.02);
+    border-bottom: 2px solid var(--border-color);
+    padding: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.875rem;
+}
+
+.custom-table td {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    vertical-align: middle;
+}
+
+.custom-table tr:hover td {
+    background-color: rgba(255, 255, 255, 0.01);
+    color: var(--text-primary);
+}
+
+.action-btns {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btn-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 0.25rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid var(--border-color);
+    background-color: transparent;
+    color: var(--text-secondary);
+    text-decoration: none;
+}
+
+.btn-icon:hover {
+    color: white;
+}
+
+.btn-icon-edit:hover {
+    background-color: var(--primary);
+    border-color: var(--primary);
+}
+
+.btn-icon-delete:hover {
+    background-color: var(--danger);
+    border-color: var(--danger);
+}
+{% endblock %}
+
+{% block content %}
+<div class="table-header-actions">
+    <div style="font-weight: 600; font-size: 1.1rem;">İçerik Listesi</div>
+    <a href="{% url 'yonetim_icerik_ekle' %}" class="btn btn-primary">
+        <i class="fa-solid fa-file-circle-plus"></i> Yeni İçerik Ekle
+    </a>
+</div>
+
+<div class="card">
+    <div class="table-container">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th style="width: 80px;">ID</th>
+                    <th>Başlık</th>
+                    <th>Tür</th>
+                    <th>Yazar</th>
+                    <th>Kategori</th>
+                    <th>Yorum Sayısı (UDF)</th>
+                    <th>Oluşturulma Tarihi</th>
+                    <th>İşlemler</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for i in icerikler %}
+                <tr>
+                    <td style="font-weight: bold; color: var(--text-primary);">#{{ i.id }}</td>
+                    <td>
+                        <span style="font-weight: 600; color: var(--text-primary); display: block; max-width: 350px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ i.baslik }}">
+                            {{ i.baslik }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if i.tur == 'haber' %}
+                            <span class="badge badge-info">Haber / Blog</span>
+                        {% else %}
+                            <span class="badge" style="background-color: rgba(168, 85, 247, 0.15); color: #a855f7;">Forum Sorusu</span>
+                        {% endif %}
+                    </td>
+                    <td style="font-weight: 500; color: var(--text-primary);">{{ i.yazar_adi }}</td>
+                    <td>
+                        {% if i.kategori_adi %}
+                            <span class="badge" style="background-color: rgba(255, 255, 255, 0.05); color: var(--text-primary); border: 1px solid var(--border-color);">
+                                {{ i.kategori_adi }}
+                            </span>
+                        {% else %}
+                            <span class="badge" style="background-color: rgba(239, 68, 68, 0.05); color: var(--danger);">Kategorisiz</span>
+                        {% endif %}
+                    </td>
+                    <td style="text-align: center; font-weight: bold; color: var(--success);">
+                        {{ i.yorum_sayisi }}
+                    </td>
+                    <td>{{ i.tarih|date:"d.m.Y H:i" }}</td>
+                    <td>
+                        <div class="action-btns">
+                            <a href="{% url 'yonetim_icerik_duzenle' i.id %}" class="btn-icon btn-icon-edit" title="Düzenle">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </a>
+                            <form method="POST" action="{% url 'yonetim_icerik_sil' i.id %}" style="display:inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-icon btn-icon-delete" title="Sil"
+                                        onclick="return confirm('Bu içeriği silmek istediğinize emin misiniz? Tüm alt yorumları ve verileri silinecektir.');">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" style="text-align: center; padding: 2rem;">Sistemde kayıtlı içerik bulunamadı.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

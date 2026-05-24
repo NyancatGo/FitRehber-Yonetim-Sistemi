@@ -1,0 +1,147 @@
+{% extends 'yonetim/base_yonetim.html' %}
+
+{% block page_title %}{{ title }}{% endblock %}
+{% block page_subtitle %}Kullanıcı profil bilgilerini düzenleyin.{% endblock %}
+
+{% block extra_css %}
+.form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+.form-group { display: flex; flex-direction: column; gap: 0.5rem; }
+.form-group label { font-size: 0.875rem; font-weight: 600; color: var(--text-primary); }
+.form-control { background-color: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 0.5rem; padding: 0.75rem 1rem; color: white; font-size: 0.875rem; outline: none; transition: all 0.3s ease; }
+.form-control:focus { border-color: var(--primary); background-color: rgba(255,255,255,0.05); box-shadow: 0 0 0 2px rgba(79,70,229,0.2); }
+select.form-control option { background-color: #1f2937; color: white; }
+.form-checkbox-group { display: flex; flex-direction: column; gap: 1rem; border: 1px solid var(--border-color); padding: 1.25rem; border-radius: 0.5rem; background-color: rgba(255,255,255,0.01); }
+.checkbox-control { display: flex; align-items: center; gap: 0.75rem; cursor: pointer; font-size: 0.875rem; font-weight: 500; }
+.checkbox-control input { width: 18px; height: 18px; accent-color: var(--danger); cursor: pointer; }
+.form-actions { display: flex; justify-content: flex-end; gap: 1rem; border-top: 1px solid var(--border-color); padding-top: 1.5rem; }
+.section-label { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary); margin-bottom: 0.25rem; grid-column: 1 / -1; }
+{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 900px; margin: 0 auto;">
+    <form method="POST">
+        {% csrf_token %}
+
+        <div class="form-grid">
+
+            {% if not profil %}
+            <!-- Yeni profil: kullanıcı seç -->
+            <div class="form-group" style="grid-column: 1 / -1;">
+                <label for="user_id">Kullanıcı <span style="color: var(--danger)">*</span></label>
+                {% if kullanicilar %}
+                <select id="user_id" name="user_id" class="form-control" required>
+                    <option value="">— Kullanıcı seçin —</option>
+                    {% for u in kullanicilar %}
+                    <option value="{{ u.id }}">{{ u.username }} ({{ u.email }})</option>
+                    {% endfor %}
+                </select>
+                {% else %}
+                <div style="padding: 0.75rem 1rem; background-color: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.25); border-radius: 0.5rem; color: var(--success); font-size: 0.875rem;">
+                    <i class="fa-solid fa-circle-check"></i> Tüm kullanıcıların profili mevcut.
+                </div>
+                {% endif %}
+            </div>
+            {% else %}
+            <div class="form-group" style="grid-column: 1 / -1;">
+                <label>Kullanıcı</label>
+                <input type="text" class="form-control" value="{{ profil.username }} — {{ profil.email }}" readonly style="opacity:0.6; cursor:not-allowed;">
+                <small style="color: var(--text-secondary);">Kullanıcı değiştirilemez. Farklı kullanıcı için yeni profil oluşturun.</small>
+            </div>
+            {% endif %}
+
+            <p class="section-label">Biyometrik Bilgiler</p>
+
+            <div class="form-group">
+                <label for="cinsiyet">Cinsiyet</label>
+                <select id="cinsiyet" name="cinsiyet" class="form-control">
+                    <option value="B" {% if not profil or profil.cinsiyet == 'B' %}selected{% endif %}>Belirtilmedi</option>
+                    <option value="E" {% if profil.cinsiyet == 'E' %}selected{% endif %}>Erkek</option>
+                    <option value="K" {% if profil.cinsiyet == 'K' %}selected{% endif %}>Kadın</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="dogum_tarihi">Doğum Tarihi</label>
+                <input type="date" id="dogum_tarihi" name="dogum_tarihi" class="form-control"
+                       value="{% if profil %}{{ profil.dogum_tarihi }}{% endif %}">
+            </div>
+
+            <div class="form-group">
+                <label for="boy">Boy (cm)</label>
+                <input type="number" id="boy" name="boy" class="form-control" step="0.1" min="0" max="300"
+                       value="{% if profil %}{{ profil.boy }}{% endif %}" placeholder="örn. 175.0">
+            </div>
+
+            <div class="form-group">
+                <label for="kilo">Güncel Kilo (kg)</label>
+                <input type="number" id="kilo" name="kilo" class="form-control" step="0.1" min="0" max="500"
+                       value="{% if profil %}{{ profil.kilo }}{% endif %}" placeholder="örn. 72.5">
+            </div>
+
+            <div class="form-group">
+                <label for="baslangic_kilo">Başlangıç Kilosu (kg)</label>
+                <input type="number" id="baslangic_kilo" name="baslangic_kilo" class="form-control" step="0.1" min="0" max="500"
+                       value="{% if profil %}{{ profil.baslangic_kilo }}{% endif %}" placeholder="örn. 80.0">
+            </div>
+
+            <div class="form-group">
+                <label for="hedef_kilo">Hedef Kilo (kg)</label>
+                <input type="number" id="hedef_kilo" name="hedef_kilo" class="form-control" step="0.1" min="0" max="500"
+                       value="{% if profil %}{{ profil.hedef_kilo }}{% endif %}" placeholder="örn. 68.0">
+            </div>
+
+            <p class="section-label">Fitness & Hakkında</p>
+
+            <div class="form-group" style="grid-column: 1 / -1;">
+                <label for="fitness_hedefi">Fitness Hedefi</label>
+                <input type="text" id="fitness_hedefi" name="fitness_hedefi" class="form-control" maxlength="200"
+                       value="{% if profil %}{{ profil.fitness_hedefi }}{% endif %}"
+                       placeholder="örn. Kilo vermek, kas kazanmak…">
+            </div>
+
+            <div class="form-group" style="grid-column: 1 / -1;">
+                <label for="hakkinda">Hakkında</label>
+                <textarea id="hakkinda" name="hakkinda" class="form-control" rows="4"
+                          placeholder="Kullanıcı hakkında kısa bilgi…">{% if profil %}{{ profil.hakkinda }}{% endif %}</textarea>
+            </div>
+
+            {% if profil %}
+            <p class="section-label" style="color: #fbbf24;">Moderasyon</p>
+
+            <div class="form-checkbox-group" style="grid-column: 1 / -1; border-color: rgba(239,68,68,0.3);">
+                <label class="checkbox-control">
+                    <input type="checkbox" name="is_banned" {% if profil.is_banned %}checked{% endif %}>
+                    <div>
+                        <span style="display:block; font-weight:600; color: var(--danger);">Hesap Banlı</span>
+                        <small style="color: var(--text-secondary); display:block; font-weight:normal; margin-top:0.15rem;">
+                            İşaretlenirse kullanıcı içerik ekleyemez, yorum yapamaz, beğeni/kaydetme yapamaz (Trigger koruması aktif).
+                        </small>
+                    </div>
+                </label>
+
+                <div class="form-group" style="margin: 0;">
+                    <label for="timeout_until" style="color: var(--warning);">Timeout Bitiş Zamanı</label>
+                    <input type="datetime-local" id="timeout_until" name="timeout_until" class="form-control"
+                           value="{% if profil.timeout_until %}{{ profil.timeout_until|date:'Y-m-d\TH:i' }}{% endif %}">
+                    <small style="color: var(--text-secondary);">Doldurulursa bu zamana kadar kullanıcı işlem yapamaz. Boş bırakılırsa timeout aktif olmaz.</small>
+                </div>
+            </div>
+            {% endif %}
+
+        </div>
+
+        <div class="form-actions">
+            <a href="{% url 'yonetim_profiller' %}" class="btn btn-secondary">İptal</a>
+            {% if profil or kullanicilar %}
+            <button type="submit" class="btn btn-primary">
+                <i class="fa-solid fa-floppy-disk"></i> Kaydet
+            </button>
+            {% else %}
+            <button type="button" class="btn btn-secondary" disabled style="opacity: 0.55; cursor: not-allowed;">
+                <i class="fa-solid fa-circle-check"></i> Profil Eklenecek Kullanıcı Yok
+            </button>
+            {% endif %}
+        </div>
+    </form>
+</div>
+{% endblock %}

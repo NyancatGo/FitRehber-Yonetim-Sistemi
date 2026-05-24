@@ -1,0 +1,117 @@
+{% extends 'yonetim/base_yonetim.html' %}
+
+{% block page_title %}Profil Yönetimi{% endblock %}
+{% block page_subtitle %}Kullanıcı profillerini görüntüleyin, düzenleyin veya ban/unban aksiyonu uygulayın.{% endblock %}
+
+{% block extra_css %}
+.table-header-actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+.table-container { overflow-x: auto; width: 100%; }
+.custom-table { width: 100%; border-collapse: collapse; text-align: left; }
+.custom-table th { background-color: rgba(255,255,255,0.02); border-bottom: 2px solid var(--border-color); padding: 1rem; font-weight: 600; color: var(--text-primary); font-size: 0.875rem; }
+.custom-table td { padding: 0.875rem 1rem; border-bottom: 1px solid var(--border-color); color: var(--text-secondary); font-size: 0.875rem; vertical-align: middle; }
+.custom-table tr:hover td { background-color: rgba(255,255,255,0.01); color: var(--text-primary); }
+.action-btns { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+.btn-icon { width: 32px; height: 32px; border-radius: 0.25rem; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease; border: 1px solid var(--border-color); background-color: transparent; color: var(--text-secondary); text-decoration: none; }
+.btn-icon-edit:hover { background-color: var(--primary); border-color: var(--primary); color: white; }
+.btn-icon-delete:hover { background-color: var(--danger); border-color: var(--danger); color: white; }
+.btn-icon-ban:hover { background-color: #d97706; border-color: #d97706; color: white; }
+.btn-icon-unban:hover { background-color: var(--success); border-color: var(--success); color: white; }
+.badge-warning { background-color: rgba(217,119,6,0.15); color: #fbbf24; }
+{% endblock %}
+
+{% block content %}
+<div class="table-header-actions">
+    <div style="font-weight: 600; font-size: 1.1rem;">Profil Listesi</div>
+    <a href="{% url 'yonetim_profil_ekle' %}" class="btn btn-primary">
+        <i class="fa-solid fa-id-card-clip"></i> Yeni Profil Ekle
+    </a>
+</div>
+
+<div class="card">
+    <div class="table-container">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Kullanıcı</th>
+                    <th>Cinsiyet</th>
+                    <th>Boy / Kilo</th>
+                    <th>Hedef Kilo</th>
+                    <th>Fitness Hedefi</th>
+                    <th>Moderasyon</th>
+                    <th>İşlemler</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in profiller %}
+                <tr>
+                    <td style="font-weight: bold; color: var(--text-primary);">#{{ p.id }}</td>
+                    <td style="font-weight: 500; color: var(--text-primary);">
+                        {{ p.username }}<br>
+                        <small style="color: var(--text-secondary);">{{ p.email }}</small>
+                    </td>
+                    <td>
+                        {% if p.cinsiyet == 'E' %}Erkek
+                        {% elif p.cinsiyet == 'K' %}Kadın
+                        {% else %}<span style="color: var(--text-secondary);">Belirtilmedi</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {{ p.boy|default:"—" }} cm / {{ p.kilo|default:"—" }} kg
+                    </td>
+                    <td>{{ p.hedef_kilo|default:"—" }} kg</td>
+                    <td style="max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                        {{ p.fitness_hedefi|default:"—" }}
+                    </td>
+                    <td>
+                        {% if p.is_banned %}
+                            <span class="badge badge-danger">Banlı</span>
+                        {% elif p.timeout_until %}
+                            <span class="badge badge-warning">Timeout</span>
+                        {% else %}
+                            <span class="badge badge-success">Normal</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="action-btns">
+                            <a href="{% url 'yonetim_profil_duzenle' p.id %}" class="btn-icon btn-icon-edit" title="Düzenle">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </a>
+                            {% if p.is_banned %}
+                            <form method="POST" action="{% url 'yonetim_profil_ban_toggle' p.id %}" style="display:inline;">
+                                {% csrf_token %}
+                                <input type="hidden" name="aksiyon" value="unban">
+                                <button type="submit" class="btn-icon btn-icon-unban" title="Banı Kaldır">
+                                    <i class="fa-solid fa-unlock"></i>
+                                </button>
+                            </form>
+                            {% else %}
+                            <form method="POST" action="{% url 'yonetim_profil_ban_toggle' p.id %}" style="display:inline;">
+                                {% csrf_token %}
+                                <input type="hidden" name="aksiyon" value="ban">
+                                <button type="submit" class="btn-icon btn-icon-ban" title="Banla"
+                                        onclick="return confirm('{{ p.username }} kullanıcısını banlamak istiyor musunuz?');">
+                                    <i class="fa-solid fa-ban"></i>
+                                </button>
+                            </form>
+                            {% endif %}
+                            <form method="POST" action="{% url 'yonetim_profil_sil' p.id %}" style="display:inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-icon btn-icon-delete" title="Sil (Demo/Test)"
+                                        onclick="return confirm('⚠️ Profil #{{ p.id }} silinecek. Bu işlem yalnızca demo/test verisi için yapılmalıdır. Onaylıyor musunuz?');">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" style="text-align: center; padding: 2rem;">Sistemde kayıtlı profil bulunamadı.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

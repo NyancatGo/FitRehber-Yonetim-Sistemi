@@ -1,0 +1,229 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load account %}
+
+{% block title %}E-Posta Doğrulama - FitRehber{% endblock %}
+{% block meta_description %}FitRehber e-posta doğrulama ekranı.{% endblock %}
+{% block meta_robots %}noindex,nofollow{% endblock %}
+
+{% block extra_css %}
+<style>
+    body {
+        background:
+            radial-gradient(circle at 20% 20%, rgba(16, 185, 129, 0.16), transparent 28%),
+            radial-gradient(circle at 80% 15%, rgba(99, 102, 241, 0.16), transparent 30%),
+            linear-gradient(145deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+        min-height: 100vh;
+    }
+
+    .confirm-shell {
+        min-height: calc(100vh - 88px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 36px 16px;
+    }
+
+    .confirm-card {
+        width: 100%;
+        max-width: 640px;
+        background: rgba(255, 255, 255, 0.96);
+        border-radius: 28px;
+        overflow: hidden;
+        box-shadow: 0 28px 80px rgba(15, 23, 42, 0.42);
+    }
+
+    .confirm-hero {
+        padding: 36px 32px 28px;
+        background: linear-gradient(135deg, #6366f1 0%, #7c3aed 100%);
+        color: white;
+        text-align: center;
+    }
+
+    .confirm-icon {
+        width: 82px;
+        height: 82px;
+        margin: 0 auto 18px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.14);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        font-size: 2rem;
+    }
+
+    .confirm-hero h1 {
+        margin: 0;
+        font-size: 2rem;
+        font-weight: 800;
+    }
+
+    .confirm-hero p {
+        margin: 10px 0 0;
+        color: rgba(255, 255, 255, 0.85);
+        font-size: 0.98rem;
+    }
+
+    .confirm-body {
+        padding: 34px 32px 36px;
+    }
+
+    .confirm-copy {
+        color: #475569;
+        font-size: 1rem;
+        line-height: 1.8;
+        margin-bottom: 20px;
+    }
+
+    .confirm-email {
+        color: #4f46e5;
+        font-weight: 800;
+        word-break: break-word;
+    }
+
+    .confirm-note {
+        background: #eef2ff;
+        border: 1px solid #c7d2fe;
+        color: #4338ca;
+        border-radius: 18px;
+        padding: 16px 18px;
+        font-size: 0.93rem;
+        line-height: 1.7;
+        margin-bottom: 26px;
+    }
+
+    .confirm-actions {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .confirm-btn {
+        border: none;
+        border-radius: 16px;
+        padding: 14px 22px;
+        font-weight: 800;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .confirm-btn:hover {
+        transform: translateY(-1px);
+    }
+
+    .confirm-btn-primary {
+        background: linear-gradient(135deg, #6366f1 0%, #7c3aed 100%);
+        color: #fff;
+        box-shadow: 0 14px 30px rgba(99, 102, 241, 0.28);
+    }
+
+    .confirm-btn-secondary {
+        background: #eef2f7;
+        color: #0f172a;
+    }
+
+    @media (max-width: 768px) {
+        .confirm-card {
+            border-radius: 22px;
+        }
+
+        .confirm-hero,
+        .confirm-body {
+            padding-left: 22px;
+            padding-right: 22px;
+        }
+
+        .confirm-hero h1 {
+            font-size: 1.7rem;
+        }
+
+        .confirm-actions {
+            flex-direction: column;
+        }
+
+        .confirm-btn {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="confirm-shell">
+    <div class="confirm-card">
+        <div class="confirm-hero">
+            <div class="confirm-icon">
+                <i class="bi bi-envelope-check-fill"></i>
+            </div>
+            <h1>E-Posta Doğrulama</h1>
+            <p>FitRehber hesabını güvenle aktifleştirmek için son adım.</p>
+        </div>
+
+        <div class="confirm-body">
+            {% if confirmation %}
+                {% user_display confirmation.email_address.user as user_display %}
+                {% if can_confirm %}
+                    <p class="confirm-copy">
+                        <span class="confirm-email">{{ confirmation.email_address.email }}</span>
+                        adresinin <strong>{{ user_display }}</strong> hesabına ait olduğunu onaylamak üzeresin.
+                    </p>
+
+                    <div class="confirm-note">
+                        Bağlantı açıldığı anda doğrulama güvenli şekilde tamamlanır ve seni otomatik olarak hesabının içine alır.
+                    </div>
+
+                    <form method="post" action="{{ request.path }}" id="email-confirm-form" data-auto-submit="{% if auto_submit %}true{% else %}false{% endif %}">
+                        {% csrf_token %}
+                        {{ redirect_field }}
+                        <div class="confirm-actions">
+                            <button type="submit" class="confirm-btn confirm-btn-primary">
+                                <i class="bi bi-patch-check-fill me-2"></i>
+                                E-Postamı Onayla
+                            </button>
+                            <a href="{% url 'giris' %}" class="confirm-btn confirm-btn-secondary">
+                                Girişe Dön
+                            </a>
+                        </div>
+                    </form>
+                {% else %}
+                    <p class="confirm-copy">
+                        Bu bağlantı kullanılamıyor. İlgili e-posta adresi farklı bir hesap tarafından zaten doğrulanmış görünüyor.
+                    </p>
+                    <div class="confirm-actions">
+                        <a href="{% url 'giris' %}" class="confirm-btn confirm-btn-primary">Giriş Yap</a>
+                        <a href="{% url 'kayit' %}" class="confirm-btn confirm-btn-secondary">Yeni Hesap Oluştur</a>
+                    </div>
+                {% endif %}
+            {% else %}
+                <p class="confirm-copy">
+                    Bu doğrulama bağlantısının süresi dolmuş olabilir ya da bağlantı geçersizdir.
+                </p>
+                <div class="confirm-note">
+                    Endişe etme. Giriş yapmayı denediğinde veya kayıt ekranından tekrar istediğinde yeni bir doğrulama bağlantısı gönderebilirsin.
+                </div>
+                <div class="confirm-actions">
+                    <a href="{% url 'giris' %}" class="confirm-btn confirm-btn-primary">Giriş Yap</a>
+                    <a href="{% url 'kayit' %}" class="confirm-btn confirm-btn-secondary">Kayıt Ekranına Git</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const form = document.getElementById('email-confirm-form');
+        if (!form || form.dataset.autoSubmit !== 'true') {
+            return;
+        }
+
+        window.setTimeout(() => form.submit(), 120);
+    });
+</script>
+{% endblock %}

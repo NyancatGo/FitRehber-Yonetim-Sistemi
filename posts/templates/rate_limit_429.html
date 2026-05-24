@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex,nofollow">
+    <title>Erişim Sınırlandı</title>
+    <style>
+        body { font-family: sans-serif; background: #f8f9fa; color: #1f2937; margin: 0; display: grid; place-items: center; min-height: 100vh; }
+        .card { max-width: 680px; background: #fff; border-radius: 12px; border-top: 6px solid #dc3545; padding: 32px; box-shadow: 0 12px 30px rgba(0,0,0,.1); }
+        h1 { margin-top: 0; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        {% if level == 0 %}
+            <h1>Çok Hızlısınız</h1>
+            <p>Lütfen kısa bir süre bekleyip tekrar deneyin.</p>
+            <p>Önerilen bekleme süresi: <strong>{{ burst_penalty }} saniye</strong>.</p>
+        {% elif level == 1 %}
+            <h1>1 Dakika Engellendiniz</h1>
+            <p>Bu IP adresinden çok fazla istek geldiği için geçici engel uygulandı.</p>
+        {% elif level == 2 %}
+            <h1>10 Dakika Engellendiniz</h1>
+            <p>İhlaller devam ettiği için daha uzun süreli engel uygulandı.</p>
+        {% else %}
+            <h1>Kalıcı Olarak Engellendiniz</h1>
+            <p>Sistem kaynaklarını kötüye kullanmaya devam edildiği için bu IP kalıcı olarak banlandı.</p>
+        {% endif %}
+    </div>
+</body>
+</html>

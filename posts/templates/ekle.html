@@ -1,0 +1,839 @@
+{% extends "base.html" %}
+
+{% block title %}{% if edit_mode %}İçeriği Düzenle{% else %}Paylaşım Yap{% endif %} | FitRehber{% endblock %}
+{% block meta_description %}FitRehber içerik paylaşım ekranı.{% endblock %}
+{% block meta_robots %}noindex,nofollow{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Arka Planı Biraz Daha Canlı Yapalım */
+    body {
+        background-color: #f1f5f9;
+        background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
+        background-size: 24px 24px;
+    }
+
+    .main-container {
+        max-width: 800px;
+        margin: 60px auto;
+        animation: fadeInUp 0.6s ease-out;
+    }
+
+    /* KART TASARIMI */
+    .form-card {
+        background: white;
+        border: none;
+        border-radius: 24px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+        position: relative;
+    }
+
+    /* HEADER (Üst Kısım) */
+    .card-header-custom {
+        background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+        padding: 50px 30px;
+        text-align: center;
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+
+    /* Header Arkasındaki Süslemeler */
+    .card-header-custom::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 60%);
+        animation: rotate 20s linear infinite;
+    }
+
+    /* INPUT ALANLARI */
+    .form-label {
+        font-weight: 700;
+        font-size: 0.95rem;
+        color: #334155;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .custom-input {
+        background-color: #f8fafc;
+        border: 2px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 16px;
+        font-size: 1rem;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        width: 100%;
+        color: #1e293b;
+    }
+
+    /* 👇 İŞTE SİHİRLİ DOKUNUŞ BURADA */
+    /* Select kutusunun varsayılan ve Bootstrap oklarını temizle */
+    select.custom-input {
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        background-image: none !important;
+        cursor: pointer;
+    }
+
+    .custom-input:focus {
+        background-color: #fff;
+        border-color: #6366f1;
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
+        outline: none;
+    }
+
+    .custom-input::placeholder {
+        color: #94a3b8;
+    }
+
+    /* ÖZEL DOSYA YÜKLEME ALANI */
+    .upload-area {
+        border: 2px dashed #cbd5e1;
+        border-radius: 16px;
+        padding: 40px;
+        text-align: center;
+        background-color: #f8fafc;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+    .upload-area:hover,
+    .upload-area.dragover {
+        border-color: #6366f1;
+        background-color: #eef2ff;
+    }
+
+    .upload-icon {
+        font-size: 2.5rem;
+        color: #64748b;
+        margin-bottom: 10px;
+        transition: color 0.3s;
+    }
+
+    .upload-area:hover .upload-icon {
+        color: #4f46e5;
+    }
+
+    #file-name-display {
+        font-weight: 600;
+        color: #4f46e5;
+        margin-top: 10px;
+        display: none;
+    }
+
+    /* BUTONLAR */
+    .btn-gonder {
+        background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+        color: white;
+        padding: 18px;
+        border-radius: 16px;
+        font-weight: 800;
+        font-size: 1.1rem;
+        letter-spacing: 0.5px;
+        border: none;
+        box-shadow: 0 10px 20px -5px rgba(79, 70, 229, 0.4);
+        transition: all 0.3s;
+        width: 100%;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-gonder:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 20px 25px -5px rgba(79, 70, 229, 0.5);
+    }
+
+    .btn-iptal {
+        background: transparent;
+        color: #64748b;
+        font-weight: 600;
+        padding: 15px;
+        border-radius: 16px;
+        border: 2px solid transparent;
+        transition: all 0.2s;
+        display: block;
+        text-align: center;
+        text-decoration: none;
+        margin-top: 10px;
+    }
+
+    .btn-iptal:hover {
+        background: #f1f5f9;
+        color: #334151;
+    }
+
+    /* Animasyon Keyframes */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(40px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes rotate {
+        from {
+            transform: rotate(0deg);
+        }
+
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    /* MOBİL İÇERİK EKLEME (OPTIMIZE) */
+    @media (max-width: 768px) {
+        .main-container {
+            margin-top: 20px !important;
+        }
+
+        .form-card {
+            border-radius: 20px !important;
+            margin: 0 !important;
+        }
+
+        .card-header-custom {
+            padding: 30px 20px !important;
+            border-radius: 0 0 30px 30px !important;
+        }
+
+        .card-header-custom h2 {
+            font-size: 1.6rem !important;
+        }
+
+        .p-4.p-md-5 {
+            padding: 20px !important;
+        }
+
+        .custom-input,
+        select.custom-input {
+            height: 52px !important;
+            font-size: 1rem !important;
+        }
+
+        textarea.custom-input {
+            height: 150px !important;
+        }
+
+        .upload-area {
+            padding: 25px 15px !important;
+            background-color: #f8fafc !important;
+            border: 2px dashed #cbd5e1 !important;
+            border-radius: 16px !important;
+        }
+
+        .upload-icon {
+            font-size: 2.5rem !important;
+        }
+
+        .d-grid {
+            display: flex !important;
+            flex-direction: column;
+            gap: 10px !important;
+        }
+
+        .btn-gonder {
+            position: static !important;
+            width: 100% !important;
+            height: 52px !important;
+            box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3) !important;
+        }
+
+        .btn-iptal {
+            margin-bottom: 30px;
+        }
+    }
+
+    /* MOBİL OVERFLOW DÜZELTMESİ - sticky'yi bozmadan */
+    @media (max-width: 768px) {
+        .container.main-container {
+            overflow-x: hidden !important;
+            max-width: 100% !important;
+            box-sizing: border-box !important;
+        }
+
+        .row {
+            margin-left: 0 !important;
+            margin-right: 0 !important;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container main-container">
+
+    <div class="form-card">
+
+        <div class="card-header-custom">
+            <div style="position: relative; z-index: 2;">
+                {% if edit_mode %}
+                <div class="mb-3">
+                    <span style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 50%;">
+                        <i class="bi bi-pencil-square fs-2"></i>
+                    </span>
+                </div>
+                <h2 class="fw-bold mb-2">İçeriği Düzenle ✏️</h2>
+                <p class="mb-0 opacity-90 fs-5 fw-light">Yayınladığın içeriği güncelle.</p>
+                {% elif request.GET.tur == 'haber' %}
+                <div class="mb-3">
+                    <span style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 50%;">
+                        <i class="bi bi-megaphone-fill fs-2"></i>
+                    </span>
+                </div>
+                <h2 class="fw-bold mb-2">Haber Paylaş 📰</h2>
+                <p class="mb-0 opacity-90 fs-5 fw-light">Toplulukla güncel gelişmeleri paylaş.</p>
+                {% else %}
+                <div class="mb-3">
+                    <span style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 50%;">
+                        <i class="bi bi-patch-question-fill fs-2"></i>
+                    </span>
+                </div>
+                <h2 class="fw-bold mb-2">Soru Sor & Tartış 💭</h2>
+                <p class="mb-0 opacity-90 fs-5 fw-light">Aklına takılanları sor, topluluktan destek al.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="p-4 p-md-5">
+            {% if user.is_authenticated and user.profil.timeout_until and user.profil.timeout_until > now %}
+            <!-- SUSTURULMUŞ KULLANICI - KİLİTLİ SAYFA -->
+            <div class="text-center py-5">
+                <div class="mb-4" style="width: 80px; height: 80px; background: linear-gradient(135deg, #f59e0b, #d97706); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto; box-shadow: 0 8px 25px rgba(245, 158, 11, 0.3);">
+                    <i class="bi bi-lock-fill text-white" style="font-size: 2rem;"></i>
+                </div>
+                <h4 class="fw-bold text-dark mb-2">Hesabın Geçici Olarak Susturuldu</h4>
+                <p class="text-muted mb-4">Susturma süresi dolana kadar içerik paylaşamazsın.</p>
+                <div class="timeout-countdown d-flex gap-2 gap-md-3 justify-content-center flex-wrap mb-4" id="timeout-countdown-ekle"
+                    data-timeout="{{ user.profil.timeout_until|date:'c' }}">
+                    <div class="text-center" style="background: #1e293b; color: white; border-radius: 12px; padding: 12px 16px; min-width: 70px;">
+                        <div class="fw-bold" style="font-size: 1.5rem;" id="countdown-days-ekle">--</div>
+                        <div style="font-size: 0.7rem; opacity: 0.7; letter-spacing: 1px;">GÜN</div>
+                    </div>
+                    <div class="text-center" style="background: #1e293b; color: white; border-radius: 12px; padding: 12px 16px; min-width: 70px;">
+                        <div class="fw-bold" style="font-size: 1.5rem;" id="countdown-hours-ekle">--</div>
+                        <div style="font-size: 0.7rem; opacity: 0.7; letter-spacing: 1px;">SAAT</div>
+                    </div>
+                    <div class="text-center" style="background: #1e293b; color: white; border-radius: 12px; padding: 12px 16px; min-width: 70px;">
+                        <div class="fw-bold" style="font-size: 1.5rem;" id="countdown-minutes-ekle">--</div>
+                        <div style="font-size: 0.7rem; opacity: 0.7; letter-spacing: 1px;">DAKİKA</div>
+                    </div>
+                    <div class="text-center" style="background: #f59e0b; color: white; border-radius: 12px; padding: 12px 16px; min-width: 70px;">
+                        <div class="fw-bold" style="font-size: 1.5rem;" id="countdown-seconds-ekle">--</div>
+                        <div style="font-size: 0.7rem; opacity: 0.9; letter-spacing: 1px;">SANİYE</div>
+                    </div>
+                </div>
+                <a href="{% url 'anasayfa' %}" class="btn btn-outline-secondary rounded-pill px-4">
+                    <i class="bi bi-arrow-left me-2"></i>Ana Sayfaya Dön
+                </a>
+            </div>
+            {% else %}
+            <form method="post" enctype="multipart/form-data"{% if edit_mode %} action="{% url 'icerik_duzenle' icerik.id %}"{% endif %}>
+                {% csrf_token %}
+
+                {% if form.errors %}
+                <div class="alert alert-danger rounded-4 mb-4 border-0 shadow-sm">
+                    <div class="d-flex gap-3 align-items-center">
+                        <i class="bi bi-exclamation-circle-fill fs-4"></i>
+                        <ul class="mb-0 small list-unstyled">
+                            {% for field in form %}
+                            {% for error in field.errors %}
+                            <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+                            {% endfor %}
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="mb-4">
+                    <label class="form-label">
+                        <i class="bi bi-fonts text-primary"></i> Konu Başlığı
+                    </label>
+                    {{ form.baslik }}
+                    <div class="form-text text-muted ms-1 small">
+                        <i class="bi bi-info-circle me-1"></i> Kısa, net ve ilgi çekici bir başlık seçin.
+                    </div>
+                </div>
+
+                {% if form.kategori %}
+                <div class="mb-4">
+                    <label class="form-label">
+                        <i class="bi bi-collection text-primary"></i> Kategori Seçimi
+                    </label>
+                    <div style="position: relative;">
+                        {{ form.kategori }}
+                        <i class="bi bi-chevron-down position-absolute"
+                            style="right: 20px; top: 18px; pointer-events: none; color: #64748b;"></i>
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="mb-4">
+                    <label class="form-label">
+                        <i class="bi bi-text-paragraph text-primary"></i> Detaylı Açıklama
+                    </label>
+                    {% if user.is_superuser and request.GET.tur == 'haber' or user.is_superuser and edit_mode and icerik.tur == 'haber' %}
+                    <div class="form-check form-switch mb-2">
+                        <input class="form-check-input" type="checkbox" id="raw-html-mode-switch" checked>
+                        <label class="form-check-label small text-muted" for="raw-html-mode-switch">
+                            Ham HTML/CSS/JS modu (style ve script etiketlerini korur)
+                        </label>
+                    </div>
+                    {% endif %}
+                    {{ form.yazi }}
+                </div>
+
+                <div class="mb-5">
+                    <label class="form-label">
+                        <i class="bi bi-image text-primary"></i> Görsel Ekle (Opsiyonel)
+                    </label>
+
+                    <div class="upload-area" id="upload-box"
+                        onclick="document.querySelector('input[type=file]').click()">
+                        <div class="upload-icon">
+                            <i class="bi bi-cloud-arrow-up-fill"></i>
+                        </div>
+                        <h6 class="fw-bold text-dark mb-1">Görseli buraya bırak veya tıkla</h6>
+                        <p class="text-muted small mb-0">PNG, JPG veya JPEG (Max 5MB)</p>
+
+                        <div style="height: 0; overflow: hidden; opacity: 0;">
+                            {{ form.resim }}
+                        </div>
+
+                        <div id="file-name-display">
+                            <i class="bi bi-check-circle-fill me-1"></i> <span id="file-name-text"></span>
+                        </div>
+                    </div>
+
+                    {% if edit_mode and icerik.resim %}
+                    <div class="mt-3 p-3 rounded-4" style="background: #f0fdf4; border: 1px solid #bbf7d0;">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <i class="bi bi-check-circle-fill text-success"></i>
+                            <span class="fw-bold small text-success">Mevcut Görsel</span>
+                        </div>
+                        <img src="{{ icerik.resim.url }}" alt="Mevcut görsel" class="rounded-3" style="max-width: 200px; max-height: 120px; object-fit: cover;">
+                        <p class="text-muted small mt-2 mb-0">Yeni görsel yüklerseniz mevcut görsel değiştirilir.</p>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn-gonder">
+                        {% if edit_mode %}
+                        Değişiklikleri Kaydet <i class="bi bi-check-lg ms-2"></i>
+                        {% elif request.GET.tur == 'haber' %}
+                        Haberi Yayınla <i class="bi bi-rocket-takeoff-fill ms-2"></i>
+                        {% else %}
+                        Soruyu Gönder <i class="bi bi-send-fill ms-2"></i>
+                        {% endif %}
+                    </button>
+
+                    <a href="{% if edit_mode %}{% url 'detay' icerik.id %}{% else %}{% url 'anasayfa' %}{% endif %}" class="btn-iptal">
+                        Vazgeç ve Geri Dön
+                    </a>
+                </div>
+
+            </form>
+            {% endif %}
+        </div>
+
+    </div>
+
+    <div class="text-center mt-4 mb-5">
+        <span class="badge bg-white text-secondary border px-3 py-2 rounded-pill shadow-sm fw-normal">
+            <i class="bi bi-shield-lock-fill me-1 text-success"></i> Güvenli Paylaşım
+        </span>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // 1. Django Inputlarına Özel Sınıfları Ekle
+        const inputs = document.querySelectorAll('input[type="text"], textarea, select');
+        inputs.forEach(el => {
+            el.classList.add('custom-input');
+
+            // Eğer Textarea ise
+            if (el.tagName === 'TEXTAREA') {
+                el.rows = 8;
+                el.placeholder = "Düşüncelerini, sorularını veya haberin detaylarını buraya detaylıca yazabilirsin...";
+            }
+        });
+
+        // 2. Dosya Yükleme Etkileşimi
+        const fileInput = document.querySelector('input[type="file"]');
+        const uploadBox = document.getElementById('upload-box');
+        const fileNameDisplay = document.getElementById('file-name-display');
+        const fileNameText = document.getElementById('file-name-text');
+        const originalText = uploadBox.querySelector('h6');
+        const originalSubText = uploadBox.querySelector('p');
+        const icon = uploadBox.querySelector('.upload-icon i');
+
+        if (fileInput) {
+            fileInput.addEventListener('change', function (e) {
+                if (this.files && this.files[0]) {
+                    const file = this.files[0];
+                    fileNameDisplay.style.display = 'block';
+                    fileNameText.textContent = file.name;
+
+                    // Görseli Güncelle
+                    originalText.style.display = 'none';
+                    originalSubText.style.display = 'none';
+                    icon.classList.remove('bi-cloud-arrow-up-fill');
+                    icon.classList.add('bi-file-earmark-image-fill', 'text-primary');
+                    uploadBox.style.borderColor = '#4f46e5';
+                    uploadBox.style.backgroundColor = '#eef2ff';
+                }
+            });
+
+            // Drag & Drop Efekti
+            ['dragenter', 'dragover'].forEach(eventName => {
+                uploadBox.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    uploadBox.classList.add('dragover');
+                }, false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                uploadBox.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    uploadBox.classList.remove('dragover');
+                }, false);
+            });
+
+            uploadBox.addEventListener('drop', (e) => {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                fileInput.files = files;
+                // Change eventini manuel tetikle
+                const event = new Event('change');
+                fileInput.dispatchEvent(event);
+            });
+        }
+    });
+
+    // --- SUSTURMA GERİ SAYIM ZAMANLAYICISI ---
+    (function() {
+        const countdownEl = document.getElementById('timeout-countdown-ekle');
+        if (!countdownEl) return;
+        
+        const timeoutDate = new Date(countdownEl.dataset.timeout).getTime();
+        
+        function updateCountdown() {
+            const now = Date.now();
+            const diff = timeoutDate - now;
+            
+            if (diff <= 0) {
+                location.reload();
+                return;
+            }
+            
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+            
+            document.getElementById('countdown-days-ekle').textContent = String(days).padStart(2, '0');
+            document.getElementById('countdown-hours-ekle').textContent = String(hours).padStart(2, '0');
+            document.getElementById('countdown-minutes-ekle').textContent = String(minutes).padStart(2, '0');
+            document.getElementById('countdown-seconds-ekle').textContent = String(seconds).padStart(2, '0');
+        }
+        
+        updateCountdown();
+        setInterval(updateCountdown, 1000);
+    })();
+</script>
+
+{% if user.is_superuser and request.GET.tur == 'haber' or user.is_superuser and edit_mode and icerik.tur == 'haber' %}
+<style>
+    /* Eski "Görsel Ekle" alanını tamamen gizle */
+    .mb-5:has(.upload-area) {
+        display: none !important;
+    }
+    
+    /* CKEditor editör alanı */
+    .ck-editor__editable_inline {
+        min-height: 400px;
+        border-radius: 0 0 16px 16px !important;
+    }
+
+    /* Ham kod modu görünümü */
+    textarea.raw-html-textarea {
+        min-height: 420px !important;
+        font-family: Consolas, "Courier New", monospace !important;
+        font-size: 0.95rem !important;
+        line-height: 1.55 !important;
+        white-space: pre !important;
+        tab-size: 4 !important;
+    }
+    
+    /* CKEditor Mobil Uyumu */
+    @media (max-width: 768px) {
+        .ck-editor__editable_inline {
+            min-height: 300px;
+        }
+        
+        /* Mobilde Toolbar'ın yatay kaydırılabilir olmasını sağla */
+        .ck.ck-toolbar {
+            overflow-x: auto !important;
+            flex-wrap: nowrap !important;
+            padding: 8px !important;
+            border-radius: 16px 16px 0 0 !important;
+            /* Scrollbar gizleme/şekillendirme */
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        
+        .ck.ck-toolbar::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .ck.ck-toolbar__items {
+            flex-wrap: nowrap !important;
+        }
+
+        /* Üç noktaya (...) basınca açılan menünün düzgün görünmesi için */
+        .ck.ck-dropdown__panel {
+            max-width: 90vw !important;
+            left: 0 !important;
+            right: auto !important;
+            position: absolute !important;
+            white-space: normal !important;
+        }
+        
+        /* Açılan panelin içindeki araçların da yana kaymasını önle, alt alta/yan yana sarılsın */
+        .ck.ck-dropdown__panel .ck-toolbar__items {
+            flex-wrap: wrap !important;
+            flex-direction: row !important;
+        }
+    }
+</style>
+
+<script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/super-build/ckeditor.js"></script>
+<script>
+    // Django için özel Yükleme Adaptörü (Custom Upload Adapter)
+    class MyUploadAdapter {
+        constructor( loader ) {
+            this.loader = loader;
+        }
+
+        upload() {
+            return this.loader.file
+                .then( file => new Promise( ( resolve, reject ) => {
+                    this._initRequest();
+                    this._initListeners( resolve, reject, file );
+                    this._sendRequest( file );
+                } ) );
+        }
+
+        abort() {
+            if ( this.xhr ) { this.xhr.abort(); }
+        }
+
+        _initRequest() {
+            const xhr = this.xhr = new XMLHttpRequest();
+            xhr.open( 'POST', '{% url "ckeditor_resim_yukle" %}', true );
+            xhr.setRequestHeader('X-CSRFToken', '{{ csrf_token }}');
+            xhr.responseType = 'json';
+        }
+
+        _initListeners( resolve, reject, file ) {
+            const xhr = this.xhr;
+            const loader = this.loader;
+            const genericErrorText = `Dosya yüklenemedi: ${ file.name }.`;
+
+            xhr.addEventListener( 'error', () => reject( genericErrorText ) );
+            xhr.addEventListener( 'abort', () => reject() );
+            xhr.addEventListener( 'load', () => {
+                const response = xhr.response;
+                if ( !response || response.error ) {
+                    return reject( response && response.error ? response.error.message : genericErrorText );
+                }
+                resolve( { default: response.url } );
+            } );
+
+            if ( xhr.upload ) {
+                xhr.upload.addEventListener( 'progress', evt => {
+                    if ( evt.lengthComputable ) {
+                        loader.uploadTotal = evt.total;
+                        loader.uploaded = evt.loaded;
+                    }
+                } );
+            }
+        }
+
+        _sendRequest( file ) {
+            const data = new FormData();
+            data.append( 'upload', file );
+            this.xhr.send( data );
+        }
+    }
+
+    function MyCustomUploadAdapterPlugin( editor ) {
+        editor.plugins.get( 'FileRepository' ).createUploadAdapter = ( loader ) => {
+            return new MyUploadAdapter( loader );
+        };
+    }
+
+    // GHS konfigürasyonu bazı sürümlerde tek başına yeterli olmayabilir.
+    // Bu plugin script/style etiketlerini DataFilter üzerinden açıkça allow eder.
+    function ForceScriptStyleSupportPlugin( editor ) {
+        if (!editor.plugins.has('DataFilter')) {
+            console.warn('DataFilter bulunamadı. script/style etiketleri filtrelenebilir.');
+            return;
+        }
+
+        const dataFilter = editor.plugins.get('DataFilter');
+        ['script', 'style'].forEach(tagName => {
+            dataFilter.allowElement(tagName);
+            dataFilter.allowAttributes({
+                name: tagName,
+                attributes: true,
+                classes: true,
+                styles: true
+            });
+        });
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        const yaziAlani = document.querySelector('#id_yazi');
+        if (!yaziAlani) {
+            return;
+        }
+
+        // HTML5 required kaldır — CKEditor gizli textarea'yı boş bırakınca tarayıcı formu sessizce engelliyor
+        yaziAlani.removeAttribute('required');
+
+        const form = yaziAlani.closest('form');
+        const rawModeSwitch = document.getElementById('raw-html-mode-switch');
+        let editorInstance = null;
+
+        function applyRawTextareaLook() {
+            yaziAlani.classList.add('raw-html-textarea');
+            yaziAlani.rows = 22;
+            yaziAlani.placeholder = "HTML, CSS ve JS kodlarını buraya doğrudan yazabilirsin...";
+            yaziAlani.style.display = 'block';
+        }
+
+        function removeRawTextareaLook() {
+            yaziAlani.classList.remove('raw-html-textarea');
+            yaziAlani.rows = 8;
+        }
+
+        async function destroyEditorIfNeeded() {
+            if (!editorInstance) return;
+            yaziAlani.value = editorInstance.getData();
+            await editorInstance.destroy();
+            editorInstance = null;
+            applyRawTextareaLook();
+        }
+
+        function initEditor() {
+            if (editorInstance) return;
+            removeRawTextareaLook();
+
+            CKEDITOR.ClassicEditor
+                .create( yaziAlani, {
+                    extraPlugins: [ MyCustomUploadAdapterPlugin, ForceScriptStyleSupportPlugin ],
+                    toolbar: {
+                        items: [
+                            'sourceEditing', '|',
+                            'heading', '|',
+                            'bold', 'italic', 'link', 'bulletedList', 'numberedList', '|',
+                            'insertImage', 'blockQuote', 'insertTable', '|',
+                            'undo', 'redo'
+                        ],
+                        shouldNotGroupWhenFull: false
+                    },
+                    image: {
+                        toolbar: [
+                            'imageTextAlternative', 'toggleImageCaption', '|',
+                            'imageStyle:inline', 'imageStyle:wrapText', 'imageStyle:breakText', 'imageStyle:side', '|',
+                            'resizeImage'
+                        ]
+                    },
+                    htmlSupport: {
+                        allow: [
+                            {
+                                name: /.*/,
+                                attributes: true,
+                                classes: true,
+                                styles: true
+                            },
+                            {
+                                name: 'style',
+                                attributes: true,
+                                classes: true,
+                                styles: true
+                            },
+                            {
+                                name: 'script',
+                                attributes: true,
+                                classes: true,
+                                styles: true
+                            }
+                        ]
+                    },
+                    removePlugins: [
+                        'Base64UploadAdapter', 'CKBox', 'CKFinder', 'EasyImage', 'RealTimeCollaborativeComments',
+                        'RealTimeCollaborativeTrackChanges', 'RealTimeCollaborativeRevisionHistory',
+                        'PresenceList', 'Comments', 'TrackChanges', 'TrackChangesData', 'RevisionHistory',
+                        'Pagination', 'WProofreader', 'MathType', 'SlashCommand', 'Template',
+                        'DocumentOutline', 'FormatPainter', 'TableOfContents', 'PasteFromOfficeEnhanced', 'CaseChange'
+                    ]
+                })
+                .then( editor => {
+                    editorInstance = editor;
+                })
+                .catch( error => {
+                    console.error('CKEditor yüklenemedi:', error);
+                    applyRawTextareaLook();
+                });
+        }
+
+        if (form) {
+            form.addEventListener('submit', function() {
+                if (editorInstance) {
+                    yaziAlani.value = editorInstance.getData();
+                }
+            });
+        }
+
+        // Admin haber ekranında varsayılan olarak ham kod modu açılır.
+        // İstenirse switch kapatılarak CKEditor geri açılabilir.
+        if (rawModeSwitch) {
+            applyRawTextareaLook();
+            rawModeSwitch.addEventListener('change', async function() {
+                if (this.checked) {
+                    await destroyEditorIfNeeded();
+                } else {
+                    initEditor();
+                }
+            });
+            return;
+        }
+
+        initEditor();
+    });
+</script>
+{% endif %}
+{% endblock %}

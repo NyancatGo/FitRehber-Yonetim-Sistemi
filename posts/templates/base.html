@@ -1,0 +1,1567 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="google-site-verification" content="rlKiTnH6P57w1TX-9bhAozm_iFDsajQoNX8qszpXj8M">
+
+    <title>{% block title %}{{ seo_title|default:SEO_DEFAULT_TITLE }}{% endblock %}</title>
+    <meta name="description" content="{% block meta_description %}{{ seo_description|default:SEO_DEFAULT_DESCRIPTION }}{% endblock %}">
+    <meta name="robots" content="{% block meta_robots %}index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1{% endblock %}">
+    <link rel="canonical" href="{% block canonical_url %}{{ SEO_CANONICAL_URL }}{% endblock %}">
+
+    <meta property="og:locale" content="tr_TR">
+    <meta property="og:type" content="{% block og_type %}website{% endblock %}">
+    <meta property="og:site_name" content="{{ SEO_SITE_NAME }}">
+    <meta property="og:title" content="{% block og_title %}{{ seo_title|default:SEO_DEFAULT_TITLE }}{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}{{ seo_description|default:SEO_DEFAULT_DESCRIPTION }}{% endblock %}">
+    <meta property="og:url" content="{% block og_url %}{{ SEO_CANONICAL_URL }}{% endblock %}">
+    <meta property="og:image" content="{% block og_image %}{{ seo_image|default:SEO_DEFAULT_IMAGE }}{% endblock %}">
+    <meta property="og:image:width" content="{% block og_image_width %}1200{% endblock %}">
+    <meta property="og:image:height" content="{% block og_image_height %}630{% endblock %}">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{% block twitter_title %}{{ seo_title|default:SEO_DEFAULT_TITLE }}{% endblock %}">
+    <meta name="twitter:description" content="{% block twitter_description %}{{ seo_description|default:SEO_DEFAULT_DESCRIPTION }}{% endblock %}">
+    <meta name="twitter:image" content="{% block twitter_image %}{{ seo_image|default:SEO_DEFAULT_IMAGE }}{% endblock %}">
+
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@graph": [
+            {
+                "@type": "Organization",
+                "@id": "{{ SEO_SITE_URL }}/#organization",
+                "name": "{{ SEO_SITE_NAME }}",
+                "alternateName": "{{ SEO_SITE_ALTERNATE_NAME }}",
+                "url": "{{ SEO_SITE_URL }}",
+                "logo": {
+                    "@type": "ImageObject",
+                    "url": "{{ SEO_ORGANIZATION_LOGO }}"
+                }
+            },
+            {
+                "@type": "WebSite",
+                "@id": "{{ SEO_SITE_URL }}/#website",
+                "name": "{{ SEO_SITE_NAME }}",
+                "alternateName": "{{ SEO_SITE_ALTERNATE_NAME }}",
+                "url": "{{ SEO_SITE_URL }}",
+                "publisher": {
+                    "@id": "{{ SEO_SITE_URL }}/#organization"
+                },
+                "inLanguage": "tr-TR",
+                "potentialAction": {
+                    "@type": "SearchAction",
+                    "target": "{{ SEO_SITE_URL }}{% url 'arama' %}?q={search_term_string}",
+                    "query-input": "required name=search_term_string"
+                }
+            }
+        ]
+    }
+    </script>
+    {% block structured_data %}
+    {% if seo_structured_data %}
+    <script type="application/ld+json">{{ seo_structured_data|safe }}</script>
+    {% endif %}
+    {% if seo_breadcrumb %}
+    <script type="application/ld+json">{{ seo_breadcrumb|safe }}</script>
+    {% endif %}
+    {% endblock %}
+
+    <!-- Site Küçük Resmi (Favicon) -->
+    <link rel="apple-touch-icon" sizes="57x57" href="{% static 'images/favicons/apple-icon-57x57.png' %}?v=20260311c">
+    <link rel="apple-touch-icon" sizes="60x60" href="{% static 'images/favicons/apple-icon-60x60.png' %}?v=20260311c">
+    <link rel="apple-touch-icon" sizes="72x72" href="{% static 'images/favicons/apple-icon-72x72.png' %}?v=20260311c">
+    <link rel="apple-touch-icon" sizes="76x76" href="{% static 'images/favicons/apple-icon-76x76.png' %}?v=20260311c">
+    <link rel="apple-touch-icon" sizes="114x114" href="{% static 'images/favicons/apple-icon-114x114.png' %}?v=20260311c">
+    <link rel="apple-touch-icon" sizes="120x120" href="{% static 'images/favicons/apple-icon-120x120.png' %}?v=20260311c">
+    <link rel="apple-touch-icon" sizes="144x144" href="{% static 'images/favicons/apple-icon-144x144.png' %}?v=20260311c">
+    <link rel="apple-touch-icon" sizes="152x152" href="{% static 'images/favicons/apple-icon-152x152.png' %}?v=20260311c">
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'images/favicons/apple-icon-180x180.png' %}?v=20260311c">
+    <link rel="icon" type="image/png" sizes="192x192" href="{% static 'images/favicons/android-icon-192x192.png' %}?v=20260311c">
+    <link rel="icon" type="image/png" sizes="96x96" href="{% static 'images/favicons/favicon-96x96.png' %}?v=20260311c">
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'images/favicons/favicon-32x32.png' %}?v=20260311c">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'images/favicons/favicon-16x16.png' %}?v=20260311c">
+    <link rel="shortcut icon" type="image/x-icon" href="{% static 'images/favicons/favicon.ico' %}?v=20260311c">
+    <link rel="manifest" href="{% static 'images/favicons/manifest.json' %}?v=20260311c">
+    <meta name="msapplication-TileColor" content="#ffffff">
+    <meta name="msapplication-TileImage" content="{% static 'images/favicons/ms-icon-144x144.png' %}?v=20260311c">
+    <meta name="msapplication-config" content="{% static 'images/favicons/browserconfig.xml' %}?v=20260311c">
+    <meta name="theme-color" content="#ffffff">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <style>
+        /* GLOBAL FONT SETTINGS */
+        * {
+            font-family: 'Plus Jakarta Sans', sans-serif !important;
+        }
+
+        body {
+            background-color: #f8fafc;
+        }
+
+        .comment-readable-text {
+            white-space: pre-wrap;
+            overflow-wrap: break-word;
+            word-break: normal;
+            hyphens: auto;
+        }
+
+        /* NAVBAR STYLES */
+        .navbar {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%) !important;
+            padding: 0.8rem 0 !important;
+            position: sticky !important;
+            top: 0 !important;
+            z-index: 9999 !important;
+        }
+
+        .navbar-shell {
+            padding-left: 10px !important;
+            padding-right: 16px !important;
+        }
+
+        nav.navbar .brand-logo-link {
+            height: 58px;
+            padding: 0 !important;
+            margin: 0 !important;
+            line-height: 1 !important;
+            overflow: hidden;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: flex-start;
+            flex-shrink: 0;
+        }
+
+        nav.navbar .brand-logo-img {
+            width: clamp(230px, 22vw, 340px) !important;
+            height: 56px !important;
+            object-fit: cover;
+            object-position: 46% 48%;
+            display: block;
+        }
+
+        @media (max-width: 991px) {
+            nav.navbar .brand-logo-link {
+                height: 60px !important;
+                max-width: 72vw;
+            }
+
+            nav.navbar .brand-logo-img {
+                width: clamp(170px, 52vw, 284px) !important;
+                height: 43px !important;
+                object-fit: cover;
+                object-position: 45% 48%;
+            }
+
+            nav.navbar .navbar-shell {
+                padding-left: 10px !important;
+                padding-right: 10px !important;
+            }
+        }
+
+        /* Dropdown hover for desktop */
+        @media (min-width: 992px) {
+            .dropdown:hover .dropdown-menu {
+                display: block;
+                margin-top: 0;
+            }
+        }
+
+        .navbar-collapse {
+            transition: all 0.3s ease;
+        }
+
+        @media (max-width: 991px) {
+            .navbar-collapse {
+                background: rgba(255, 255, 255, 0.05);
+                padding: 20px;
+                border-radius: 15px;
+                margin-top: 15px;
+            }
+        }
+
+        /* --- 🔥 OPTİMİZE EDİLMİŞ MOBİL DENEYİM (BALANCED) 🔥 --- */
+        @media (max-width: 768px) {
+
+            /* 1. YAZI BOYUTU: Standart ve Okunaklı */
+            html {
+                font-size: 16px !important;
+            }
+
+            body {
+                background-color: #f8fafc !important;
+            }
+
+            /* 2. KENAR BOŞLUKLARI: İçerik nefes alsın */
+            .container,
+            .main-container {
+                max-width: 100% !important;
+                padding-left: 20px !important;
+                padding-right: 20px !important;
+                margin-top: 15px !important;
+            }
+
+            /* 3. INPUT VE BUTONLAR: İdeal Parmak Boyutu (52px) */
+            input.form-control,
+            select,
+            .form-input {
+                height: 52px !important;
+                font-size: 1rem !important;
+                padding: 0 15px !important;
+                border-radius: 12px !important;
+                background-color: #ffffff !important;
+                border: 1px solid #e2e8f0 !important;
+                box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+            }
+
+            /* Butonlar (navbar dışındakiler) */
+            main .btn,
+            main button {
+                height: 52px !important;
+                font-size: 1rem !important;
+                font-weight: 600 !important;
+                border-radius: 12px !important;
+                width: 100% !important;
+                margin-bottom: 12px !important;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            /* Textarea */
+            textarea.form-control {
+                padding: 15px !important;
+                font-size: 1rem !important;
+            }
+
+            /* 4. KARTLAR: Yumuşak ve Modern */
+            .card,
+            .form-card,
+            .sidebar-card,
+            .login-card {
+                border-radius: 16px !important;
+                border: none !important;
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05) !important;
+                margin-bottom: 20px !important;
+                padding: 20px !important;
+            }
+
+            /* 5. BAŞLIKLAR: Orantılı */
+            h1 {
+                font-size: 1.75rem !important;
+                font-weight: 800 !important;
+            }
+
+            h2 {
+                font-size: 1.5rem !important;
+                font-weight: 700 !important;
+            }
+
+            h3 {
+                font-size: 1.25rem !important;
+                font-weight: 700 !important;
+            }
+
+            p,
+            .text-muted {
+                font-size: 0.95rem !important;
+                line-height: 1.5 !important;
+            }
+
+            /* Navbar Düzenlemesi */
+            .navbar-brand {
+                font-size: 1.4rem !important;
+            }
+        }
+
+        /* --- FORUM & LİSTE MOBİL OPTİMİZASYONU --- */
+        @media (max-width: 768px) {
+
+            /* Kart İçi Düzeni */
+            .topic-card .d-flex {
+                align-items: center !important;
+            }
+
+            .topic-card .avatar-circle {
+                width: 45px !important;
+                height: 45px !important;
+                font-size: 1.1rem !important;
+                margin-right: 10px !important;
+            }
+
+            .topic-link {
+                font-size: 1.1rem !important;
+                line-height: 1.4 !important;
+                margin-bottom: 4px !important;
+            }
+
+            .topic-card .text-muted.small {
+                font-size: 0.8rem !important;
+                display: inline-block;
+                margin-top: 2px;
+            }
+
+            .comment-bubble {
+                padding: 5px 10px !important;
+                font-size: 0.8rem !important;
+                background-color: #f1f5f9 !important;
+            }
+        }
+
+        /* --- HERO ALANLARINI KÜÇÜLT --- */
+        @media (max-width: 768px) {
+
+            .hero-section,
+            .community-header {
+                padding: 40px 0 60px !important;
+                margin-bottom: 20px !important;
+                border-radius: 0 0 30px 30px !important;
+            }
+
+            .display-4,
+            .display-5 {
+                font-size: 2rem !important;
+            }
+
+            .lead,
+            .fs-5 {
+                font-size: 1rem !important;
+                padding: 0 15px !important;
+            }
+        }
+
+        /* --- KART RESİMLERİ --- */
+        @media (max-width: 768px) {
+            .card-img-wrapper {
+                height: 180px !important;
+            }
+
+            .category-badge {
+                top: 10px !important;
+                left: 10px !important;
+                padding: 4px 10px !important;
+                font-size: 0.7rem !important;
+            }
+        }
+
+        /* --- MOBİL MENÜ İYİLEŞTİRMESİ --- */
+        @media (max-width: 991px) {
+            .navbar-collapse {
+                background: #1e293b !important;
+                padding: 20px !important;
+                border-radius: 16px !important;
+                margin-top: 15px !important;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2) !important;
+            }
+
+            .nav-item {
+                margin-bottom: 10px !important;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+                padding-bottom: 10px;
+            }
+
+            .nav-item:last-child {
+                border-bottom: none;
+            }
+
+            .nav-link {
+                font-size: 1.1rem !important;
+                color: white !important;
+                padding-left: 10px !important;
+            }
+        }
+
+        /* --- FORUM MOBİL KART OPTİMİZASYONU --- */
+        @media (max-width: 768px) {
+
+            /* Kartı biraz daralt ve padding'i azalt */
+            .topic-card {
+                padding: 16px !important;
+                margin-bottom: 15px !important;
+                border-radius: 16px !important;
+            }
+
+            /* Avatarı Küçült */
+            .avatar-circle {
+                width: 48px !important;
+                height: 48px !important;
+                font-size: 1.1rem !important;
+                margin-right: 5px !important;
+            }
+
+            /* Başlığı Düzenle */
+            .topic-link {
+                font-size: 1rem !important;
+                line-height: 1.3 !important;
+            }
+
+            /* Kategori Badge'i */
+            .badge-category {
+                padding: 4px 8px !important;
+                font-size: 0.7rem !important;
+            }
+
+            /* Yorum Balonu */
+            .comment-bubble {
+                padding: 4px 10px !important;
+                font-size: 0.75rem !important;
+                background-color: #f1f5f9 !important;
+            }
+        }
+
+        /* =========================================================
+           🔥 MOBİL NAVBAR - NATİVE APP TARZI (FULL FIX) 🔥
+           ========================================================= */
+        @media (max-width: 991px) {
+
+            /* ─────────────────────────────────────────────────────
+               1. ANA NAVBAR: 60px sabit yükseklik, tam genişlik
+               ───────────────────────────────────────────────────── */
+            nav.navbar {
+                min-height: 60px !important;
+                max-height: none !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                position: sticky !important;
+                top: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                background: linear-gradient(135deg, #1e293b 0%, #334155 100%) !important;
+                border-bottom: none !important;
+                z-index: 1050 !important;
+                display: flex !important;
+                flex-wrap: wrap !important;
+                align-items: center !important;
+                box-sizing: border-box !important;
+            }
+
+            /* ─────────────────────────────────────────────────────
+               2. CONTAINER: Bootstrap sınırlarını kır, tam genişlik
+               ───────────────────────────────────────────────────── */
+            nav.navbar>.container,
+            nav.navbar>.container-fluid,
+            nav.navbar>.container-lg,
+            nav.navbar>.container-md,
+            nav.navbar>.container-sm,
+            nav.navbar>.container-xl,
+            nav.navbar>.container-xxl {
+                max-width: 100% !important;
+                width: 100% !important;
+                padding-left: 10px !important;
+                padding-right: 15px !important;
+                margin: 0 !important;
+                min-height: 60px !important;
+                display: flex !important;
+                flex-direction: row !important;
+                flex-wrap: wrap !important;
+                justify-content: space-between !important;
+                align-items: center !important;
+                position: relative !important;
+            }
+
+            /* Logo ve Hamburger her zaman ilk satırda kalsın */
+            nav.navbar .navbar-brand {
+                order: 1 !important;
+            }
+            nav.navbar .navbar-toggler {
+                order: 2 !important;
+            }
+            /* Collapse her zaman ikinci satıra düşsün */
+            nav.navbar .navbar-collapse {
+                order: 3 !important;
+                flex-basis: 100% !important;
+            }
+
+            /* ─────────────────────────────────────────────────────
+               3. LOGO: Sol köşeye sabitle, dikey ortala
+               ───────────────────────────────────────────────────── */
+            nav.navbar .navbar-brand {
+                position: relative !important;
+                left: 0 !important;
+                margin: 0 0 0 -10px !important;
+                padding: 0 !important;
+                font-size: 1.25rem !important;
+                line-height: 60px !important;
+                height: 60px !important;
+                display: flex !important;
+                align-items: center !important;
+                z-index: 1052 !important;
+                flex-shrink: 0 !important;
+                order: 1 !important;
+            }
+
+            /* ─────────────────────────────────────────────────────
+               4. HAMBURGER: Sağ köşeye sabitle, dikey ortala
+               ───────────────────────────────────────────────────── */
+            nav.navbar .navbar-toggler {
+                position: relative !important;
+                right: 0 !important;
+                margin: 0 !important;
+                padding: 8px !important;
+                border: none !important;
+                box-shadow: none !important;
+                outline: none !important;
+                background: transparent !important;
+                font-size: 1.5rem !important;
+                line-height: 1 !important;
+                color: white !important;
+                z-index: 1052 !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                flex-shrink: 0 !important;
+                order: 2 !important;
+                height: 60px !important;
+            }
+
+            nav.navbar .navbar-toggler:focus,
+            nav.navbar .navbar-toggler:active {
+                outline: none !important;
+                box-shadow: none !important;
+            }
+
+            nav.navbar .navbar-toggler .bi-list {
+                font-size: 1.75rem !important;
+                color: white !important;
+            }
+
+            /* ─────────────────────────────────────────────────────
+               5. AÇILIR MENÜ: Sayfanın üzerine kaplayan overlay
+               ───────────────────────────────────────────────────── */
+            nav.navbar .navbar-collapse {
+                position: fixed !important;
+                top: 60px !important;
+                left: 0 !important;
+                right: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%) !important;
+                border-radius: 0 0 20px 20px !important;
+                box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5) !important;
+                z-index: 1049 !important;
+                overflow-y: auto !important;
+                max-height: calc(100vh - 60px) !important;
+                /* Animasyon */
+                transform: translateY(-100%) !important;
+                opacity: 0 !important;
+                transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+                            opacity 0.25s ease !important;
+                pointer-events: none !important;
+            }
+
+            nav.navbar .navbar-collapse.collapsing {
+                height: 0 !important;
+                overflow: hidden !important;
+            }
+
+            nav.navbar .navbar-collapse:not(.show):not(.collapsing) {
+                display: block !important;
+                transform: translateY(-100%) !important;
+                opacity: 0 !important;
+                pointer-events: none !important;
+            }
+
+            nav.navbar .navbar-collapse.show {
+                display: block !important;
+                transform: translateY(0) !important;
+                opacity: 1 !important;
+                pointer-events: auto !important;
+            }
+
+            /* Arka plan overlay - fade animasyonu */
+            .navbar-backdrop {
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
+                width: 100% !important;
+                height: 100% !important;
+                background: rgba(0, 0, 0, 0) !important;
+                backdrop-filter: blur(0px) !important;
+                -webkit-backdrop-filter: blur(0px) !important;
+                z-index: 1048 !important;
+                pointer-events: none;
+                transition: background 0.35s ease,
+                            backdrop-filter 0.35s ease,
+                            -webkit-backdrop-filter 0.35s ease !important;
+            }
+            .navbar-backdrop.show {
+                background: rgba(0, 0, 0, 0.55) !important;
+                backdrop-filter: blur(4px) !important;
+                -webkit-backdrop-filter: blur(4px) !important;
+                pointer-events: auto;
+            }
+
+            /* ✨ Menü öğeleri cascade animasyonu */
+            nav.navbar .navbar-collapse .nav-item,
+            nav.navbar .navbar-collapse .d-flex.flex-column,
+            nav.navbar .navbar-collapse hr {
+                opacity: 0;
+                transform: translateY(-8px);
+                transition: opacity 0.3s ease, transform 0.3s ease !important;
+            }
+
+            nav.navbar .navbar-collapse.show .nav-item,
+            nav.navbar .navbar-collapse.show .d-flex.flex-column,
+            nav.navbar .navbar-collapse.show hr {
+                opacity: 1;
+                transform: translateY(0);
+            }
+
+            /* Sıralı gecikme efekti */
+            nav.navbar .navbar-collapse.show .nav-item:nth-child(1) { transition-delay: 0.06s !important; }
+            nav.navbar .navbar-collapse.show .nav-item:nth-child(2) { transition-delay: 0.12s !important; }
+            nav.navbar .navbar-collapse.show .nav-item:nth-child(3) { transition-delay: 0.18s !important; }
+            nav.navbar .navbar-collapse.show .nav-item:nth-child(4) { transition-delay: 0.24s !important; }
+            nav.navbar .navbar-collapse.show hr { transition-delay: 0.15s !important; }
+            nav.navbar .navbar-collapse.show .d-flex.flex-column { transition-delay: 0.2s !important; }
+
+            /* Hamburger ikon animasyonu */
+            nav.navbar .navbar-toggler .bi-list {
+                transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+            }
+            nav.navbar .navbar-toggler[aria-expanded='true'] .bi-list {
+                transform: rotate(90deg) !important;
+            }
+
+            /* mt-3 class'ını override et */
+            nav.navbar .navbar-collapse.mt-3,
+            nav.navbar .navbar-collapse.mt-lg-0 {
+                margin-top: 0 !important;
+            }
+
+            /* ─────────────────────────────────────────────────────
+               6. MENÜ CONTAINER: Şık iç düzen
+               ───────────────────────────────────────────────────── */
+            nav.navbar .navbar-collapse .navbar-nav.me-auto {
+                padding: 20px !important;
+                margin: 0 !important;
+                background: rgba(255, 255, 255, 0.03) !important;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+            }
+
+            nav.navbar .navbar-collapse .nav-item {
+                margin: 0 0 8px 0 !important;
+                padding: 0 !important;
+                border-bottom: none !important;
+            }
+
+            nav.navbar .navbar-collapse .nav-item:last-child {
+                margin-bottom: 0 !important;
+            }
+
+            /* ─────────────────────────────────────────────────────
+               7. MENÜ LİNKLERİ: Modern pill tarzı
+               ───────────────────────────────────────────────────── */
+            nav.navbar .navbar-collapse .nav-link {
+                padding: 14px 18px !important;
+                font-size: 1rem !important;
+                font-weight: 600 !important;
+                color: rgba(255, 255, 255, 0.9) !important;
+                display: flex !important;
+                align-items: center !important;
+                gap: 12px !important;
+                background: rgba(255, 255, 255, 0.05) !important;
+                border-radius: 12px !important;
+                transition: all 0.2s ease !important;
+            }
+
+            nav.navbar .navbar-collapse .nav-link:hover,
+            nav.navbar .navbar-collapse .nav-link:focus {
+                color: #fbbf24 !important;
+                background: rgba(251, 191, 36, 0.15) !important;
+                transform: translateX(5px) !important;
+            }
+
+            nav.navbar .navbar-collapse .nav-link i {
+                font-size: 1.2rem !important;
+                opacity: 0.8 !important;
+            }
+
+            /* ─────────────────────────────────────────────────────
+               8. AYIRICI: Daha subtle
+               ───────────────────────────────────────────────────── */
+            nav.navbar .navbar-collapse hr {
+                margin: 0 !important;
+                border: none !important;
+                height: 1px !important;
+                background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.1), transparent) !important;
+            }
+
+            /* ─────────────────────────────────────────────────────
+               9. ALT KISIM: Arama ve Kullanıcı Alanı
+               ───────────────────────────────────────────────────── */
+            nav.navbar .navbar-collapse .d-flex.flex-column {
+                padding: 20px !important;
+                gap: 15px !important;
+            }
+
+            /* Arama kutusu */
+            nav.navbar .navbar-collapse form {
+                width: 100% !important;
+                margin-bottom: 5px !important;
+            }
+
+            nav.navbar .navbar-collapse .input-group {
+                width: 100% !important;
+                background: rgba(255, 255, 255, 0.08) !important;
+                border-radius: 12px !important;
+                overflow: hidden !important;
+                border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            }
+
+            nav.navbar .navbar-collapse .input-group-text {
+                background: transparent !important;
+                border: none !important;
+                color: rgba(255, 255, 255, 0.6) !important;
+            }
+
+            nav.navbar .navbar-collapse .input-group input {
+                background: transparent !important;
+                border: none !important;
+                color: white !important;
+                padding: 12px 15px 12px 0 !important;
+                height: auto !important;
+            }
+
+            nav.navbar .navbar-collapse .input-group input::placeholder {
+                color: rgba(255, 255, 255, 0.5) !important;
+            }
+
+            /* ─────────────────────────────────────────────────────
+               10. KULLANICI DROPDOWN: Şık tasarım
+               ───────────────────────────────────────────────────── */
+            nav.navbar .navbar-collapse .dropdown {
+                width: 100% !important;
+            }
+
+            nav.navbar .navbar-collapse .dropdown-toggle {
+                width: 100% !important;
+                justify-content: flex-start !important;
+                background: linear-gradient(135deg, rgba(99, 102, 241, 0.3), rgba(168, 85, 247, 0.3)) !important;
+                border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                border-radius: 12px !important;
+                padding: 12px 16px !important;
+            }
+
+            nav.navbar .navbar-collapse .dropdown-menu {
+                position: static !important;
+                width: 100% !important;
+                margin-top: 10px !important;
+                background: rgba(0, 0, 0, 0.3) !important;
+                backdrop-filter: blur(10px) !important;
+                border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                border-radius: 12px !important;
+                padding: 8px !important;
+                /* Animasyon */
+                display: none;
+                opacity: 0;
+                transform: translateY(-8px);
+                transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+            }
+
+            nav.navbar .navbar-collapse .dropdown-menu.show {
+                display: block !important;
+                opacity: 1;
+                transform: translateY(0);
+            }
+
+            nav.navbar .navbar-collapse .dropdown-item {
+                color: rgba(255, 255, 255, 0.9) !important;
+                padding: 12px 16px !important;
+                border-radius: 8px !important;
+                font-weight: 500 !important;
+                transition: all 0.2s !important;
+                opacity: 0;
+                transform: translateX(-5px);
+            }
+
+            nav.navbar .navbar-collapse .dropdown-menu.show .dropdown-item {
+                opacity: 1;
+                transform: translateX(0);
+            }
+
+            nav.navbar .navbar-collapse .dropdown-menu.show li:nth-child(1) .dropdown-item { transition-delay: 0.05s; }
+            nav.navbar .navbar-collapse .dropdown-menu.show li:nth-child(2) .dropdown-item { transition-delay: 0.1s; }
+            nav.navbar .navbar-collapse .dropdown-menu.show li:nth-child(3) .dropdown-item { transition-delay: 0.15s; }
+            nav.navbar .navbar-collapse .dropdown-menu.show li:nth-child(4) .dropdown-item { transition-delay: 0.2s; }
+            nav.navbar .navbar-collapse .dropdown-menu.show li:nth-child(5) .dropdown-item { transition-delay: 0.25s; }
+            nav.navbar .navbar-collapse .dropdown-menu.show li:nth-child(6) .dropdown-item { transition-delay: 0.3s; }
+
+            nav.navbar .navbar-collapse .dropdown-item:hover {
+                background: rgba(255, 255, 255, 0.1) !important;
+                transform: translateX(5px) !important;
+            }
+
+            /* Dropdown ok ikonu animasyonu */
+            nav.navbar .navbar-collapse .dropdown-toggle::after {
+                transition: transform 0.3s ease !important;
+            }
+            nav.navbar .navbar-collapse .dropdown-toggle[aria-expanded='true']::after {
+                transform: rotate(180deg) !important;
+            }
+
+            /* Giriş/Kayıt butonları */
+            nav.navbar .navbar-collapse .nav-item.d-flex .btn {
+                height: auto !important;
+                padding: 14px 24px !important;
+                font-weight: 600 !important;
+                border-radius: 12px !important;
+            }
+
+            nav.navbar .navbar-collapse .btn-outline-light {
+                border: 2px solid rgba(255, 255, 255, 0.3) !important;
+            }
+
+            nav.navbar .navbar-collapse .btn-warning {
+                background: linear-gradient(135deg, #fbbf24, #f59e0b) !important;
+                border: none !important;
+                box-shadow: 0 4px 15px rgba(251, 191, 36, 0.3) !important;
+            }
+        }
+
+        /* =========================================================
+           🖥️ MASAÜSTÜ NAVBAR - Mobil stilleri override et
+           ========================================================= */
+        @media (min-width: 992px) {
+            nav.navbar .navbar-collapse {
+                display: flex !important;
+                position: static !important;
+                width: auto !important;
+                background: transparent !important;
+                box-shadow: none !important;
+                border-radius: 0 !important;
+                animation: none !important;
+                transition: none !important;
+            }
+
+            nav.navbar .navbar-collapse:not(.show):not(.collapsing) {
+                display: flex !important;
+            }
+
+            nav.navbar .navbar-collapse .navbar-nav {
+                flex-direction: row !important;
+                background: transparent !important;
+                padding: 0 !important;
+                border: none !important;
+            }
+
+            nav.navbar .navbar-collapse .nav-link {
+                padding: 8px 16px !important;
+                background: transparent !important;
+                border-radius: 8px !important;
+            }
+
+            nav.navbar .navbar-collapse .input-group {
+                width: auto !important;
+                background: transparent !important;
+            }
+
+            /* Masaüstü dropdown animasyonu */
+            nav.navbar .dropdown-menu {
+                opacity: 0;
+                transform: translateY(-8px) scale(0.97);
+                transition: opacity 0.2s ease, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+                display: block;
+                pointer-events: none;
+            }
+
+            nav.navbar .dropdown:hover .dropdown-menu,
+            nav.navbar .dropdown-menu.show {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+                pointer-events: auto;
+            }
+        }
+        /* --- 🗑️ MÜKEMMEL DENGE SİLME ANİMASYONU (Balanced Elegance) --- */
+        .item-deleting {
+            animation: itemBalancedElegance 0.8s cubic-bezier(0.25, 1, 0.5, 1) forwards !important;
+            pointer-events: none !important;
+            overflow: hidden !important;
+        }
+
+        @keyframes itemBalancedElegance {
+            0% {
+                opacity: 1;
+                transform: translateY(0);
+                max-height: 1000px;
+                margin-top: inherit;
+                margin-bottom: inherit;
+                padding-top: inherit;
+                padding-bottom: inherit;
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-25px);
+                max-height: 0;
+                margin-top: 0;
+                margin-bottom: 0;
+                padding-top: 0;
+                padding-bottom: 0;
+                border-width: 0;
+                visibility: hidden;
+            }
+        }
+        /* --- 🔍 CANLI ARAMA PREMİUM STİLLERİ --- */
+        #live-search-results {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.98) !important;
+            border: 1px solid rgba(0, 0, 0, 0.05) !important;
+            padding: 8px;
+        }
+
+        .search-result-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 12px;
+            border-radius: 12px;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            text-decoration: none !important;
+            margin-bottom: 2px;
+        }
+
+        .search-result-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .search-result-item:hover, .search-result-item.active {
+            background-color: #f1f5f9;
+            transform: translateX(4px);
+        }
+
+        .search-result-icon {
+            width: 36px;
+            height: 36px;
+            background: #f8fafc;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            color: #94a3b8;
+            flex-shrink: 0;
+            border: 1px solid rgba(0,0,0,0.03);
+        }
+
+        .search-result-item:hover .search-result-icon, .search-result-item.active .search-result-icon {
+            background: #ffffff;
+            color: #3b82f6;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+        }
+
+        .search-result-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .search-result-title {
+            color: #1e293b;
+            font-weight: 600;
+            font-size: 0.92rem;
+            margin: 0;
+            line-height: 1.2;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .search-result-meta {
+            color: #64748b;
+            font-size: 0.72rem;
+            margin-top: 2px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .search-badge {
+            font-size: 0.65rem;
+            padding: 2px 6px;
+            border-radius: 6px;
+            background: #f1f5f9;
+            color: #64748b;
+            font-weight: 500;
+        }
+    </style>
+
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+    {% include "navbar_master.html" %}
+
+    <!-- Toast Container (Top Right) -->
+    <div class="toast-container position-fixed top-0 end-0 p-3" id="standard-toasts-container" style="z-index: 1055; margin-top: 60px;">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="toast show align-items-center text-white bg-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} border-0 shadow-lg" role="alert" style="border-radius: 10px;">
+                    <div class="d-flex">
+                        <div class="toast-body fs-5">
+                            {% if message.tags == 'success' %}✅{% elif message.tags == 'error' %}⛔{% else %}ℹ️{% endif %}
+                            {{ message }}
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <!-- Global Fetch Interceptor & Burst Toast Manager -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            
+            // 1. Ekranda halihazırda var olan Burst Toast'ları saydır
+            document.querySelectorAll('.burst-toast').forEach(function(toastEl) {
+                startBurstCountdown(toastEl);
+            });
+
+            // 2. AJAX (Fetch) Interceptor: Bütün fetch isteklerini dinle
+            const originalFetch = window.fetch;
+            window.fetch = async function () {
+                try {
+                    const response = await originalFetch.apply(this, arguments);
+                    
+                    // Eğer 429 Too Many Requests dönerse ve bizim PENALTY ise
+                    if (response.status === 429) {
+                        const clone = response.clone();
+                        clone.json().then(data => {
+                            if (data.error === 'BURST_PENALTY') {
+                                showAjaxBurstToast(data.penalty_time, 'burst', data.message);
+                            } else if (data.error === 'COMMENT_PENALTY') {
+                                showAjaxBurstToast(data.penalty_time, 'comment', data.message);
+                            }
+                        }).catch(e => { /* JSON değilse boşver */ });
+                    }
+                    return response;
+                } catch (error) {
+                    throw error;
+                }
+            };
+
+            // AJAX'tan gelen ceza için dinamik Toast oluşturucu
+            function showAjaxBurstToast(penaltyTime, type, customMessage) {
+                const container = document.getElementById('standard-toasts-container');
+                if (!container) return;
+
+                // Ekranda zaten AYNI TİP burst toast varsa yenisini ekleme, süreyi güncelle
+                const existingToast = Array.from(container.querySelectorAll('.burst-toast')).find(t => t.getAttribute('data-type') === type);
+                
+                if (existingToast) {
+                    existingToast.setAttribute('data-penalty', penaltyTime);
+                    existingToast.querySelector('.burst-countdown').innerText = penaltyTime;
+                    return;
+                }
+
+                const title = type === 'comment' ? 'Yorum Sınırı' : 'Çok Hızlısınız!';
+                const msg = customMessage || 'İşleminiz reddedildi. Lütfen bekleyin.';
+
+                const toastHTML = `
+                    <div class="toast show align-items-center text-white bg-danger border-0 shadow-lg burst-toast" role="alert" style="border-radius: 10px;" data-penalty="${penaltyTime}" data-type="${type}">
+                        <div class="d-flex">
+                            <div class="toast-body fs-6">
+                                ⛔ <strong>${title}</strong><br>
+                                <span class="burst-timer-text">${msg} <span class="burst-countdown fw-bold">${penaltyTime}</span> sn.</span>
+                            </div>
+                            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                        </div>
+                    </div>
+                `;
+                container.insertAdjacentHTML('beforeend', toastHTML);
+                
+                const newToast = container.lastElementChild;
+                startBurstCountdown(newToast);
+            }
+
+            // Geri Sayım Fonksiyonu
+            function startBurstCountdown(toastEl) {
+                let timeLeft = parseInt(toastEl.getAttribute('data-penalty')) || 30;
+                const timerSpan = toastEl.querySelector('.burst-countdown');
+                const timerText = toastEl.querySelector('.burst-timer-text');
+                
+                const timerInterval = setInterval(function() {
+                    timeLeft--;
+                    if (timerSpan) timerSpan.innerText = timeLeft;
+                    
+                    if(timeLeft <= 0) {
+                        clearInterval(timerInterval);
+                        if (timerText) {
+                            timerText.innerHTML = "✅ Süreniz doldu, devam edebilirsiniz.";
+                        }
+                        setTimeout(() => {
+                            toastEl.classList.remove('show');
+                            setTimeout(() => toastEl.remove(), 500);
+                        }, 3000); // 3 saniye sonra otomatik kaybolur
+                    }
+                }, 1000);
+
+                // Kullanıcı çarpıya basarsa sayacı durdur
+                toastEl.querySelector('.btn-close').addEventListener('click', function() {
+                    clearInterval(timerInterval);
+                    toastEl.remove();
+                });
+            }
+        });
+    </script>
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Mobil Navbar Toggle - Custom handler + Backdrop -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var toggler = document.querySelector('nav.navbar .navbar-toggler');
+        var collapse = document.getElementById('navbarMobile');
+        if (!toggler || !collapse) return;
+
+        // Backdrop oluştur
+        var backdrop = document.createElement('div');
+        backdrop.className = 'navbar-backdrop';
+        document.body.appendChild(backdrop);
+
+        // Bootstrap'ın collapse'ını tamamen devre dışı bırak
+        // (Production'da data-bs-toggle cached olabilir)
+        toggler.removeAttribute('data-bs-toggle');
+        toggler.removeAttribute('data-bs-target');
+        try {
+            var bsCollapse = bootstrap.Collapse.getInstance(collapse);
+            if (bsCollapse) bsCollapse.dispose();
+        } catch(e) {}
+
+        function openMenu() {
+            collapse.classList.remove('collapsing');
+            // Önce display:block olsun, sonra animasyon tetiklensin
+            collapse.style.display = 'block';
+            // Bir sonraki frame'de show ekle (animasyon tetiklemesi için)
+            requestAnimationFrame(function() {
+                requestAnimationFrame(function() {
+                    collapse.classList.add('show');
+                    backdrop.classList.add('show');
+                });
+            });
+            toggler.classList.remove('collapsed');
+            toggler.setAttribute('aria-expanded', 'true');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeMenu() {
+            collapse.classList.remove('collapsing');
+            collapse.classList.remove('show');
+            backdrop.classList.remove('show');
+            toggler.classList.add('collapsed');
+            toggler.setAttribute('aria-expanded', 'false');
+            document.body.style.overflow = '';
+        }
+
+        toggler.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (collapse.classList.contains('show')) {
+                closeMenu();
+            } else {
+                openMenu();
+            }
+        });
+
+        // Backdrop'a tıklayınca menüyü kapat
+        backdrop.addEventListener('click', function() {
+            closeMenu();
+        });
+
+        // Menü içindeki linklere tıklayınca menüyü kapat (dropdown-toggle ve dropdown-item hariç)
+        collapse.addEventListener('click', function(e) {
+            var clickedLink = e.target.closest('a');
+            if (clickedLink && !clickedLink.classList.contains('dropdown-toggle') && !clickedLink.closest('.dropdown-menu')) {
+                closeMenu();
+            }
+        });
+
+        // Mobil menüde profil dropdown'ını custom olarak yönet
+        var dropdownToggle = collapse.querySelector('.dropdown-toggle');
+        var dropdownMenu = collapse.querySelector('.dropdown-menu');
+        if (dropdownToggle && dropdownMenu) {
+            function setupDropdownForScreenSize() {
+                if (window.innerWidth < 992) {
+                    // Mobil: Bootstrap dropdown'ını kaldır, custom handler kullan
+                    try {
+                        var bsDropdown = bootstrap.Dropdown.getInstance(dropdownToggle);
+                        if (bsDropdown) bsDropdown.dispose();
+                    } catch(ex) {}
+                    dropdownToggle.removeAttribute('data-bs-toggle');
+                } else {
+                    // Masaüstü: Bootstrap dropdown'ını aktif et
+                    dropdownToggle.setAttribute('data-bs-toggle', 'dropdown');
+                    if (!bootstrap.Dropdown.getInstance(dropdownToggle)) {
+                        new bootstrap.Dropdown(dropdownToggle);
+                    }
+                }
+            }
+            setupDropdownForScreenSize();
+            window.addEventListener('resize', setupDropdownForScreenSize);
+
+            dropdownToggle.addEventListener('click', function(e) {
+                // Masaüstünde Bootstrap kendi halleder
+                if (window.innerWidth >= 992) return;
+                e.preventDefault();
+                e.stopPropagation();
+                var isOpen = dropdownMenu.classList.contains('show');
+                if (isOpen) {
+                    dropdownMenu.classList.remove('show');
+                    dropdownToggle.setAttribute('aria-expanded', 'false');
+                    setTimeout(function() {
+                        if (!dropdownMenu.classList.contains('show')) {
+                            dropdownMenu.style.display = 'none';
+                        }
+                    }, 250); // CSS transition süresi kadar bekle
+                } else {
+                    dropdownMenu.style.display = 'block';
+                    requestAnimationFrame(function() {
+                        requestAnimationFrame(function() {
+                            dropdownMenu.classList.add('show');
+                            dropdownToggle.setAttribute('aria-expanded', 'true');
+                        });
+                    });
+                }
+            });
+
+            // Dropdown içindeki linklere tıklayınca menüyü kapat
+            dropdownMenu.querySelectorAll('.dropdown-item').forEach(function(item) {
+                item.addEventListener('click', function() {
+                    closeMenu();
+                });
+            });
+        }
+    });
+    </script>
+
+    <!-- EMAIL DEBUGGER (Geliştirme Amaçlı) -->
+    {% if APP_DEBUG %}
+    <script src="/static/js/email_monitor.js?v={% now 'U' %}"></script>
+    {% endif %}
+
+    {% if messages %}
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var closeButtons = document.querySelectorAll('.toast .btn-close');
+            closeButtons.forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    var toastBox = this.closest('.toast');
+                    if (toastBox) {
+                        toastBox.classList.remove('show');
+                        setTimeout(function () { toastBox.remove(); }, 500);
+                    }
+                });
+            });
+
+            setTimeout(function () {
+                var allToasts = document.querySelectorAll('.toast');
+                allToasts.forEach(function (t) {
+                    t.classList.remove('show');
+                    setTimeout(function () { t.remove(); }, 500);
+                });
+            }, 4000);
+        });
+    </script>
+    {% endif %}
+
+    {% block extra_js %}{% endblock %}
+
+
+    <!-- ============================================
+         🗑️ GLOBAL SİLME ONAY MODALİ (Delete Confirmation)
+         ============================================ -->
+    <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered" style="max-width: 400px;">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 20px; overflow: hidden;">
+                <div class="modal-body text-center p-4 pt-5">
+                    <!-- Danger Icon -->
+                    <div class="d-flex align-items-center justify-content-center mx-auto mb-3"
+                        style="width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, #fee2e2, #fecaca);">
+                        <i class="bi bi-exclamation-triangle-fill" style="font-size: 1.8rem; color: #dc2626;"></i>
+                    </div>
+                    <h5 class="fw-bold mb-2">Silmek istediğine emin misin?</h5>
+                    <p class="text-muted small mb-4">Bu işlem geri alınamaz.</p>
+                    <div class="d-flex gap-2 justify-content-center">
+                        <button type="button" class="btn btn-light fw-bold px-4 rounded-pill" data-bs-dismiss="modal"
+                            style="min-width: 110px;">
+                            <i class="bi bi-x-lg me-1"></i>İptal
+                        </button>
+                        <button type="button" class="btn btn-danger fw-bold px-4 rounded-pill" id="deleteConfirmBtn"
+                            style="min-width: 110px;">
+                            <i class="bi bi-trash me-1"></i>Evet, Sil
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ── Global Silme Onay Sistemi ──
+        (function () {
+            let _deleteUrl = null;
+            let _deleteCallback = null;
+            let _modalInstance = null;
+
+            /**
+             * Silme onay penceresini açar.
+             *  - url: Onaylanırsa yönlendirilecek link (sayfa silme)
+             *  - callback: Onaylanırsa çalışacak fonksiyon (AJAX silme)
+             * İkisinden biri yeterli.
+             */
+            window.silmeOnayAc = function (url, callback) {
+                _deleteUrl = url || null;
+                _deleteCallback = callback || null;
+
+                if (!_modalInstance) {
+                    _modalInstance = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+                }
+                _modalInstance.show();
+            };
+
+            document.addEventListener('DOMContentLoaded', function () {
+                const confirmBtn = document.getElementById('deleteConfirmBtn');
+                if (confirmBtn) {
+                    confirmBtn.addEventListener('click', function () {
+                        if (_modalInstance) _modalInstance.hide();
+
+                        if (_deleteCallback && typeof _deleteCallback === 'function') {
+                            _deleteCallback();
+                        } else if (_deleteUrl) {
+                            window.location.href = _deleteUrl;
+                        }
+
+                        _deleteUrl = null;
+                        _deleteCallback = null;
+                    });
+                }
+
+                // Auto-delegate: class="delete-action" olan <a> elemanları
+                document.addEventListener('click', function (e) {
+                    const el = e.target.closest('.delete-action');
+                    if (el) {
+                        e.preventDefault();
+                        const href = el.getAttribute('href');
+
+                        // --- YENİ: GENEL AJAX SİLME SİSTEMİ ---
+                        // Yorumlar (yorum-sil) veya Genel İçerik (sil/id/)
+                        const isComment = href && href.includes('yorum-sil/');
+                        const isContent = href && href.includes('/sil/') && !href.includes('admin'); // Admin silmeyi elleme
+
+                        if (isComment || isContent) {
+                            silmeOnayAc(null, function () {
+                                fetch(href, {
+                                    method: 'POST',
+                                    headers: {
+                                        'X-CSRFToken': '{{ csrf_token }}',
+                                        'X-Requested-With': 'XMLHttpRequest'
+                                    }
+                                })
+                                    .then(response => response.json())
+                                    .then(data => {
+                                        if (data.success) {
+                                            // Detay sayfasındaysak ve ana içeriği sildiysek yönlendir
+                                            if (isContent && window.location.pathname.includes('/detay/')) {
+                                                window.location.href = data.redirect_url || (href.includes('soru') ? '/forum/' : '/');
+                                                return;
+                                            }
+
+                                            // ID'yi URL'den çek
+                                            const parts = href.split('/').filter(Boolean);
+                                            const id = parts[parts.length - 1];
+
+                                            // Elementi Bul (Yorum veya İçerik Kartı)
+                                            const targetEl = document.getElementById('comment-' + id) ||
+                                                document.getElementById('cevap-' + id) ||
+                                                document.getElementById('icerik-' + id);
+
+                                            if (targetEl) {
+                                                // Havalı Yeni Animasyon Sınıfı
+                                                targetEl.classList.add('item-deleting');
+
+                                                // Animasyon bitince elementi tamamen kaldır
+                                                targetEl.onanimationend = () => {
+                                                    targetEl.remove();
+                                                    // Eğer sayfa boşaldıysa yenile
+                                                    const container = document.getElementById('icerik-container');
+                                                    if (container && container.children.length === 0) {
+                                                        location.reload();
+                                                    }
+                                                };
+                                            } else {
+                                                // Element bulunamadıysa (belki detay sayfasında bir linktir) yenile
+                                                location.reload();
+                                            }
+                                        } else {
+                                            alert(data.mesaj || "Bunu silme yetkiniz yok.");
+                                        }
+                                    })
+                                    .catch(err => {
+                                        console.error("Silme hatası:", err);
+                                        window.location.href = href; // Hata olursa normal yönlendir
+                                    });
+                            });
+                        } else {
+                            // Diğer silme işlemleri (Normal yönlendirme)
+                            silmeOnayAc(href);
+                        }
+                    }
+                });
+            });
+        })();
+    </script>
+
+    <!-- AKTİVİTE TAKİP SCRİPTİ -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Django template variable to JS boolean
+            const isAuthenticated = "{{ user.is_authenticated|yesno:'true,false' }}" === "true";
+
+            if (isAuthenticated) {
+                const ACTIVITY_PING_URL = "{% url 'aktivite_kaydet' %}";
+                const PING_INTERVAL = 60000; // 1 dakika (ms)
+                const CSRF_TOKEN = "{{ csrf_token }}";
+
+                function sendActivityPing() {
+                    if (document.hidden) return;
+
+                    fetch(ACTIVITY_PING_URL, {
+                        method: 'POST',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRFToken': CSRF_TOKEN
+                        }
+                    })
+                        .then(response => {
+                            if (response.ok) {
+                                console.log('Aktivite kaydedildi.');
+                            }
+                        })
+                        .catch(error => console.error('Aktivite hatası:', error));
+                }
+
+                setInterval(sendActivityPing, PING_INTERVAL);
+            }
+        });
+    </script>
+    <!-- 🔍 LİVE SEARCH SCRİPTİ -->
+    <script>
+        (function() {
+            const searchInput = document.getElementById('live-search-input');
+            const resultsBox = document.getElementById('live-search-results');
+            let debounceTimer;
+            let selectedIndex = -1;
+
+            if (!searchInput || !resultsBox) return;
+
+            function updateSelection() {
+                const items = resultsBox.querySelectorAll('.search-result-item');
+                items.forEach((item, index) => {
+                    if (index === selectedIndex) {
+                        item.classList.add('active');
+                        item.scrollIntoView({ block: 'nearest' });
+                    } else {
+                        item.classList.remove('active');
+                    }
+                });
+            }
+
+            searchInput.addEventListener('input', function() {
+                const query = this.value.trim();
+                clearTimeout(debounceTimer);
+                selectedIndex = -1;
+
+                if (query.length < 1) {
+                    resultsBox.classList.add('d-none');
+                    return;
+                }
+
+                debounceTimer = setTimeout(() => {
+                    fetch(`/canli-arama/?q=${encodeURIComponent(query)}`)
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.results && data.results.length > 0) {
+                                let html = '';
+                                data.results.forEach(item => {
+                                    const icon = item.tur_raw === 'soru' ? 'bi-patch-question-fill' : 'bi-newspaper';
+                                    const badgeClass = item.tur_raw === 'soru' ? 'bg-primary-subtle text-primary' : 'bg-success-subtle text-success';
+                                    html += `
+                                        <a href="${item.url}" class="search-result-item">
+                                            <div class="search-result-icon">
+                                                <i class="bi ${icon}"></i>
+                                            </div>
+                                            <div class="search-result-info">
+                                                <p class="search-result-title">${item.baslik}</p>
+                                                <div class="search-result-meta">
+                                                    <span class="search-badge ${badgeClass}">${item.tur}</span>
+                                                    <span>${item.kategori || 'Genel'}</span>
+                                                </div>
+                                            </div>
+                                        </a>
+                                    `;
+                                });
+                                resultsBox.innerHTML = html;
+                                resultsBox.classList.remove('d-none');
+                            } else {
+                                resultsBox.classList.add('d-none');
+                            }
+                        })
+                        .catch(err => console.error("Arama hatası:", err));
+                }, 300);
+            });
+
+            searchInput.addEventListener('keydown', function(e) {
+                const items = resultsBox.querySelectorAll('.search-result-item');
+                if (items.length === 0) return;
+
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    selectedIndex = (selectedIndex + 1) % items.length;
+                    updateSelection();
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    selectedIndex = (selectedIndex - 1 + items.length) % items.length;
+                    updateSelection();
+                } else if (e.key === 'Enter') {
+                    if (selectedIndex > -1) {
+                        e.preventDefault();
+                        items[selectedIndex].click();
+                    }
+                } else if (e.key === 'Escape') {
+                    resultsBox.classList.add('d-none');
+                }
+            });
+
+            // Dışarı tıklayınca kapat
+            document.addEventListener('click', function(e) {
+                if (!searchInput.contains(e.target) && !resultsBox.contains(e.target)) {
+                    resultsBox.classList.add('d-none');
+                }
+            });
+
+            // Focus olunca eğer içerde bişey varsa göster
+            searchInput.addEventListener('focus', function() {
+                if (resultsBox.children.length > 0 && this.value.trim().length >= 1) {
+                    resultsBox.classList.remove('d-none');
+                }
+            });
+        })();
+    </script>
+</body>
+
+</html>
+

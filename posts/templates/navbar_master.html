@@ -1,0 +1,93 @@
+{% load static posts_image_tags %}
+<nav class="navbar navbar-expand-lg navbar-dark sticky-top"
+    style="background: linear-gradient(to right, #1e293b, #0f172a);">
+    <div class="container-fluid navbar-shell">
+        <a class="navbar-brand brand-logo-link d-flex align-items-center py-1" href="{% url 'anasayfa' %}">
+            <img class="brand-logo-img" src="{% static 'images/logo.png' %}?v=20260422a" alt="FitRehber" width="340" height="56">
+        </a>
+
+        <button class="navbar-toggler border-0 shadow-none" type="button"
+            aria-controls="navbarMobile" aria-expanded="false" aria-label="Menüyü Aç">
+            <span class="bi bi-list fs-1 text-white"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarMobile">
+
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0 gap-lg-3">
+                <li class="nav-item">
+                    <a class="nav-link fs-5 text-white opacity-75 hover-opacity-100 transition-all"
+                        href="{% url 'anasayfa' %}">
+                        <i class="bi bi-house-door-fill me-1 d-lg-none"></i> Ana Sayfa
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link fs-5 text-white opacity-75 hover-opacity-100 transition-all"
+                        href="{% url 'forum' %}">
+                        <i class="bi bi-chat-dots-fill me-1 d-lg-none"></i> Forum
+                    </a>
+                </li>
+            </ul>
+
+            <hr class="d-lg-none border-secondary my-3">
+
+            <div class="d-flex flex-column flex-lg-row align-items-lg-center gap-3">
+
+                <form class="d-flex position-relative" action="{% url 'arama' %}" method="get" id="live-search-form" autocomplete="off">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-0 ps-3 rounded-start-pill text-muted">
+                            <i class="bi bi-search"></i>
+                        </span>
+                        <input class="form-control border-0 rounded-end-pill shadow-none" type="search" name="q" id="live-search-input"
+                            placeholder="İçerik ara..." style="min-width: 200px;">
+                    </div>
+                    <div id="live-search-results" class="position-absolute top-100 start-0 w-100 mt-2 bg-white rounded-4 shadow-lg d-none" style="z-index: 1050; overflow: hidden; border: 1px solid rgba(0,0,0,0.1);">
+                        <!-- Sonuçlar JavaScript ile buraya gelecek -->
+                    </div>
+                </form>
+
+                <ul class="navbar-nav">
+                    {% if user.is_authenticated %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center gap-2 bg-white bg-opacity-10 rounded-pill px-3 py-2 text-white"
+                            href="{% url 'profil' user.username %}" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                            {% with current_avatar=user|avatar_url %}
+                            <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold text-white shadow-sm bg-primary"
+                                style="width: 30px; height: 30px; font-size: 14px; overflow: hidden;">
+                                {% if current_avatar %}
+                                <img src="{{ current_avatar }}" alt="{{ user.username }}" style="width: 100%; height: 100%; object-fit: cover; display: block;">
+                                {% else %}
+                                {{ user.username|make_list|first|upper }}
+                                {% endif %}
+                            </div>
+                            {% endwith %}
+                            <span class="fw-bold small">{{ user.username }}</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-0 rounded-4 p-2">
+                            <li><a class="dropdown-item rounded-3 py-2" href="{% url 'profil' user.username %}">👤
+                                     Profilim</a></li>
+                            <li><a class="dropdown-item rounded-3 py-2" href="{% url 'ekle' %}">✍️ Soru Sor</a></li>
+                            <li><a class="dropdown-item rounded-3 py-2" href="{% url 'profil_duzenle' %}">⚙️ Ayarlar</a></li>
+                            {% if user.is_superuser %}
+                            <li><a class="dropdown-item rounded-3 py-2 text-primary fw-bold" href="{% url 'yonetim_dashboard' %}">📊 Yönetim Paneli</a></li>
+                            {% endif %}
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li><a class="dropdown-item rounded-3 py-2 text-danger fw-bold" href="{% url 'cikis' %}">🚪
+                                     Çıkış</a></li>
+                        </ul>
+                    </li>
+                    {% else %}
+                    <li class="nav-item d-flex gap-2">
+                        <a href="{% url 'giris' %}"
+                            class="btn btn-outline-light rounded-pill px-4 fw-bold w-100">Giriş</a>
+                        <a href="{% url 'kayit' %}"
+                            class="btn btn-warning rounded-pill px-4 fw-bold text-dark w-100">Kayıt</a>
+                    </li>
+                    {% endif %}
+                </ul>
+
+            </div>
+        </div>
+    </div>
+</nav>

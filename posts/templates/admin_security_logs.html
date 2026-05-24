@@ -1,0 +1,240 @@
+{% extends "base.html" %}
+
+{% block title %}Güvenlik İhlalleri - Detaylı Loglar{% endblock %}
+{% block meta_robots %}noindex,nofollow{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --admin-bg: #0f172a;
+        --admin-surface: #1e293b;
+        --admin-border: #334155;
+        --admin-accent: #ef4444;
+        --admin-text: #f8fafc;
+        --admin-muted: #94a3b8;
+    }
+
+    html, body {
+        overflow-x: hidden;
+        position: relative;
+        max-width: 100vw;
+    }
+
+    body {
+        background: var(--admin-bg) !important;
+    }
+
+    .log-container {
+        padding: 40px 0;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .log-header {
+        background: linear-gradient(135deg, #450a0a 0%, #7f1d1d 100%);
+        border-radius: 20px;
+        padding: 30px;
+        margin-bottom: 30px;
+        border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+
+    .log-header h2 {
+        color: white;
+        font-weight: 800;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .log-table-wrapper {
+        background: var(--admin-surface);
+        border: 1px solid var(--admin-border);
+        border-radius: 15px;
+        overflow-x: auto;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+
+    .log-table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 900px;
+    }
+
+    .log-table th {
+        background: rgba(15, 23, 42, 0.8);
+        padding: 15px 20px;
+        color: var(--admin-muted);
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 1px;
+        text-align: left;
+        border-bottom: 1px solid var(--admin-border);
+    }
+
+    .log-table td {
+        padding: 18px 20px;
+        border-bottom: 1px solid rgba(51, 65, 85, 0.5);
+        color: var(--admin-text);
+        font-size: 0.9rem;
+    }
+
+    .log-table tr:hover {
+        background: rgba(239, 68, 68, 0.03);
+    }
+
+    .badge-user {
+        background: #ef4444;
+        color: white;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        font-weight: 700;
+    }
+
+    .badge-guest {
+        color: #64748b;
+        font-size: 0.8rem;
+        font-style: italic;
+    }
+
+    .code-path {
+        background: #0f172a;
+        padding: 4px 8px;
+        border-radius: 4px;
+        color: #f87171;
+        font-family: monospace;
+        font-size: 0.85rem;
+    }
+
+    .ua-text {
+        font-size: 0.75rem;
+        color: var(--admin-muted);
+        max-width: 300px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        display: block;
+    }
+
+    /* Pagination */
+    .pagination {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        padding: 25px;
+    }
+
+    .page-link {
+        background: var(--admin-surface);
+        border: 1px solid var(--admin-border);
+        color: var(--admin-muted);
+        padding: 8px 16px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.2s;
+    }
+
+    .page-link:hover, .page-link.active {
+        background: #ef4444;
+        color: white;
+        border-color: #ef4444;
+    }
+
+    .back-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: #94a3b8;
+        text-decoration: none;
+        font-weight: 600;
+        margin-bottom: 20px;
+        transition: color 0.2s;
+    }
+
+    .back-btn:hover {
+        color: white;
+    }
+
+    @media (max-width: 768px) {
+        .log-header { padding: 20px; }
+        .log-header h2 { font-size: 1.2rem; }
+        .log-table th, .log-table td { padding: 12px 10px; font-size: 0.8rem; }
+        .log-container { padding: 20px 0; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="log-container">
+    <div class="container">
+        <a href="{% url 'admin_monitor' %}" class="back-btn">
+            <i class="bi bi-arrow-left"></i> Panel'e Geri Dön
+        </a>
+
+        <div class="log-header">
+            <h2><i class="bi bi-shield-lock-fill"></i> GÜVENLİK İHLAL GÜNLÜKLERİ</h2>
+            <p style="color: rgba(255,255,255,0.6); margin: 10px 0 0;">Sistem genelindeki tüm yetkisiz erişim teşebbüslerinin tam dökümü.</p>
+        </div>
+
+        <div class="log-table-wrapper">
+            <table class="log-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Kullanıcı</th>
+                        <th>IP Adresi</th>
+                        <th>Erişilen Yol</th>
+                        <th>Zaman</th>
+                        <th>Tarayıcı Bilgisi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ihlal in ihlaller %}
+                    <tr>
+                        <td><span style="color: #ef4444; font-weight: 800;">#{{ ihlal.id }}</span></td>
+                        <td>
+                            {% if ihlal.user %}
+                                <span class="badge-user">{{ ihlal.user.username }}</span>
+                            {% else %}
+                                <span class="badge-guest">Misafir</span>
+                            {% endif %}
+                        </td>
+                        <td style="font-family: monospace;">{{ ihlal.ip_adresi }}</td>
+                        <td><span class="code-path">{{ ihlal.yol }}</span></td>
+                        <td>{{ ihlal.tarih|date:"d.m.Y H:i:s" }}</td>
+                        <td><span class="ua-text" title="{{ ihlal.user_agent }}">{{ ihlal.user_agent }}</span></td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 50px; color: var(--admin-muted);">
+                            Henüz kayıtlı bir güvenlik ihlali bulunmuyor.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            {% if ihlaller.has_other_pages %}
+            <div class="pagination">
+                {% if ihlaller.has_previous %}
+                    <a href="?sayfa={{ ihlaller.previous_page_number }}" class="page-link"><i class="bi bi-chevron-left"></i></a>
+                {% endif %}
+
+                {% for num in ihlaller.paginator.page_range %}
+                    {% if ihlaller.number == num %}
+                        <a href="#" class="page-link active">{{ num }}</a>
+                    {% elif num > ihlaller.number|add:'-3' and num < ihlaller.number|add:'3' %}
+                        <a href="?sayfa={{ num }}" class="page-link">{{ num }}</a>
+                    {% endif %}
+                {% endfor %}
+
+                {% if ihlaller.has_next %}
+                    <a href="?sayfa={{ ihlaller.next_page_number }}" class="page-link"><i class="bi bi-chevron-right"></i></a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,1429 @@
+{% extends "base.html" %}
+{% load posts_image_tags %}
+
+{% block title %}{{ seo_title }}{% endblock %}
+{% block meta_description %}{{ seo_description }}{% endblock %}
+{% block og_type %}article{% endblock %}
+{% block og_title %}{{ seo_title }}{% endblock %}
+{% block og_description %}{{ seo_description }}{% endblock %}
+{% block og_image %}{{ seo_image }}{% endblock %}
+{% block og_image_width %}{% if icerik.resim %}{{ icerik.resim|safe_image_width:"1200" }}{% else %}1200{% endif %}{% endblock %}
+{% block og_image_height %}{% if icerik.resim %}{{ icerik.resim|safe_image_height:"630" }}{% else %}630{% endif %}{% endblock %}
+{% block twitter_title %}{{ seo_title }}{% endblock %}
+{% block twitter_description %}{{ seo_description }}{% endblock %}
+{% block twitter_image %}{{ seo_image }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .blog-header {
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        color: white;
+        padding: 4rem 0;
+        margin-bottom: 2rem;
+        border-radius: 0 0 50px 50px;
+    }
+
+    /* Sil Butonu Hover Efekti */
+    .delete-btn {
+        transition: color 0.2s ease;
+    }
+
+    .delete-btn:hover {
+        color: #dc3545 !important;
+    }
+
+    /* Toast Bildirim Sistemi (Sağ Üst) */
+    .toast-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 999999;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        pointer-events: none;
+    }
+
+    .toast-notification {
+        pointer-events: auto;
+        background: white;
+        border-radius: 14px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15), 0 2px 10px rgba(0, 0, 0, 0.08);
+        padding: 16px 20px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 320px;
+        max-width: 420px;
+        transform: translateX(120%);
+        opacity: 0;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        border-left: 4px solid #ef4444;
+        position: relative;
+    }
+
+    .toast-notification.toast-success {
+        border-left-color: #22c55e;
+    }
+
+    .toast-notification.toast-warning {
+        border-left-color: #f59e0b;
+    }
+
+    .toast-notification.show {
+        transform: translateX(0);
+        opacity: 1;
+    }
+
+    .toast-notification .toast-icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        font-size: 1.1rem;
+    }
+
+    .toast-notification .toast-icon.error {
+        background: linear-gradient(135deg, #fee2e2, #fecaca);
+        color: #dc2626;
+    }
+
+    .toast-notification .toast-icon.success {
+        background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+        color: #16a34a;
+    }
+
+    .toast-notification .toast-icon.warning {
+        background: linear-gradient(135deg, #fef3c7, #fde68a);
+        color: #d97706;
+    }
+
+    .toast-notification .toast-body {
+        flex: 1;
+    }
+
+    .toast-notification .toast-title {
+        font-weight: 700;
+        font-size: 0.9rem;
+        color: #1e293b;
+        margin-bottom: 2px;
+    }
+
+    .toast-notification .toast-message {
+        font-size: 0.85rem;
+        color: #64748b;
+        line-height: 1.4;
+    }
+
+    .toast-notification .toast-close {
+        background: none;
+        border: none;
+        color: #94a3b8;
+        cursor: pointer;
+        padding: 4px;
+        border-radius: 6px;
+        transition: all 0.2s;
+        font-size: 0.8rem;
+        align-self: flex-start;
+    }
+
+    .toast-notification .toast-close:hover {
+        background: #f1f5f9;
+        color: #475569;
+    }
+
+    .toast-notification .toast-progress {
+        position: absolute;
+        bottom: 0;
+        left: 4px;
+        right: 0;
+        height: 3px;
+        background: #ef4444;
+        border-radius: 0 0 14px 14px;
+        animation: toastProgress 4s linear forwards;
+    }
+
+    .toast-notification.toast-success .toast-progress {
+        background: #22c55e;
+    }
+
+    .toast-notification.toast-warning .toast-progress {
+        background: #f59e0b;
+    }
+
+    @keyframes toastProgress {
+        from { width: 100%; }
+        to { width: 0%; }
+    }
+
+    @media (max-width: 768px) {
+        .toast-container {
+            top: 10px;
+            right: 10px;
+            left: 10px;
+        }
+        .toast-notification {
+            min-width: auto;
+            max-width: 100%;
+        }
+    }
+
+    /* Dinamik Yanıt Formu Stili */
+    .dynamic-reply-form {
+        margin-top: 15px;
+        margin-bottom: 15px;
+        background: #f8fafc;
+        padding: 15px;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        animation: slideDown 0.3s ease-out;
+    }
+
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .main-container {
+        background-color: white;
+        max-width: 1100px;
+        margin: 20px auto;
+        border-radius: 4px;
+        padding: 20px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Yorum Çizgileri ve Daraltma */
+    .thread-line-container {
+        width: 20px;
+        cursor: pointer;
+    }
+
+    .thread-line {
+        width: 2px;
+        height: 100%;
+        background-color: #edeff1;
+        margin: 0 auto;
+        transition: background-color 0.2s;
+    }
+
+    .thread-line-container:hover .thread-line,
+    .comment-wrapper:hover>div>.d-flex>.thread-line-container .thread-line {
+        background-color: #0d6efd;
+    }
+
+    .collapsed .comment-content-area {
+        display: none !important;
+    }
+
+    .collapsed .expand-btn {
+        display: inline-block !important;
+    }
+
+    .collapsed .thread-line {
+        display: none;
+    }
+
+    /* Butonlar için Hover Efekti */
+    .action-btn:hover {
+        background-color: #f6f7f8;
+        border-radius: 4px;
+        color: #1c1c1c !important;
+    }
+
+    /* Form Kutusu Stili */
+    .reply-form-box {
+        border: 1px solid #edeff1;
+        background: #f6f7f8;
+        border-radius: 8px;
+        padding: 15px;
+        margin-top: 10px;
+        margin-bottom: 10px;
+    }
+
+    /* MOBİL OVERFLOW DÜZELTMESİ - sticky'yi bozmadan */
+    @media (max-width: 768px) {
+        .main-container {
+            overflow-x: hidden !important;
+            max-width: 100% !important;
+            box-sizing: border-box !important;
+        }
+
+        .row {
+            margin-left: 0 !important;
+            margin-right: 0 !important;
+        }
+
+        /* Yorum kartlarının taşmasını engelle */
+        .comment-wrapper,
+        .comment-wrapper .w-100 {
+            min-width: 0;
+        }
+
+        /* base.html'deki global buton stillerini yorum butonları için sıfırla */
+        .action-buttons .btn,
+        .action-buttons button,
+        .action-buttons a {
+            width: auto !important;
+            height: auto !important;
+            margin-bottom: 0 !important;
+            border-radius: 0 !important;
+            font-size: inherit !important;
+            font-weight: inherit !important;
+            justify-content: flex-start !important;
+        }
+
+        /* Yorum Formu Mobil Düzenlemesi */
+        @media (max-width: 768px) {
+            .comment-form .user-avatar .rounded-circle {
+                width: 32px !important;
+                height: 32px !important;
+                font-size: 0.9rem !important;
+            }
+
+            button.mobile-send-btn {
+                position: absolute !important;
+                bottom: 8px !important;
+                right: 8px !important;
+                z-index: 10 !important;
+                width: 32px !important;
+                height: 32px !important;
+                min-width: 32px !important;
+                max-width: 32px !important;
+                min-height: 32px !important;
+                max-height: 32px !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                border-radius: 50% !important;
+                padding: 0 !important;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.1) !important;
+                margin: 0 !important; /* Global margin'i sıfırla */
+            }
+
+            .mobile-send-btn i {
+                font-size: 0.9rem !important;
+                margin: 0 !important; /* İkon margin'ini sıfırla */
+            }
+
+            .comment-form textarea {
+                padding-right: 50px !important; /* Buton için yer aç */
+                padding-left: 45px !important; /* Avatar için yer aç */
+            }
+            
+            .mobile-inside-avatar {
+                position: absolute;
+                top: 12px;
+                left: 12px;
+                z-index: 10;
+                pointer-events: none; /* Tıklamaları engelle, textarea'ya odaklanabilsin */
+            }
+
+            /* Share Popup Mobil Fix (Modal-like) */
+            #shareBox {
+                position: fixed !important;
+                top: 50% !important;
+                left: 50% !important;
+                transform: translate(-50%, -50%) !important;
+                width: 90vw !important;
+                max-width: 350px !important;
+                min-width: auto !important;
+                z-index: 10000 !important;
+                box-shadow: 0 0 0 1000px rgba(0,0,0,0.5) !important;
+            }
+        }
+    }
+
+    /* --- CKEditor 5 Content Optimization --- */
+    .icerik-metni {
+        font-size: 1.1rem;
+        line-height: 1.8;
+        color: #1e293b;
+    }
+
+    /* Resimler ve Figürler */
+    .icerik-metni img {
+        max-width: 100% !important;
+        height: auto !important;
+        border-radius: 12px;
+        display: block;
+        margin: 30px auto;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+    }
+    
+    .icerik-metni figure.image {
+        margin: 30px auto;
+        text-align: center;
+    }
+    
+    .icerik-metni figure.image figcaption {
+        font-size: 0.9rem;
+        color: #64748b;
+        margin-top: 12px;
+        font-style: italic;
+        padding: 0 15px;
+    }
+
+    /* Başlıklar */
+    .icerik-metni h2, .icerik-metni h3, .icerik-metni h4 {
+        color: #0f172a;
+        font-weight: 800;
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+    }
+
+    /* Listeler */
+    .icerik-metni ul, .icerik-metni ol {
+        margin-bottom: 1.5rem;
+        padding-left: 1.5rem;
+    }
+
+    .icerik-metni li {
+        margin-bottom: 0.5rem;
+    }
+
+    /* Alıntılar (Blockquote) */
+    .icerik-metni blockquote {
+        margin: 2rem 0;
+        padding: 1.5rem 2rem;
+        border-left: 4px solid #6366f1;
+        background-color: #f8fafc;
+        border-radius: 0 12px 12px 0;
+        font-style: italic;
+        color: #475569;
+        position: relative;
+    }
+
+    .icerik-metni blockquote::before {
+        content: '"';
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        font-size: 3rem;
+        color: #e2e8f0;
+        line-height: 1;
+        font-family: serif;
+    }
+
+    /* Tablolar */
+    .icerik-metni table {
+        width: 100% !important;
+        margin: 2rem 0;
+        border-collapse: collapse;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .icerik-metni table th {
+        background-color: #f1f5f9;
+        font-weight: 700;
+        padding: 12px 15px;
+        border: 1px solid #e2e8f0;
+    }
+
+    .icerik-metni table td {
+        padding: 12px 15px;
+        border: 1px solid #e2e8f0;
+    }
+
+    .icerik-metni table tr:nth-child(even) {
+        background-color: #f8fafc;
+    }
+
+    /* Linkler */
+    .icerik-metni a {
+        color: #4f46e5;
+        text-decoration: underline;
+        font-weight: 600;
+    }
+
+    .icerik-metni a:hover {
+        color: #4338ca;
+        text-decoration: none;
+    }
+
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Toast Bildirim Container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<div class="main-container">
+
+    <div class="mb-5">
+        <div class="d-flex align-items-center mb-2">
+            <a href="{% url 'profil' icerik.yazar.username %}" class="text-decoration-none">
+                {% with detail_author_avatar=icerik.yazar|avatar_url %}
+                <div class="bg-dark text-white rounded-circle d-flex align-items-center justify-content-center me-2"
+                    style="width: 20px; height: 20px; font-size: 12px; overflow: hidden;">
+                    {% if detail_author_avatar %}
+                    <img src="{{ detail_author_avatar }}" alt="{{ icerik.yazar.username }}" style="width: 100%; height: 100%; object-fit: cover; display: block;">
+                    {% else %}
+                    {{ icerik.yazar.username|make_list|first|upper }}
+                    {% endif %}
+                </div>
+                {% endwith %}
+            </a>
+            <small class="fw-bold text-dark">r/{{ icerik.kategori }}</small>
+            <small class="text-muted ms-2">• Yazan:
+                <a href="{% url 'profil' icerik.yazar.username %}" class="text-dark text-decoration-none fw-bold">
+                    {{ icerik.yazar.username }}
+                </a>
+                • {{ icerik.tarih|safe_timesince }} önce</small>
+        </div>
+
+        <div class="d-flex align-items-start justify-content-between mb-3">
+            <h1 class="h3 fw-bold mb-0">{{ icerik.baslik }}</h1>
+            {% if user == icerik.yazar or user.is_superuser %}
+            <a href="{% url 'icerik_duzenle' icerik.id %}" 
+               class="btn btn-light btn-sm rounded-pill px-3 ms-3 flex-shrink-0"
+               style="font-size: 0.85rem; color: #6366f1; border: 1px solid #e2e8f0;"
+               title="İçeriği Düzenle">
+                <i class="bi bi-pencil-square me-1"></i>Düzenle
+            </a>
+            {% endif %}
+        </div>
+
+        {% if icerik.resim %}
+        <div class="text-center mb-4">
+            <img src="{{ icerik.resim.url }}" class="img-fluid rounded shadow-sm" loading="eager" decoding="async" alt="{{ icerik.baslik }}"
+                {% with rw=icerik.resim|safe_image_width rh=icerik.resim|safe_image_height %}{% if rw %}width="{{ rw }}" height="{{ rh }}"{% endif %}{% endwith %}
+                style="max-height: 500px; width: auto;">
+        </div>
+        {% endif %}
+
+
+        <div class="post-text icerik-metni text-dark"
+            style="font-size: 1rem; line-height: 1.6; word-wrap: break-word; overflow-wrap: break-word;">
+            {{ icerik.yazi|local_image_attrs }}
+        </div>
+
+        <div class="d-flex gap-3 mt-3 border-bottom pb-3">
+
+            <button class="btn btn-light btn-sm fw-bold text-secondary" onclick="anaYorumAlaninaGit()">
+                <i class="bi bi-chat-left-text me-1"></i> {{ icerik.yorumlar.count }} Yorum
+            </button>
+
+            <button
+                class="btn btn-light btn-sm fw-bold {% if request.user in icerik.begenenler.all %}text-danger{% else %}text-secondary{% endif %}"
+                id="btn-icerik-begen-{{ icerik.id }}" onclick="icerikBegen(event, '{{ icerik.id }}')">
+                <i class="bi {% if request.user in icerik.begenenler.all %}bi-heart-fill{% else %}bi-heart{% endif %} me-1"
+                    id="icon-icerik-begen-{{ icerik.id }}"></i>
+                <span id="sayi-icerik-begen-{{ icerik.id }}">{{ icerik.begenenler.count }}</span>
+            </button>
+
+            <div style="position: relative; display: inline-block;">
+                <button class="btn btn-light btn-sm fw-bold text-secondary" id="btnPaylas">
+                    <i class="bi bi-share-fill me-1"></i> <span id="btnPaylasText">Paylaş</span>
+                </button>
+                <!-- Share Popover Box -->
+                <div id="shareBox"
+                    style="display:none; position:absolute; top:110%; left:0; z-index:1050; background:#fff; border:1px solid #e2e8f0; border-radius:12px; box-shadow:0 8px 24px rgba(0,0,0,.12); padding:12px 14px; min-width:320px;">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="fw-bold text-dark" style="font-size:0.9rem;"><i
+                                class="bi bi-link-45deg me-1"></i>Bağlantıyı Paylaş</span>
+                        <button type="button"
+                            class="btn btn-sm btn-light border-0 rounded-circle p-0 d-flex align-items-center justify-content-center"
+                            id="shareBoxClose" style="width:28px;height:28px;">
+                            <i class="bi bi-x-lg text-muted" style="font-size:0.75rem;"></i>
+                        </button>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <input type="text" id="shareUrlInput"
+                            class="form-control form-control-sm bg-light border rounded-3" readonly
+                            style="font-size:0.85rem;">
+                        <button type="button" class="btn btn-primary btn-sm rounded-3 fw-bold px-3" id="btnKopyala"
+                            style="white-space:nowrap;">
+                            <i class="bi bi-clipboard me-1"></i>Kopyala
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <button
+                class="btn btn-light btn-sm fw-bold {% if request.user in icerik.kaydedenler.all %}text-primary{% else %}text-secondary{% endif %}"
+                id="btn-kaydet-{{ icerik.id }}" onclick="icerikKaydet('{{ icerik.id }}')">
+
+                <i class="bi {% if request.user in icerik.kaydedenler.all %}bi-bookmark-fill{% else %}bi-bookmark{% endif %}"
+                    id="icon-kaydet-{{ icerik.id }}"></i>
+
+                <span id="text-kaydet-{{ icerik.id }}">
+                    {% if request.user in icerik.kaydedenler.all %}
+                    Kaydedildi
+                    {% else %}
+                    Kaydet
+                    {% endif %}
+                </span>
+            </button>
+
+            {% if request.user == icerik.yazar or request.user.is_superuser %}
+            <a href="{% url 'sil' icerik.id %}" class="btn btn-light btn-sm fw-bold text-danger ms-auto delete-action" title="İçeriği Sil">
+                <i class="bi bi-trash me-1"></i> Sil
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="comments-section bg-white rounded-4 shadow-sm p-3 p-md-4">
+        <div class="d-flex align-items-center justify-content-between mb-4 pb-3 border-bottom">
+            <h3 class="mb-0 fw-bold">
+                <i class="bi bi-chat-dots text-primary me-2"></i>Yorumlar
+            </h3>
+
+
+        </div>
+
+        <!-- Yorum Formu -->
+        {% if not is_focus_mode %}
+        <div class="comment-form mb-5" id="ana-yorum-formu">
+            {% if user.is_authenticated and user.profil.timeout_until and user.profil.timeout_until > now %}
+            <!-- SUSTURULMUŞ KULLANICI - KİLİTLİ FORM -->
+            <div class="timeout-locked-form position-relative" style="border-radius: 16px; overflow: hidden;">
+                <!-- Arka planda blur'lu sahte textarea -->
+                <div style="padding: 16px; background: #f1f5f9; border-radius: 16px; border: 2px solid #e2e8f0; min-height: 160px; filter: blur(2px); opacity: 0.5;">
+                    <div style="height: 120px; background: #e2e8f0; border-radius: 12px;"></div>
+                    <div class="text-end mt-2">
+                        <div style="width: 120px; height: 38px; background: #cbd5e1; border-radius: 50px; display: inline-block;"></div>
+                    </div>
+                </div>
+                <!-- Kilit Overlay -->
+                <div class="position-absolute top-0 start-0 w-100 h-100 d-flex flex-column align-items-center justify-content-center"
+                    style="background: rgba(255,255,255,0.75); backdrop-filter: blur(4px); border-radius: 16px; z-index: 5;">
+                    <div class="text-center">
+                        <div class="mb-3" style="width: 56px; height: 56px; background: linear-gradient(135deg, #f59e0b, #d97706); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);">
+                            <i class="bi bi-lock-fill text-white" style="font-size: 1.5rem;"></i>
+                        </div>
+                        <h6 class="fw-bold text-dark mb-1">Hesabın Geçici Olarak Susturuldu</h6>
+                        <p class="text-muted small mb-3">Susturma süresi dolana kadar yorum yapamazsın.</p>
+                        <div class="timeout-countdown d-flex gap-2 justify-content-center" id="timeout-countdown-detay"
+                            data-timeout="{{ user.profil.timeout_until|date:'c' }}">
+                            <div class="text-center" style="background: #1e293b; color: white; border-radius: 10px; padding: 8px 12px; min-width: 60px;">
+                                <div class="fw-bold" style="font-size: 1.2rem;" id="countdown-days-detay">--</div>
+                                <div style="font-size: 0.65rem; opacity: 0.7;">GÜN</div>
+                            </div>
+                            <div class="text-center" style="background: #1e293b; color: white; border-radius: 10px; padding: 8px 12px; min-width: 60px;">
+                                <div class="fw-bold" style="font-size: 1.2rem;" id="countdown-hours-detay">--</div>
+                                <div style="font-size: 0.65rem; opacity: 0.7;">SAAT</div>
+                            </div>
+                            <div class="text-center" style="background: #1e293b; color: white; border-radius: 10px; padding: 8px 12px; min-width: 60px;">
+                                <div class="fw-bold" style="font-size: 1.2rem;" id="countdown-minutes-detay">--</div>
+                                <div style="font-size: 0.65rem; opacity: 0.7;">DAKİKA</div>
+                            </div>
+                            <div class="text-center" style="background: #f59e0b; color: white; border-radius: 10px; padding: 8px 12px; min-width: 60px;">
+                                <div class="fw-bold" style="font-size: 1.2rem;" id="countdown-seconds-detay">--</div>
+                                <div style="font-size: 0.65rem; opacity: 0.9;">SANİYE</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <!-- NORMAL YORUM FORMU -->
+            <div class="d-flex gap-2 gap-md-3">
+                <div class="user-avatar flex-shrink-0 d-none d-md-block">
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'profil' user.username %}" class="text-decoration-none">
+                        {% with current_user_avatar=user|avatar_url %}
+                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold shadow-sm"
+                            style="width: 48px; height: 48px; font-size: 1.2rem; overflow: hidden;">
+                            {% if current_user_avatar %}
+                            <img src="{{ current_user_avatar }}" alt="{{ user.username }}" style="width: 100%; height: 100%; object-fit: cover; display: block;">
+                            {% else %}
+                            {{ user.username|first|upper }}
+                            {% endif %}
+                        </div>
+                        {% endwith %}
+                    </a>
+                    {% else %}
+                    <div class="bg-secondary bg-opacity-10 text-secondary rounded-circle d-flex align-items-center justify-content-center"
+                        style="width: 48px; height: 48px;">
+                        <i class="bi bi-person-fill fs-4"></i>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="flex-grow-1">
+                    <form method="post" action="{% url 'detay' icerik.id %}"
+                        onsubmit="return handleMainCommentSubmit(event)">
+                        {% csrf_token %}
+                        <div class="mb-3 position-relative">
+                            <textarea name="mesaj" class="form-control bg-light border-0 rounded-4"
+                                placeholder="Bu içerik hakkında ne düşünüyorsun?" id="floatingTextarea2"
+                                style="height: 120px; resize: none;" onfocus="this.placeholder = ''"
+                                onblur="this.placeholder = 'Bu içerik hakkında ne düşünüyorsun?'"></textarea>
+                            
+                            <!-- Mobil Avatar (Textarea İçinde - Sol Üst) -->
+                            <div class="mobile-inside-avatar d-md-none position-absolute" style="top: 12px; left: 12px; z-index: 10;">
+                                {% if user.is_authenticated %}
+                                {% with current_user_avatar=user|avatar_url %}
+                                <div class="bg-black text-white rounded-circle d-flex align-items-center justify-content-center fw-bold shadow-sm"
+                                    style="width: 20px; height: 20px; font-size: 0.65rem; overflow: hidden;">
+                                    {% if current_user_avatar %}
+                                    <img src="{{ current_user_avatar }}" alt="{{ user.username }}" style="width: 100%; height: 100%; object-fit: cover; display: block;">
+                                    {% else %}
+                                    {{ user.username|first|upper }}
+                                    {% endif %}
+                                </div>
+                                {% endwith %}
+                                {% else %}
+                                <div class="bg-secondary bg-opacity-10 text-secondary rounded-circle d-flex align-items-center justify-content-center"
+                                    style="width: 20px; height: 20px;">
+                                    <i class="bi bi-person-fill" style="font-size: 0.7rem;"></i>
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Mobil Gönder Butonu (Textarea İçinde - Sağ Alt) -->
+                            <button type="submit" class="btn btn-primary mobile-send-btn d-flex d-md-none rounded-circle">
+                                <i class="bi bi-send-fill"></i>
+                            </button>
+                        </div>
+                        <div class="d-flex justify-content-end">
+                            <!-- Masaüstü Gönder Butonu (Gizle Mobilde) -->
+                            <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm hover-up d-none d-md-block">
+                                <i class="bi bi-send-fill me-2"></i>Yorum Yap
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+
+        <!-- Yorum Listesi -->
+        {% if is_focus_mode %}
+        <div
+            class="alert bg-light border-0 shadow-sm rounded-4 d-flex flex-column flex-md-row align-items-center justify-content-between p-3 mb-4 gap-3">
+            <div class="d-flex align-items-center gap-3 text-start w-100">
+                <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
+                    style="width: 40px; height: 40px;">
+                    <i class="bi bi-info-lg fs-5"></i>
+                </div>
+                <div>
+                    <h6 class="fw-bold mb-0 text-dark">Tek bir yorum akışını görüntülüyorsun</h6>
+                    <small class="text-muted">Diğer tüm yorumları görmek için tartışmaya dönebilirsin.</small>
+                </div>
+            </div>
+            <a href="{% url 'detay' icerik.id %}"
+                class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm hover-up w-100 w-md-auto text-center">
+                <i class="bi bi-arrow-left me-2"></i>Tüm Tartışmaya Dön
+            </a>
+        </div>
+        {% endif %}
+        <div class="comment-list">
+            {% for yorum in yorumlar %}
+            {% include "yorum_karti.html" with yorum=yorum depth=0 %}
+            {% empty %}
+            {% if not is_focus_mode %}
+            <div class="text-center py-5">
+                <div class="mb-3">
+                    <i class="bi bi-chat-square-quote display-1 text-light"></i>
+                </div>
+                <h5 class="text-muted">Henüz yorum yapılmamış</h5>
+                <p class="text-secondary small">İlk yorumu sen yaparak tartışmayı başlatabilirsin!</p>
+            </div>
+            {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Gizli Yanıt Şablonu (JS ile kopyalanacak) -->
+    <div id="reply-template" class="d-none">
+        <form method="post" action="{% url 'detay' icerik.id %}" class="reply-form">
+            {% csrf_token %}
+            <input type="hidden" name="parent_id" class="parent-id-input">
+
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span
+                    class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-3 py-2 reply-to-text">
+                    <i class="bi bi-reply-fill me-1"></i> Yanıt veriliyor
+                </span>
+                <button type="button" class="btn btn-sm btn-light border rounded-circle"
+                    onclick="this.closest('.dynamic-reply-form').remove()" title="Vazgeç">
+                    <i class="bi bi-x-lg text-muted"></i>
+                </button>
+            </div>
+
+            <textarea name="mesaj" class="form-control border mb-2" rows="3" placeholder="💬 Cevabını buraya yaz..."
+                required style="resize: none; font-size: 0.95rem;"></textarea>
+
+            <div class="text-end">
+                <button type="submit" class="btn btn-primary btn-sm rounded-pill px-4 fw-bold">
+                    Cevapla <i class="bi bi-send-fill ms-2" style="font-size: 0.8rem;"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div class="mt-5 mb-5 text-center">
+        <a href="/" class="btn btn-outline-secondary btn-sm">&larr; Ana Sayfaya Dön</a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Auth değişkeni
+    const isAuthenticated = "{{ user.is_authenticated|yesno:'true,false' }}" === "true";
+    const loginUrl = "{% url 'giris' %}";
+    const csrfToken = "{{ csrf_token }}";
+
+    function checkAuth() {
+        if (!isAuthenticated) {
+            window.location.href = loginUrl + "?next=" + encodeURIComponent(window.location.pathname);
+            return false;
+        }
+        return true;
+    }
+
+    function isRateLimitPayload(data) {
+        return data && ['BURST_PENALTY', 'COMMENT_PENALTY', 'RATE_LIMIT'].includes(data.error);
+    }
+
+    // 1. Yorum Daraltma / Genişletme
+    function toggleComment(id) {
+        document.getElementById('comment-' + id).classList.toggle('collapsed');
+    }
+
+    // 2. Yanıtla Butonu (Formu Taşıma)
+    function yanitla(yorumId, yazarUsername, button) {
+        if (!checkAuth()) return;
+
+        try {
+            // Varsa açık diğer formları kapat
+            document.querySelectorAll('.dynamic-reply-form').forEach(e => e.remove());
+
+            // Şablonu kopyala
+            const templateEl = document.getElementById('reply-template');
+            if (!templateEl) {
+                console.error("Reply template element not found!");
+                return;
+            }
+            // Şablonun içindeki formu al ve event listener ekle
+            const formClone = templateEl.querySelector('form').cloneNode(true);
+
+            // Dinamik form container'ı
+            const newFormDiv = document.createElement('div');
+            newFormDiv.classList.add('dynamic-reply-form');
+            newFormDiv.appendChild(formClone);
+
+            // ID ve metni ayarla
+            const parentInput = newFormDiv.querySelector('.parent-id-input');
+            const replyText = newFormDiv.querySelector('.reply-to-text');
+
+            if (parentInput) parentInput.value = yorumId;
+            if (replyText) replyText.innerHTML = `<i class="bi bi-reply-fill me-1"></i> @${yazarUsername} kişisine yanıt ver`;
+
+            // Form submit olayını yakala
+            const form = newFormDiv.querySelector('form');
+            form.onsubmit = handleReplySubmit;
+
+            // Kapatma butonu olayını ayarla
+            const closeBtn = newFormDiv.querySelector('.btn-light'); // X butonu
+            if (closeBtn) {
+                closeBtn.onclick = function () { newFormDiv.remove(); };
+            }
+
+
+            // Formu yorum kartının sonuna ekle (alt yorumlardan önce)
+            const actionsDiv = button.closest('.d-flex.align-items-center.gap-3') || button.parentElement;
+
+            if (actionsDiv && actionsDiv.parentNode) {
+                actionsDiv.parentNode.insertBefore(newFormDiv, actionsDiv.nextSibling);
+            } else {
+                const contentDiv = button.closest('.comment-content-area') || button.closest('.w-100') || button.closest('.flex-grow-1');
+                if (contentDiv) {
+                    contentDiv.appendChild(newFormDiv);
+                } else {
+                    console.error("Could not find a suitable container to append the reply form.");
+                    return;
+                }
+            }
+
+            // Oraya Kaydır ve Odaklan
+            newFormDiv.scrollIntoView({ behavior: "smooth", block: "center" });
+            setTimeout(() => {
+                const textarea = newFormDiv.querySelector('textarea');
+                if (textarea) textarea.focus();
+            }, 300);
+
+        } catch (error) {
+            console.error("Error in yanitla function:", error);
+            alert("Beklenmedik bir hata oluştu.");
+        }
+    }
+
+    // 📌 Yanıtları Göster / Gizle Toggle
+    function toggleAnswers(yorumId, button) {
+        const answersDiv = document.getElementById('answers-' + yorumId);
+        if (answersDiv) {
+            answersDiv.classList.toggle('d-none');
+        }
+    }
+
+    // AJAX Form Submit - Ana Yorum
+    function handleMainCommentSubmit(event) {
+        event.preventDefault();
+        if (!checkAuth()) return false;
+
+        const form = event.target;
+        const textarea = form.querySelector('textarea');
+        const message = textarea.value.trim();
+
+        if (message === "") {
+            showCustomAlert("Lütfen bir yorum yazın!");
+            textarea.classList.add('is-invalid'); // Basit görsel uyarı
+            setTimeout(() => textarea.classList.remove('is-invalid'), 2000);
+            return false;
+        }
+
+        const formData = new FormData(form);
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalBtnText = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Gönderiliyor...';
+
+        fetch(form.action, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+            body: formData
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (isRateLimitPayload(data)) return;
+                if (data.success) {
+                    // Yeni yorumu listeye ekle
+                    const commentList = document.querySelector('.comment-list');
+                    const noCommentsMsg = commentList.querySelector('.text-center.py-5');
+
+                    // Eğer "Henüz yorum yapılmamış" mesajı varsa kaldır
+                    if (noCommentsMsg) noCommentsMsg.remove();
+
+                    // HTML'i ekle (en üste veya en alta - genelde yeni yorumlar en alta veya en üste mi? order_by(-tarih) ise en üst)
+                    // Django view'da order_by('-tarih') var, yani en yeni en üstte.
+                    // commentList.insertAdjacentHTML('afterbegin', data.html); 
+                    // Ancak for döngüsü var. Genelde prepend yapmak lazım.
+                    commentList.insertAdjacentHTML('afterbegin', data.html);
+
+                    // Formu temizle
+                    textarea.value = '';
+
+                    // Yeni yoruma kaydır ve highlight et
+                    const newComment = commentList.firstElementChild;
+                    newComment.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    newComment.classList.add('bg-light'); // Highlight efekti
+                    setTimeout(() => newComment.classList.remove('bg-light'), 2000);
+
+                } else {
+                    showToast(data.mesaj || 'Yorum gönderilemedi.', 'error', '🔇 Engellendi');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showToast('Bir hata oluştu.', 'error');
+            })
+            .finally(() => {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnText;
+            });
+
+        return false;
+    }
+
+    // AJAX Form Submit - Yanıt
+    function handleReplySubmit(event) {
+        event.preventDefault();
+        if (!checkAuth()) return false;
+
+        const form = event.target;
+        const textarea = form.querySelector('textarea');
+        const message = textarea.value.trim();
+        const parentId = form.querySelector('input[name="parent_id"]').value;
+
+        if (message === "") {
+            showToast('Lütfen bir cevap yazın!', 'warning', '⚠️ Uyarı');
+            return false;
+        }
+
+        const formData = new FormData(form);
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalBtnText = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
+
+        fetch(form.action, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+            body: formData
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (isRateLimitPayload(data)) return;
+                if (data.success) {
+                    // Parent yorumun kapsayıcısını bul
+                    const parentCommentWrapper = document.getElementById('comment-' + parentId);
+                    const contentArea = parentCommentWrapper.querySelector('.comment-content-area');
+
+                    let childrenContainer = contentArea.querySelector('.children-comments');
+                    let nestedComments = null;
+
+                    // Eğer hiç alt yorum yoksa yapı oluşturulmalı
+                    if (!childrenContainer) {
+                        childrenContainer = document.createElement('div');
+                        childrenContainer.className = 'children-comments';
+
+                        nestedComments = document.createElement('div');
+                        nestedComments.className = 'nested-comments mt-2 ps-1'; // d-none OLMAMALI çünkü yeni ekledik, görmek istiyoruz
+                        nestedComments.id = 'answers-' + parentId;
+
+                        childrenContainer.appendChild(nestedComments);
+                        contentArea.appendChild(childrenContainer);
+
+                        // "Yanıtları Göster" butonu ekle? Gerek yok, zaten açık gelecek.
+                        // Ama butonun görünmesi lazım ki sonra gizlenebilsin.
+                        // Buton ekleme mantığı biraz karmaşık olabilir çünkü HTML içinde if check var.
+                        // Basitlik adına butonu JS ile ekleyebiliriz.
+                        const actionButtons = contentArea.querySelector('.action-buttons');
+
+                        // Buton zaten yoksa ekle
+                        if (!actionButtons.querySelector(`button[onclick="toggleAnswers('${parentId}', this)"]`)) {
+                            const toggleBtn = document.createElement('button');
+                            toggleBtn.className = "btn btn-link text-decoration-none p-0 text-secondary d-flex align-items-center";
+                            toggleBtn.innerHTML = '<i class="bi bi-chevron-down" style="font-size: 1.1rem;"></i><span class="ms-1 fw-bold" style="font-size: 0.9rem;">1</span>';
+                            toggleBtn.onclick = function () { toggleAnswers(parentId, this); };
+
+                            // Yanıtla butonundan sonra ekle
+                            const replyBtn = actionButtons.querySelector('button[onclick^="yanitla"]');
+                            if (replyBtn && replyBtn.nextSibling) {
+                                actionButtons.insertBefore(toggleBtn, replyBtn.nextSibling);
+                            } else {
+                                actionButtons.appendChild(toggleBtn);
+                            }
+                        }
+
+                    } else {
+                        nestedComments = document.getElementById('answers-' + parentId);
+                        // Eğer gizliyse aç
+                        if (nestedComments.classList.contains('d-none')) {
+                            nestedComments.classList.remove('d-none');
+                        }
+                    }
+
+                    // Yeni yorumu ekle
+                    // En alta ekle
+                    const wrapperDiv = document.createElement('div');
+                    wrapperDiv.className = 'nested-answer-wrapper mb-1';
+                    wrapperDiv.innerHTML = data.html;
+
+                    nestedComments.appendChild(wrapperDiv);
+
+                    // Formu kaldır
+                    form.closest('.dynamic-reply-form').remove();
+
+                    // Yeni yoruma kaydır
+                    wrapperDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    wrapperDiv.classList.add('bg-light');
+                    setTimeout(() => wrapperDiv.classList.remove('bg-light'), 2000);
+
+                } else {
+                    showToast(data.mesaj || 'Cevap gönderilemedi.', 'error', '🔇 Engellendi');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showToast('Bir hata oluştu.', 'error');
+            })
+            .finally(() => {
+                if (submitBtn) { // Form kaldırılmadıysa
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalBtnText;
+                }
+            });
+
+        return false;
+    }
+
+
+    function showCustomAlert(msg) {
+        showToast(msg, 'warning', '⚠️ Uyarı');
+    }
+
+    function showToast(message, type = 'error', title = '❌ Hata') {
+        const container = document.getElementById('toastContainer');
+        
+        const iconClass = type === 'success' ? 'success' : type === 'warning' ? 'warning' : 'error';
+        const iconSymbol = type === 'success' ? 'bi-check-circle-fill' : type === 'warning' ? 'bi-exclamation-triangle-fill' : 'bi-x-circle-fill';
+        const toastClass = type === 'success' ? 'toast-success' : type === 'warning' ? 'toast-warning' : '';
+        const progressClass = toastClass;
+        
+        const toast = document.createElement('div');
+        toast.className = `toast-notification ${toastClass}`;
+        toast.innerHTML = `
+            <div class="toast-icon ${iconClass}">
+                <i class="bi ${iconSymbol}"></i>
+            </div>
+            <div class="toast-body">
+                <div class="toast-title">${title}</div>
+                <div class="toast-message">${message}</div>
+            </div>
+            <button class="toast-close" onclick="this.closest('.toast-notification').remove()">
+                <i class="bi bi-x-lg"></i>
+            </button>
+            <div class="toast-progress"></div>
+        `;
+        
+        container.appendChild(toast);
+        
+        // Animasyon tetikle
+        requestAnimationFrame(() => {
+            toast.classList.add('show');
+        });
+        
+        // Otomatik kapat
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 400);
+        }, 4000);
+    }
+
+    // 3. Formu Kapatma
+    function formuKapat(btn) {
+        btn.closest('.dynamic-reply-form').remove();
+    }
+
+    // 4. Ana Yorum Alanına Git
+    function anaYorumAlaninaGit() {
+        document.getElementById('ana-yorum-formu').scrollIntoView({ behavior: "smooth" });
+        if (isAuthenticated) {
+            document.querySelector('#ana-yorum-formu textarea').focus();
+        }
+    }
+
+    // 5. İÇERİK KAYDETME (AJAX)
+    function icerikBegen(event, id) {
+        if (event) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        if (!checkAuth()) return;
+
+        fetch(`/icerik-begen/${id}/`, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': csrfToken
+            }
+        })
+            .then(response => {
+                if (response.status === 429) return null;
+                if (!response.ok) throw new Error("Sunucu Hatası: " + response.status);
+                return response.json();
+            })
+            .then(data => {
+                if (!data) return;
+
+                const btn = document.getElementById(`btn-icerik-begen-${id}`);
+                const icon = document.getElementById(`icon-icerik-begen-${id}`);
+                const count = document.getElementById(`sayi-icerik-begen-${id}`);
+
+                if (btn) {
+                    btn.classList.toggle('text-danger', data.begenildi);
+                    btn.classList.toggle('text-secondary', !data.begenildi);
+                }
+                if (icon) {
+                    icon.classList.toggle('bi-heart-fill', data.begenildi);
+                    icon.classList.toggle('bi-heart', !data.begenildi);
+                }
+                if (count) count.innerText = data.sayi;
+            })
+            .catch(error => console.error(error));
+    }
+
+    function icerikKaydet(id) {
+        if (!checkAuth()) return;
+
+        fetch(`/kaydet/${id}/`, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': csrfToken
+            }
+        })
+            .then(res => {
+                if (res.url.includes('/giris/')) {
+                    window.location.href = '/giris/';
+                    return null;
+                }
+                if (res.status === 429) return null;
+                if (!res.ok) throw new Error("Sunucu Hatası: " + res.status);
+                return res.json();
+            })
+            .then(data => {
+                if (!data) return;
+
+                const btn = document.getElementById(`btn-kaydet-${id}`);
+                const icon = document.getElementById(`icon-kaydet-${id}`);
+                const text = document.getElementById(`text-kaydet-${id}`);
+
+                if (data.kaydedildi) {
+                    btn.classList.remove('text-secondary');
+                    btn.classList.add('text-primary');
+                    icon.classList.remove('bi-bookmark');
+                    icon.classList.add('bi-bookmark-fill');
+                    text.innerText = "Kaydedildi";
+                } else {
+                    btn.classList.remove('text-primary');
+                    btn.classList.add('text-secondary');
+                    icon.classList.remove('bi-bookmark-fill');
+                    icon.classList.add('bi-bookmark');
+                    text.innerText = "Kaydet";
+                }
+            })
+            .catch(err => {
+                if (err.name === 'SyntaxError') {
+                    window.location.href = "/giris/";
+                } else {
+                    alert("⚠️ İşlem başarısız: " + err.message);
+                    console.error(err);
+                }
+            });
+    }
+
+    // 6. YORUM BEĞENME (AJAX)
+    function yorumBegen(yorumId) {
+        if (!checkAuth()) return;
+
+        fetch(`/begen/${yorumId}/`, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': csrfToken
+            }
+        })
+            .then(response => {
+                if (response.status === 429) return null;
+                if (!response.ok) throw new Error("Sunucu Hatası");
+                return response.text();
+            })
+            .then(text => {
+                try { return JSON.parse(text); }
+                catch (e) { window.location.href = "/giris/"; }
+            })
+            .then(data => {
+                if (!data) return;
+                const btn = document.getElementById(`btn-begen-${yorumId}`);
+                const icon = document.getElementById(`icon-begen-${yorumId}`);
+                const sayi = document.getElementById(`sayi-begen-${yorumId}`);
+
+                btn.style.color = "";
+
+                if (data.begenildi) {
+                    btn.classList.remove('text-secondary');
+                    btn.classList.add('text-danger');
+                    icon.classList.remove('bi-heart');
+                    icon.classList.add('bi-heart-fill');
+                } else {
+                    btn.classList.remove('text-danger');
+                    btn.classList.add('text-secondary');
+                    icon.classList.remove('bi-heart-fill');
+                    icon.classList.add('bi-heart');
+                }
+
+                if (sayi) {
+                    sayi.innerText = data.sayi;
+                }
+            })
+            .catch(error => console.error(error));
+    }
+
+    // 7. YORUM SİLME (AJAX + Modal Onay)
+    function yorumSil(event, yorumId) {
+        if (!checkAuth()) return false;
+
+        // Varsayılan link davranışını engelle
+        event.preventDefault();
+
+        const deleteUrl = event.currentTarget.href;
+        const urlToFetch = deleteUrl || `/sil-yorum/${yorumId}/`;
+
+        // Global modal ile onay al
+        silmeOnayAc(null, function () {
+            fetch(urlToFetch, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                }
+            })
+                .then(response => {
+                    if (response.redirected) {
+                        window.location.href = response.url;
+                        return;
+                    }
+                    if (!response.ok) throw new Error("Sunucu Hatası");
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        const commentEl = document.getElementById(`comment-${yorumId}`);
+                        if (commentEl) {
+                            commentEl.style.transition = "all 0.5s ease";
+                            commentEl.style.opacity = "0";
+                            commentEl.style.transform = "translateX(20px)";
+                            setTimeout(() => commentEl.remove(), 500);
+                        } else {
+                            const answerEl = document.getElementById(`cevap-${yorumId}`);
+                            if (answerEl) {
+                                answerEl.style.transition = "all 0.5s ease";
+                                answerEl.style.opacity = "0";
+                                answerEl.style.transform = "translateX(20px)";
+                                setTimeout(() => answerEl.remove(), 500);
+                            }
+                        }
+                    } else {
+                        alert(data.mesaj || "Silinemedi.");
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert("Bir hata oluştu.");
+                });
+        });
+
+        return false;
+    }
+    // 8. AKILLI PAYLAŞIM BUTONU (Interactive Share Popover)
+    const btnPaylas = document.getElementById('btnPaylas');
+    const shareBox = document.getElementById('shareBox');
+    const shareUrlInput = document.getElementById('shareUrlInput');
+    const btnKopyala = document.getElementById('btnKopyala');
+    const shareBoxClose = document.getElementById('shareBoxClose');
+
+    if (btnPaylas && shareBox) {
+        // Mobile: still use native share if available
+        btnPaylas.addEventListener('click', async () => {
+            if (navigator.share) {
+                try {
+                    await navigator.share({
+                        title: "{{ icerik.baslik|escapejs }}",
+                        url: window.location.href
+                    });
+                    return;
+                } catch (err) {
+                    // User cancelled or API error – fall through to popover
+                }
+            }
+            // Desktop / fallback: toggle popover
+            shareUrlInput.value = window.location.href;
+            const isOpen = shareBox.style.display !== 'none';
+            shareBox.style.display = isOpen ? 'none' : 'block';
+            if (!isOpen) {
+                setTimeout(() => shareUrlInput.select(), 50);
+            }
+        });
+
+        // Close button
+        shareBoxClose.addEventListener('click', () => {
+            shareBox.style.display = 'none';
+        });
+
+        // Copy button with HTTP fallback
+        btnKopyala.addEventListener('click', async () => {
+            try {
+                shareUrlInput.select();
+                if (navigator.clipboard && window.isSecureContext) {
+                    await navigator.clipboard.writeText(shareUrlInput.value);
+                } else {
+                    document.execCommand('copy');
+                }
+                // Visual feedback – green check
+                const origHTML = btnKopyala.innerHTML;
+                btnKopyala.innerHTML = '<i class="bi bi-check-lg me-1"></i>Kopyalandı!';
+                btnKopyala.classList.remove('btn-primary');
+                btnKopyala.classList.add('btn-success');
+                setTimeout(() => {
+                    btnKopyala.innerHTML = origHTML;
+                    btnKopyala.classList.remove('btn-success');
+                    btnKopyala.classList.add('btn-primary');
+                }, 2000);
+            } catch (err) {
+                console.error('Kopyalama hatası:', err);
+                alert('Lütfen linki manuel olarak kopyalayın.');
+            }
+        });
+
+        // Click-outside detection
+        document.addEventListener('click', (e) => {
+            if (!shareBox.contains(e.target) && !btnPaylas.contains(e.target)) {
+                shareBox.style.display = 'none';
+            }
+        });
+    }
+
+    // --- SUSTURMA GERİ SAYIM ZAMANLAYICISI ---
+    (function() {
+        const countdownEl = document.getElementById('timeout-countdown-detay');
+        if (!countdownEl) return;
+        
+        const timeoutDate = new Date(countdownEl.dataset.timeout).getTime();
+        
+        function updateCountdown() {
+            const now = Date.now();
+            const diff = timeoutDate - now;
+            
+            if (diff <= 0) {
+                // Süre doldu, sayfayı yenile
+                location.reload();
+                return;
+            }
+            
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+            
+            document.getElementById('countdown-days-detay').textContent = String(days).padStart(2, '0');
+            document.getElementById('countdown-hours-detay').textContent = String(hours).padStart(2, '0');
+            document.getElementById('countdown-minutes-detay').textContent = String(minutes).padStart(2, '0');
+            document.getElementById('countdown-seconds-detay').textContent = String(seconds).padStart(2, '0');
+        }
+        
+        updateCountdown();
+        setInterval(updateCountdown, 1000);
+    })();
+</script>
+<script>
+    // Yorum odaklama: URL'de #comment-XX varsa o yoruma scroll + highlight
+    if (window.location.hash) {
+        setTimeout(function() {
+            const el = document.querySelector(window.location.hash);
+            if (el) {
+                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                el.style.transition = 'box-shadow 0.4s, outline 0.4s';
+                el.style.outline = '2px solid #6366f1';
+                el.style.borderRadius = '12px';
+                el.style.boxShadow = '0 0 25px rgba(99,102,241,0.35)';
+                setTimeout(() => {
+                    el.style.outline = '';
+                    el.style.boxShadow = '';
+                }, 3500);
+            }
+        }, 600);
+    }
+</script>
+{% endblock %}

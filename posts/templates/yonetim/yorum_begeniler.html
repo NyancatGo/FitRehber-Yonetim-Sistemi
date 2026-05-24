@@ -1,0 +1,156 @@
+{% extends 'yonetim/base_yonetim.html' %}
+
+{% block page_title %}Yorum Beğeni Yönetimi{% endblock %}
+{% block page_subtitle %}Kullanıcı–Yorum beğeni kayıtlarını görüntüleyin, ekleyin veya silin.{% endblock %}
+
+{% block extra_css %}
+.split-layout { display: grid; grid-template-columns: 1fr 340px; gap: 1.5rem; align-items: start; }
+@media (max-width: 1100px) { .split-layout { grid-template-columns: 1fr; } }
+.table-container { overflow-x: auto; }
+.custom-table { width: 100%; border-collapse: collapse; text-align: left; }
+.custom-table th { background-color: rgba(255,255,255,0.02); border-bottom: 2px solid var(--border-color); padding: 0.875rem 1rem; font-weight: 600; color: var(--text-primary); font-size: 0.875rem; }
+.custom-table td { padding: 0.875rem 1rem; border-bottom: 1px solid var(--border-color); color: var(--text-secondary); font-size: 0.875rem; vertical-align: middle; }
+.custom-table tr:hover td { background-color: rgba(255,255,255,0.01); color: var(--text-primary); }
+.btn-icon { width: 32px; height: 32px; border-radius: 0.25rem; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease; border: 1px solid var(--border-color); background-color: transparent; color: var(--text-secondary); }
+.btn-icon-edit:hover { background-color: var(--primary); border-color: var(--primary); color: white; }
+.btn-icon-delete:hover { background-color: var(--danger); border-color: var(--danger); color: white; }
+.add-form .form-group { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem; }
+.add-form label { font-size: 0.8rem; font-weight: 600; color: var(--text-primary); }
+.form-control { background-color: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 0.5rem; padding: 0.65rem 0.875rem; color: white; font-size: 0.875rem; outline: none; transition: all 0.3s ease; width: 100%; }
+.form-control:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(79,70,229,0.2); }
+select.form-control option { background-color: #1f2937; }
+.sp-note { font-size: 0.75rem; color: var(--text-secondary); font-style: italic; }
+{% endblock %}
+
+{% block content %}
+<div class="split-layout">
+
+    <!-- Sol: Liste -->
+    <div class="card">
+        <div style="font-weight: 600; font-size: 1rem; margin-bottom: 1.25rem;">
+            <i class="fa-solid fa-thumbs-up" style="color: var(--success);"></i>
+            Yorum Beğeni Kayıtları
+            <span class="badge badge-info" style="margin-left: 0.5rem;">{{ begeniler|length }}</span>
+        </div>
+        <div class="table-container">
+            <table class="custom-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Yorum (ID)</th>
+                        <th>Yorum Metni</th>
+                        <th>Kullanıcı</th>
+                        <th>İşlem</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for b in begeniler %}
+                    <tr>
+                        <td style="font-weight:bold; color: var(--text-primary);">#{{ b.id }}</td>
+                        <td>#{{ b.yorum_id }}</td>
+                        <td style="max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                            {{ b.yorum_ozeti }}
+                        </td>
+                        <td style="color: var(--text-primary);">{{ b.kullanici_adi }}</td>
+                        <td>
+                            <div style="display:flex; gap:0.4rem;">
+                                <a href="{% url 'yonetim_yorum_begeni_duzenle' b.id %}" class="btn-icon btn-icon-edit" title="Düzenle">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </a>
+                                <form method="POST" action="{% url 'yonetim_yorum_begeni_sil' b.id %}" style="display:inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn-icon btn-icon-delete" title="Sil (Demo/Test)"
+                                            onclick="return confirm('⚠️ Yorum beğenisi #{{ b.id }} silinecek. Bu işlem yalnızca demo/test verisi için yapılmalıdır.');">
+                                        <i class="fa-solid fa-trash-can"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" style="text-align:center; padding:2rem; color: var(--text-secondary);">
+                            Henüz yorum beğenisi bulunmuyor.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Sağ: Ekle / Düzenle Formu -->
+    <div class="card add-form">
+        {% if edit_data %}
+        <div style="font-weight: 600; font-size: 1rem; margin-bottom: 1.25rem;">
+            <i class="fa-solid fa-pen-to-square" style="color: var(--primary);"></i> Yorum Beğenisi Düzenle <span style="color: var(--text-secondary); font-weight:400;">#{{ edit_data.id }}</span>
+        </div>
+        <p class="sp-note" style="margin-bottom: 1rem;">
+            <i class="fa-solid fa-database"></i>
+            DAL → <code>sp_YorumBegeniGuncelle</code> çağrısı yapılır.
+        </p>
+        <form method="POST" action="{% url 'yonetim_yorum_begeni_duzenle' edit_data.id %}">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="yorum_id_edit">Yorum</label>
+                <select id="yorum_id_edit" name="yorum_id" class="form-control" required>
+                    <option value="">— Yorum seçin —</option>
+                    {% for y in yorumlar %}
+                    <option value="{{ y.id }}" {% if y.id == edit_data.yorum_id %}selected{% endif %}>#{{ y.id }} — {{ y.mesaj|truncatechars:45 }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="user_id_edit">Kullanıcı</label>
+                <select id="user_id_edit" name="user_id" class="form-control" required>
+                    <option value="">— Kullanıcı seçin —</option>
+                    {% for u in kullanicilar %}
+                    <option value="{{ u.id }}" {% if u.id == edit_data.user_id %}selected{% endif %}>{{ u.username }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div style="display:flex; gap:0.75rem;">
+                <a href="{% url 'yonetim_yorum_begenileri' %}" class="btn btn-secondary" style="flex:1; text-align:center;">İptal</a>
+                <button type="submit" class="btn btn-primary" style="flex:1;">
+                    <i class="fa-solid fa-floppy-disk"></i> Güncelle
+                </button>
+            </div>
+        </form>
+        {% else %}
+        <div style="font-weight: 600; font-size: 1rem; margin-bottom: 1.25rem;">
+            <i class="fa-solid fa-plus" style="color: var(--primary);"></i> Yorum Beğenisi Ekle
+        </div>
+        <p class="sp-note" style="margin-bottom: 1rem;">
+            <i class="fa-solid fa-database"></i>
+            DAL → <code>sp_YorumBegeniEkle</code> çağrısı yapılır.<br>
+            Trigger, pasif/banlı kullanıcıyı otomatik engeller.
+        </p>
+        <form method="POST">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="yorum_id">Yorum</label>
+                <select id="yorum_id" name="yorum_id" class="form-control" required>
+                    <option value="">— Yorum seçin —</option>
+                    {% for y in yorumlar %}
+                    <option value="{{ y.id }}">#{{ y.id }} — {{ y.mesaj|truncatechars:45 }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="user_id">Kullanıcı</label>
+                <select id="user_id" name="user_id" class="form-control" required>
+                    <option value="">— Kullanıcı seçin —</option>
+                    {% for u in kullanicilar %}
+                    <option value="{{ u.id }}">{{ u.username }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width:100%;">
+                <i class="fa-solid fa-thumbs-up"></i> Beğeni Ekle
+            </button>
+        </form>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}

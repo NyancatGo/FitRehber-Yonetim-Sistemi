@@ -1,0 +1,159 @@
+{% extends 'yonetim/base_yonetim.html' %}
+
+{% block page_title %}Kullanıcı Yönetimi{% endblock %}
+{% block page_subtitle %}Sistemdeki kullanıcıları görüntüleyin, ekleyin veya düzenleyin.{% endblock %}
+
+{% block extra_css %}
+.table-header-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.table-container {
+    overflow-x: auto;
+    width: 100%;
+}
+
+.custom-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.custom-table th {
+    background-color: rgba(255, 255, 255, 0.02);
+    border-bottom: 2px solid var(--border-color);
+    padding: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.875rem;
+}
+
+.custom-table td {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    vertical-align: middle;
+}
+
+.custom-table tr:hover td {
+    background-color: rgba(255, 255, 255, 0.01);
+    color: var(--text-primary);
+}
+
+.action-btns {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btn-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 0.25rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid var(--border-color);
+    background-color: transparent;
+    color: var(--text-secondary);
+    text-decoration: none;
+}
+
+.btn-icon:hover {
+    color: white;
+}
+
+.btn-icon-edit:hover {
+    background-color: var(--primary);
+    border-color: var(--primary);
+}
+
+.btn-icon-delete:hover {
+    background-color: var(--danger);
+    border-color: var(--danger);
+}
+{% endblock %}
+
+{% block content %}
+<div class="table-header-actions">
+    <div style="font-weight: 600; font-size: 1.1rem;">Kullanıcı Listesi</div>
+    <a href="{% url 'yonetim_kullanici_ekle' %}" class="btn btn-primary">
+        <i class="fa-solid fa-user-plus"></i> Yeni Kullanıcı Ekle
+    </a>
+</div>
+
+<div class="card">
+    <div class="table-container">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Kullanıcı Adı</th>
+                    <th>E-Posta</th>
+                    <th>Ad Soyad</th>
+                    <th>Durum</th>
+                    <th>Yetkiler</th>
+                    <th>İçerik Sayısı (UDF)</th>
+                    <th>Kayıt Tarihi</th>
+                    <th>İşlemler</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in kullanicilar %}
+                <tr>
+                    <td style="font-weight: bold; color: var(--text-primary);">#{{ u.id }}</td>
+                    <td style="font-weight: 500; color: var(--text-primary);">{{ u.username }}</td>
+                    <td>{{ u.email }}</td>
+                    <td>{{ u.first_name }} {{ u.last_name }}</td>
+                    <td>
+                        {% if u.is_active %}
+                            <span class="badge badge-success">Aktif</span>
+                        {% else %}
+                            <span class="badge badge-danger">Pasif / Engelli</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if u.is_superuser %}
+                            <span class="badge badge-info">Süper Admin</span>
+                        {% elif u.is_staff %}
+                            <span class="badge badge-info" style="background-color: rgba(245, 158, 11, 0.15); color: var(--warning);">Personel</span>
+                        {% else %}
+                            <span class="badge" style="background-color: rgba(255, 255, 255, 0.05); color: var(--text-secondary);">Üye</span>
+                        {% endif %}
+                    </td>
+                    <td style="text-align: center; font-weight: bold; color: var(--primary);">
+                        {{ u.icerik_sayisi }}
+                    </td>
+                    <td>{{ u.date_joined|date:"d.m.Y H:i" }}</td>
+                    <td>
+                        <div class="action-btns">
+                            <a href="{% url 'yonetim_kullanici_duzenle' u.id %}" class="btn-icon btn-icon-edit" title="Düzenle">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </a>
+                            {% if request.user.id != u.id %}
+                            <form method="POST" action="{% url 'yonetim_kullanici_sil' u.id %}" style="display:inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-icon btn-icon-delete" title="Sil"
+                                        onclick="return confirm('Bu kullanıcıyı silmek istediğinize emin misiniz? Tüm ilişkili verileri silinebilir.');">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                            </form>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="9" style="text-align: center; padding: 2rem;">Sistemde kayıtlı kullanıcı bulunamadı.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

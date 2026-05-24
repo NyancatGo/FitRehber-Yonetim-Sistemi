@@ -1,0 +1,92 @@
+{% load posts_image_tags %}
+<!-- Forum Soru-Cevap için Kutu Tarzı Yorum Kartı -->
+<div class="forum-answer-card mb-3" id="cevap-{{ yorum.id }}">
+    <div class="answer-header d-flex align-items-center gap-3 mb-3">
+        <!-- Avatar -->
+        <a href="{% url 'profil' yorum.yazar.username %}" class="text-decoration-none">
+            {% with answer_avatar=yorum.yazar|avatar_url %}
+            <div class="answer-avatar">
+                {% if answer_avatar %}
+                <img src="{{ answer_avatar }}" alt="{{ yorum.yazar.username }}" style="width: 100%; height: 100%; object-fit: cover; border-radius: inherit; display: block;">
+                {% else %}
+                {{ yorum.yazar.username|make_list|first|upper }}
+                {% endif %}
+            </div>
+            {% endwith %}
+        </a>
+
+        <!-- Kullanıcı Bilgisi -->
+        <div class="answer-meta">
+            <div class="d-flex align-items-center gap-2">
+                <a href="{% url 'profil' yorum.yazar.username %}" class="answer-author text-decoration-none">
+                    {{ yorum.yazar.username }}
+                </a>
+                {% if yorum.yazar == icerik.yazar %}
+                <span class="badge bg-warning text-dark" style="font-size: 0.65rem; padding: 3px 8px;">YAZAR</span>
+                {% endif %}
+            </div>
+            <small class="text-muted">• {{ yorum.tarih|safe_timesince }} önce</small>
+        </div>
+    </div>
+
+    <!-- Cevap İçeriği -->
+    <div class="answer-body comment-readable-text mb-3">
+        {{ yorum.mesaj|linebreaks }}
+    </div>
+
+    <!-- Aksiyon Butonları -->
+    <div class="answer-actions d-flex align-items-center gap-2 pt-3 border-top">
+
+        <button class="answer-action-btn d-flex align-items-center justify-content-center px-2 py-1"
+            onclick="yanitla('{{ yorum.id }}', '{{ yorum.yazar.username }}', this)">
+            <i class="bi bi-reply-fill"></i>
+            <span class="d-none d-md-inline ms-1">Yanıtla</span>
+        </button>
+
+        <button
+            class="answer-action-btn d-flex align-items-center justify-content-center px-2 py-1 {% if request.user in yorum.begenenler.all %}liked{% endif %}"
+            onclick="yorumBegen('{{ yorum.id }}')" id="btn-begen-{{ yorum.id }}">
+            <i class="bi {% if request.user in yorum.begenenler.all %}bi-heart-fill{% else %}bi-heart{% endif %}"
+                id="icon-begen-{{ yorum.id }}"></i>
+            <span id="sayi-begen-{{ yorum.id }}" class="ms-1 fw-bold">
+                {{ yorum.begenenler.count }}
+            </span>
+        </button>
+
+        {% if yorum.yanitlar.count > 0 %}
+        <button class="answer-action-btn d-flex align-items-center justify-content-center px-2 py-1"
+            onclick="toggleAnswers('{{ yorum.id }}', this)">
+            <i class="bi bi-chat-dots"></i>
+            <span class="ms-1 fw-bold" style="font-size: 0.9rem;">{{ yorum.total_replies }}</span>
+        </button>
+        {% endif %}
+
+        {% if request.user.is_superuser or request.user == yorum.yazar %}
+        <a href="{% url 'yorum_sil' yorum.id %}"
+            class="answer-action-btn text-danger ms-auto d-flex align-items-center justify-content-center px-2 py-1 delete-action" title="Cevabı Sil">
+            <i class="bi bi-trash"></i>
+            <span class="d-none d-md-inline ms-1">Sil</span>
+        </a>
+        {% endif %}
+    </div>
+
+    <!-- Nested Yanıtlar (Alt Cevaplar) -->
+    {% if yorum.yanitlar.all %}
+    <div class="nested-answers mt-3 d-none" id="answers-{{ yorum.id }}">
+        {% if depth < 2 %}
+            {% for yanit in yorum.yanitlar.all %}
+            <div class="nested-answer-wrapper ps-2 ps-md-4 border-start border-2 border-primary-subtle">
+                {% include "yorum_karti_soru.html" with yorum=yanit depth=depth|add:1 %}
+            </div>
+            {% endfor %}
+        {% else %}
+        <div class="ps-4">
+            <a href="{% url 'detay' icerik.id %}?odak={{ yorum.id }}"
+                class="btn btn-sm btn-light text-primary border rounded-pill">
+                <i class="bi bi-arrow-right-circle me-1"></i> Bu tartışmanın devamını gör
+            </a>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>

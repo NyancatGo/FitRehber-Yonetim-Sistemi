@@ -1,0 +1,120 @@
+{% load posts_image_tags %}
+{% for konu in icerikler %}
+<div class="topic-card fade-in-up" id="icerik-{{ konu.id }}">
+    <div class="d-flex align-items-start gap-3">
+
+        <a href="{% url 'profil' konu.yazar.username %}" class="text-decoration-none">
+            {% with topic_avatar=konu.yazar|avatar_url %}
+            <div class="avatar-circle">
+                {% if topic_avatar %}
+                <img src="{{ topic_avatar }}" alt="{{ konu.yazar.username }}" style="width: 100%; height: 100%; object-fit: cover; border-radius: inherit; display: block;">
+                {% else %}
+                {{ konu.yazar.username|make_list|first|upper }}
+                {% endif %}
+            </div>
+            {% endwith %}
+        </a>
+
+        <div class="flex-grow-1" style="min-width: 0;">
+            <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                <span class="badge-category">{{ konu.kategori }}</span>
+                <span class="text-muted small">• {{ konu.tarih|safe_timesince }} önce</span>
+            </div>
+
+            <a href="{% url 'detay' konu.id %}" class="topic-link stretched-link text-truncate">
+                {{ konu.baslik }}
+            </a>
+
+            <p class="text-muted mb-0 small text-truncate">
+                {{ konu.yazi|striptags|truncatechars:120 }}
+            </p>
+
+            <div class="d-lg-none mt-2">
+                <a href="{% url 'profil' konu.yazar.username %}" class="text-decoration-none text-dark fw-bold">
+                    {{ konu.yazar.username }}
+                </a>
+            </div>
+        </div>
+
+        <div class="d-flex flex-column align-items-end gap-2">
+            <div class="comment-bubble">
+                <i class="bi bi-chat-dots-fill"></i> {{ konu.yorumlar.count }}
+            </div>
+
+            <button type="button"
+                class="topic-like-button {% if request.user in konu.begenenler.all %}liked{% endif %}"
+                id="btn-icerik-begen-{{ konu.id }}"
+                onclick="icerikBegen(event, '{{ konu.id }}')"
+                title="Beğen">
+                <i class="bi {% if request.user in konu.begenenler.all %}bi-heart-fill{% else %}bi-heart{% endif %}"
+                    id="icon-icerik-begen-{{ konu.id }}"></i>
+                <span id="sayi-icerik-begen-{{ konu.id }}">{{ konu.begenenler.count }}</span>
+            </button>
+
+            <a href="{% url 'profil' konu.yazar.username %}"
+                class="text-decoration-none text-dark fw-bold d-none d-lg-block">
+                {{ konu.yazar.username }}
+            </a>
+
+            {% if request.user.is_superuser or request.user == konu.yazar %}
+            <a href="{% url 'sil' konu.id %}" class="btn-delete shadow-sm delete-action" style="z-index: 2;">
+                <i class="bi bi-trash"></i>
+            </a>
+            {% endif %}
+        </div>
+
+    </div>
+</div>
+{% empty %}
+<div class="text-center py-5 bg-white rounded-4 shadow-sm topic-card fade-in-up">
+    <h4>Henüz tartışma yok...</h4>
+    <a href="{% url 'ekle' %}?tur=soru" class="btn btn-outline-primary rounded-pill mt-3">Konu Başlat</a>
+</div>
+{% endfor %}
+
+{% if icerikler.has_other_pages %}
+<nav aria-label="Sayfalar" class="my-5">
+    <ul class="pagination justify-content-center">
+        {% if icerikler.has_previous %}
+        <li class="page-item">
+            <a class="page-link rounded-start-pill border-0 shadow-sm fw-bold px-3 ajax-page-link"
+                href="?page={{ icerikler.previous_page_number }}{% if secili_kategori %}&kategori={{ secili_kategori }}{% endif %}">
+                Önceki
+            </a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+            <span class="page-link rounded-start-pill border-0 bg-light text-muted px-3">Önceki</span>
+        </li>
+        {% endif %}
+
+        {% for i in icerikler.paginator.page_range %}
+        {% if icerikler.number == i %}
+        <li class="page-item active">
+            <span class="page-link border-0 shadow-sm fw-bold px-3" style="background: #4f46e5;">{{ i }}</span>
+        </li>
+        {% else %}
+        <li class="page-item">
+            <a class="page-link border-0 shadow-sm fw-bold text-dark px-3 ajax-page-link"
+                href="?page={{ i }}{% if secili_kategori %}&kategori={{ secili_kategori }}{% endif %}">
+                {{ i }}
+            </a>
+        </li>
+        {% endif %}
+        {% endfor %}
+
+        {% if icerikler.has_next %}
+        <li class="page-item">
+            <a class="page-link rounded-end-pill border-0 shadow-sm fw-bold px-3 ajax-page-link"
+                href="?page={{ icerikler.next_page_number }}{% if secili_kategori %}&kategori={{ secili_kategori }}{% endif %}">
+                Sonraki
+            </a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+            <span class="page-link rounded-end-pill border-0 bg-light text-muted px-3">Sonraki</span>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}

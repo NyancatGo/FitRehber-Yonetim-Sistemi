@@ -1,0 +1,286 @@
+<!-- E-Posta Doğrulama Modal Overlay -->
+<style>
+    .verify-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.85);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        animation: fadeInOverlay 0.4s ease;
+    }
+
+    @keyframes fadeInOverlay {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @keyframes slideUp {
+        from { opacity: 0; transform: translateY(30px) scale(0.95); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .verify-card {
+        background: linear-gradient(145deg, #1e293b, #0f172a);
+        border: 1px solid rgba(99, 102, 241, 0.25);
+        border-radius: 24px;
+        padding: 40px 35px;
+        max-width: 440px;
+        width: 100%;
+        text-align: center;
+        box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5), 0 0 40px rgba(99, 102, 241, 0.1);
+        animation: slideUp 0.5s ease 0.1s both;
+    }
+
+    .verify-icon {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.2));
+        border: 2px solid rgba(99, 102, 241, 0.3);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 24px;
+    }
+
+    .verify-icon i {
+        font-size: 2rem;
+        color: #818cf8;
+    }
+
+    .verify-card h2 {
+        color: #f1f5f9;
+        font-size: 1.4rem;
+        font-weight: 800;
+        margin-bottom: 12px;
+    }
+
+    .verify-card .verify-desc {
+        color: #94a3b8;
+        font-size: 0.9rem;
+        line-height: 1.7;
+        margin-bottom: 8px;
+    }
+
+    .verify-email-highlight {
+        color: #818cf8;
+        font-weight: 700;
+        word-break: break-all;
+    }
+
+    .verify-warning {
+        background: rgba(245, 158, 11, 0.1);
+        border: 1px solid rgba(245, 158, 11, 0.2);
+        border-radius: 12px;
+        padding: 12px 16px;
+        margin: 20px 0;
+        color: #fbbf24;
+        font-size: 0.8rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .verify-warning i {
+        font-size: 1.1rem;
+        flex-shrink: 0;
+    }
+
+    .verify-timer-section {
+        margin-top: 24px;
+    }
+
+    .verify-timer-label {
+        color: #64748b;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 8px;
+    }
+
+    .verify-timer {
+        font-family: 'Courier New', monospace;
+        font-size: 1.6rem;
+        font-weight: 800;
+        color: #e2e8f0;
+        letter-spacing: 3px;
+    }
+
+    .btn-resend {
+        margin-top: 20px;
+        width: 100%;
+        padding: 14px;
+        border-radius: 14px;
+        border: none;
+        font-size: 0.9rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-resend:disabled {
+        background: rgba(71, 85, 105, 0.3);
+        color: #475569;
+        cursor: not-allowed;
+    }
+
+    .btn-resend:not(:disabled) {
+        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+        color: white;
+        box-shadow: 0 4px 15px rgba(99, 102, 241, 0.35);
+    }
+
+    .btn-resend:not(:disabled):hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(99, 102, 241, 0.45);
+    }
+
+    .verify-close-hint {
+        margin-top: 16px;
+        color: #475569;
+        font-size: 0.75rem;
+    }
+
+    @media (max-width: 768px) {
+        .verify-card {
+            padding: 30px 20px;
+            border-radius: 18px;
+        }
+        .verify-card h2 {
+            font-size: 1.2rem;
+        }
+        .verify-timer {
+            font-size: 1.3rem;
+        }
+    }
+</style>
+
+<div class="verify-overlay" id="verifyOverlay">
+    <div class="verify-card">
+        <div class="verify-icon">
+            <i class="bi bi-envelope-check-fill"></i>
+        </div>
+
+        <h2>📩 E-Posta Onayı Gerekli</h2>
+
+        <p class="verify-desc">
+            <span class="verify-email-highlight">{{ pending_email }}</span>
+            adresine bir doğrulama bağlantısı gönderildi.
+            Hesabınızı aktif etmek için lütfen e-postanızdaki bağlantıya tıklayın.
+        </p>
+
+        <div class="verify-warning">
+            <i class="bi bi-clock-history"></i>
+            <span>Gönderilen bağlantı <strong>24 saat</strong> boyunca geçerlidir. Süre dolduğunda yeni bir bağlantı talep edebilirsiniz.</span>
+        </div>
+
+        <div class="verify-timer-section">
+            <div class="verify-timer-label">Yeni bağlantı talep edebilmek için kalan süre</div>
+            <div class="verify-timer" id="verifyTimer">--:--:--</div>
+        </div>
+
+        <button class="btn-resend" id="btnResend" disabled>
+            <i class="bi bi-arrow-repeat"></i> Yeni Bağlantı Gönder
+        </button>
+
+        <div class="verify-close-hint">
+            Bu pencereyi kapatabilirsiniz. Onaylama bağlantısı mailinizde bekliyor.
+        </div>
+    </div>
+</div>
+
+<script>
+(function() {
+    // Sunucudan gelen kayıt zamanı (Unix timestamp, saniye)
+    const registeredAt = "{{ registered_at_ts|escapejs }}";
+    const INITIAL_COOLDOWN = 86400; // 24 saat (saniye)
+    const RESEND_COOLDOWN = 300; // 5 dakika (saniye)
+    const btnResend = document.getElementById('btnResend');
+    const timerEl = document.getElementById('verifyTimer');
+    let resendBlockedUntil = 0;
+
+    function setCooldown(seconds) {
+        resendBlockedUntil = Math.floor(Date.now() / 1000) + seconds;
+    }
+
+    function updateTimer() {
+        const now = Math.floor(Date.now() / 1000);
+        const initialRemaining = INITIAL_COOLDOWN - (now - registeredAt);
+        const resendRemaining = resendBlockedUntil > now ? resendBlockedUntil - now : 0;
+        const remaining = Math.max(initialRemaining, resendRemaining, 0);
+
+        if (remaining <= 0) {
+            timerEl.textContent = '00:00:00';
+            btnResend.disabled = false;
+            btnResend.innerHTML = '<i class="bi bi-arrow-repeat"></i> Yeni Bağlantı Gönder';
+        } else {
+            const hours = Math.floor(remaining / 3600);
+            const mins = Math.floor((remaining % 3600) / 60);
+            const secs = remaining % 60;
+            timerEl.textContent =
+                String(hours).padStart(2, '0') + ':' +
+                String(mins).padStart(2, '0') + ':' +
+                String(secs).padStart(2, '0');
+            btnResend.disabled = true;
+        }
+
+        requestAnimationFrame(() => setTimeout(updateTimer, 1000));
+    }
+
+    updateTimer();
+
+    // Overlay'ı kapatma (arka plana tıklama)
+    document.getElementById('verifyOverlay').addEventListener('click', function(e) {
+        if (e.target === this) {
+            this.style.animation = 'none';
+            this.style.opacity = '0';
+            this.style.transition = 'opacity 0.3s ease';
+            setTimeout(() => this.remove(), 300);
+        }
+    });
+
+    // Yeni Bağlantı Gönder butonu işlemi
+    btnResend.addEventListener('click', function() {
+        const originalHtml = this.innerHTML;
+        this.disabled = true;
+        this.innerHTML = '<i class="bi bi-arrow-repeat spin"></i> Gönderiliyor...';
+
+        const formData = new FormData();
+        formData.append('email', '{{ pending_email }}');
+
+        fetch('{% url "dogrulama_mail_gonder" %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                setCooldown(RESEND_COOLDOWN);
+                alert('✅ ' + data.mesaj);
+            } else {
+                if (data.mesaj && data.mesaj.includes('birkaç dakika')) {
+                    setCooldown(RESEND_COOLDOWN);
+                }
+                alert('❌ ' + data.mesaj);
+            }
+        })
+        .catch(err => {
+            console.error('E-posta gönderim hatası:', err);
+            alert('❌ E-posta gönderilirken bir sistem hatası oluştu.');
+        })
+        .finally(() => {
+            this.innerHTML = originalHtml;
+            updateTimer();
+        });
+    });
+})();
+</script>

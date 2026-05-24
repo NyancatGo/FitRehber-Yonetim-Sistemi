@@ -1,0 +1,130 @@
+{% if content_type == 'paylasim' %}
+    {% for icerik in content_items %}
+    <div class="content-card item-paylasim">
+        <div class="content-icon {% if icerik.tur == 'soru' %}icon-soru{% else %}icon-haber{% endif %}">
+            {% if icerik.tur == 'soru' %}
+            <i class="bi bi-question-lg"></i>
+            {% else %}
+            <i class="bi bi-newspaper"></i>
+            {% endif %}
+        </div>
+        <div class="content-body">
+            <div class="content-meta">
+                <span class="meta-badge {% if icerik.tur == 'soru' %}meta-soru{% else %}meta-haber{% endif %}">
+                    {% if icerik.tur == 'soru' %}Forum Sorusu{% else %}Haber / Blog{% endif %}
+                </span>
+                <span class="meta-date">
+                    <i class="bi bi-clock"></i> {{ icerik.tarih|date:"d M Y" }}
+                </span>
+            </div>
+            <a href="{% url 'detay' icerik.id %}" class="content-title-link">
+                {{ icerik.baslik }}
+            </a>
+            <p class="content-excerpt">
+                {{ icerik.mizanpajli_ozet|safe }}
+            </p>
+        </div>
+    </div>
+    {% empty %}
+    <div class="empty-state item-paylasim">
+        <div class="empty-icon">📭</div>
+        <h5 class="empty-title">Henüz paylaşım yok</h5>
+        <p class="empty-desc">Bu kullanıcı henüz hiç içerik paylaşmamış.</p>
+    </div>
+    {% endfor %}
+{% elif content_type == 'kaydedilen' %}
+    {% for kayit in content_items %}
+    <div class="content-card item-kaydedilen">
+        <div class="content-icon icon-kayit">
+            <i class="bi bi-bookmark-fill"></i>
+        </div>
+        <div class="content-body">
+            <div class="content-meta">
+                <span class="meta-badge" style="background: #f0f9ff; color: #0284c7;">KAYDEDİLDİ</span>
+                <span class="meta-date">
+                    <i class="bi bi-clock"></i> {{ kayit.tarih|date:"d M Y" }}
+                </span>
+            </div>
+            <a href="{% url 'detay' kayit.id %}" class="content-title-link">
+                {{ kayit.baslik }}
+            </a>
+            <p class="content-excerpt">
+                Yazar:
+                <a href="{% url 'profil' kayit.yazar.username %}" class="text-decoration-none text-dark fw-bold">
+                    {{ kayit.yazar.username }}
+                </a>
+            </p>
+        </div>
+    </div>
+    {% empty %}
+    <div class="empty-state item-kaydedilen">
+        <div class="empty-icon">🔖</div>
+        <h5 class="empty-title">Henüz kaydedilen içerik yok</h5>
+        <p class="empty-desc">Beğendiğin içerikleri daha sonra okumak için kaydedebilirsin.</p>
+    </div>
+    {% endfor %}
+{% elif content_type == 'begeni' %}
+    {% for item in content_items %}
+    {% if item.kind == 'yorum' %}
+    {% with yorum=item.obj %}
+    <div class="content-card item-begeni">
+        <div class="content-icon icon-begeni">
+            <i class="bi bi-heart-fill"></i>
+        </div>
+        <div class="content-body">
+            <div class="content-meta">
+                <span class="meta-badge" style="background: #fef2f2; color: #ef4444;">BEĞENİLEN YORUM</span>
+            </div>
+            <p class="content-excerpt fst-italic">
+                "{{ yorum.mesaj|truncatewords:20 }}"
+            </p>
+            <div class="content-stats">
+                <div class="stat-item-inline">
+                    <i class="bi bi-file-text"></i>
+                    <span>Konu: <strong>{{ yorum.icerik.baslik }}</strong></span>
+                </div>
+                <div class="stat-item-inline">
+                    <i class="bi bi-person"></i>
+                    <a href="{% url 'profil' yorum.yazar.username %}" class="text-decoration-none text-dark fw-bold">
+                        {{ yorum.yazar.username }}
+                    </a>
+                </div>
+            </div>
+            <a href="{% url 'detay' yorum.icerik.id %}" class="stretched-link"></a>
+        </div>
+    </div>
+    {% endwith %}
+    {% elif item.kind == 'icerik' %}
+    {% with icerik=item.obj %}
+    <div class="content-card item-begeni">
+        <div class="content-icon icon-begeni">
+            <i class="bi bi-heart-fill"></i>
+        </div>
+        <div class="content-body">
+            <div class="content-meta">
+                <span class="meta-badge" style="background: #fef2f2; color: #ef4444;">BEĞENİLEN İÇERİK</span>
+                <span class="meta-date">
+                    <i class="bi bi-clock"></i> {{ icerik.tarih|date:"d M Y" }}
+                </span>
+            </div>
+            <a href="{% url 'detay' icerik.id %}" class="content-title-link">
+                {{ icerik.baslik }}
+            </a>
+            <p class="content-excerpt">
+                Yazar:
+                <a href="{% url 'profil' icerik.yazar.username %}" class="text-decoration-none text-dark fw-bold">
+                    {{ icerik.yazar.username }}
+                </a>
+            </p>
+        </div>
+    </div>
+    {% endwith %}
+    {% endif %}
+    {% empty %}
+    <div class="empty-state item-begeni">
+        <div class="empty-icon">❤️</div>
+        <h5 class="empty-title">Henüz beğenilen içerik yok</h5>
+        <p class="empty-desc">İlginizi çeken içerik ve yorumları beğenerek destek olabilirsiniz.</p>
+    </div>
+    {% endfor %}
+{% endif %}

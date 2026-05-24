@@ -1,0 +1,1120 @@
+{% extends 'base.html' %}
+{% load static posts_image_tags %}
+
+{% block title %}{{ hedef_user.username }} - Admin Detay{% endblock %}
+{% block meta_robots %}noindex,nofollow{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --ad-bg: #080c14;
+        --ad-surface: #111827;
+        --ad-surface2: #1a2236;
+        --ad-border: #1f2d47;
+        --ad-text: #f1f5f9;
+        --ad-muted: #7b8ba5;
+        --ad-accent: #6366f1;
+        --ad-accent2: #818cf8;
+        --ad-danger: #ef4444;
+        --ad-warning: #f59e0b;
+        --ad-success: #10b981;
+        --ad-purple: #a78bfa;
+        --ad-blue: #60a5fa;
+        --ad-pink: #f472b6;
+    }
+
+    html, body {
+        overflow-x: hidden;
+        position: relative;
+        max-width: 100vw;
+    }
+
+    body { background: var(--ad-bg) !important; }
+    .navbar { border-bottom: 1px solid var(--ad-border) !important; }
+
+    .admin-detail {
+        padding: 30px 0 80px;
+        min-height: 100vh;
+    }
+
+    /* ═══════ BACK BUTTON ═══════ */
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--ad-muted);
+        text-decoration: none;
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-bottom: 24px;
+        padding: 8px 16px;
+        border-radius: 10px;
+        border: 1px solid var(--ad-border);
+        background: var(--ad-surface);
+        transition: all 0.25s;
+    }
+    .back-link:hover {
+        color: var(--ad-accent);
+        border-color: var(--ad-accent);
+        background: rgba(99,102,241,0.08);
+        transform: translateX(-3px);
+    }
+
+    /* ═══════ USER HERO HEADER ═══════ */
+    .user-hero {
+        background: var(--ad-surface);
+        border: 1px solid var(--ad-border);
+        border-radius: 24px;
+        overflow: hidden;
+        margin-bottom: 24px;
+        position: relative;
+    }
+    .user-hero-banner {
+        height: 120px;
+        background: linear-gradient(135deg, #312e81 0%, #4f46e5 30%, #7c3aed 60%, #2563eb 100%);
+        position: relative;
+    }
+    .user-hero-banner::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .user-hero-body {
+        padding: 0 30px 28px;
+        position: relative;
+    }
+    .user-hero-avatar-wrapper {
+        margin-top: -45px;
+        margin-bottom: 14px;
+        position: relative;
+        display: inline-block;
+    }
+    .user-hero-avatar {
+        width: 90px;
+        height: 90px;
+        border-radius: 22px;
+        background: linear-gradient(135deg, var(--ad-accent), #a78bfa);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 900;
+        color: white;
+        font-size: 2.2rem;
+        border: 4px solid var(--ad-surface);
+        box-shadow: 0 12px 40px rgba(99,102,241,0.35);
+    }
+    .user-hero-status-dot {
+        position: absolute;
+        bottom: 4px;
+        right: 4px;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        border: 3px solid var(--ad-surface);
+    }
+    .user-hero-status-dot.normal { background: var(--ad-success); }
+    .user-hero-status-dot.banli { background: var(--ad-danger); }
+    .user-hero-status-dot.susturulmus { background: var(--ad-warning); }
+    .user-hero-status-dot.pasif { background: #94a3b8; }
+
+    .user-hero-info {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+    .user-hero-info h2 {
+        color: var(--ad-text);
+        font-weight: 900;
+        margin: 0 0 2px;
+        font-size: 1.6rem;
+        letter-spacing: -0.5px;
+    }
+    .user-hero-email {
+        color: var(--ad-muted);
+        font-size: 0.9rem;
+        margin-bottom: 10px;
+    }
+    .user-hero-chips {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+    .hero-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 14px;
+        border-radius: 50px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.3px;
+    }
+    .hero-chip.normal { background: rgba(16,185,129,0.12); color: #34d399; border: 1px solid rgba(16,185,129,0.2); }
+    .hero-chip.banli { background: rgba(239,68,68,0.12); color: #f87171; border: 1px solid rgba(239,68,68,0.2); }
+    .hero-chip.susturulmus { background: rgba(245,158,11,0.12); color: #fbbf24; border: 1px solid rgba(245,158,11,0.2); }
+    .hero-chip.pasif { background: rgba(148,163,184,0.15); color: #cbd5e1; border: 1px solid rgba(148,163,184,0.25); }
+    .hero-chip.info { background: rgba(148,163,184,0.08); color: var(--ad-muted); border: 1px solid var(--ad-border); }
+
+    .hero-actions {
+        display: flex;
+        gap: 8px;
+        align-self: flex-start;
+    }
+    .hero-action-btn {
+        padding: 10px 20px;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 0.82rem;
+        text-decoration: none;
+        transition: all 0.25s;
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+    }
+    .hero-action-btn.primary {
+        background: linear-gradient(135deg, var(--ad-accent), #8b5cf6);
+        color: white;
+        box-shadow: 0 4px 20px rgba(99,102,241,0.3);
+    }
+    .hero-action-btn.primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 30px rgba(99,102,241,0.4);
+        color: white;
+    }
+
+    /* ═══════ STATS GRID ═══════ */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 14px;
+        margin-bottom: 28px;
+    }
+    .stat-tile {
+        background: var(--ad-surface);
+        border: 1px solid var(--ad-border);
+        border-radius: 18px;
+        padding: 20px 16px;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s;
+    }
+    .stat-tile:hover {
+        transform: translateY(-3px);
+        border-color: rgba(99,102,241,0.3);
+        box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+    }
+    .stat-tile::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 3px;
+    }
+    .stat-tile:nth-child(1)::before { background: linear-gradient(90deg, #6366f1, #818cf8); }
+    .stat-tile:nth-child(2)::before { background: linear-gradient(90deg, #10b981, #34d399); }
+    .stat-tile:nth-child(3)::before { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+    .stat-tile:nth-child(4)::before { background: linear-gradient(90deg, #ef4444, #f87171); }
+    .stat-tile:nth-child(5)::before { background: linear-gradient(90deg, #ec4899, #f472b6); }
+    .stat-tile:nth-child(6)::before { background: linear-gradient(90deg, #8b5cf6, #a78bfa); }
+    .stat-tile-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 10px;
+        font-size: 1rem;
+    }
+    .stat-tile:nth-child(1) .stat-tile-icon { background: rgba(99,102,241,0.12); color: var(--ad-accent2); }
+    .stat-tile:nth-child(2) .stat-tile-icon { background: rgba(16,185,129,0.12); color: #34d399; }
+    .stat-tile:nth-child(3) .stat-tile-icon { background: rgba(245,158,11,0.12); color: #fbbf24; }
+    .stat-tile:nth-child(4) .stat-tile-icon { background: rgba(239,68,68,0.12); color: #f87171; }
+    .stat-tile:nth-child(5) .stat-tile-icon { background: rgba(236,72,153,0.12); color: #f472b6; }
+    .stat-tile:nth-child(6) .stat-tile-icon { background: rgba(139,92,246,0.12); color: #a78bfa; }
+    .stat-tile-value {
+        font-size: 1.6rem;
+        font-weight: 900;
+        color: var(--ad-text);
+        line-height: 1;
+    }
+    .stat-tile-label {
+        font-size: 0.68rem;
+        font-weight: 700;
+        color: var(--ad-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        margin-top: 6px;
+    }
+
+    /* ═══════ SECTION CARD ═══════ */
+    .section-card {
+        background: var(--ad-surface);
+        border: 1px solid var(--ad-border);
+        border-radius: 20px;
+        margin-bottom: 20px;
+        overflow: hidden;
+    }
+    .section-header {
+        padding: 18px 24px;
+        border-bottom: 1px solid var(--ad-border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: rgba(17,24,39,0.5);
+    }
+    .section-title {
+        font-weight: 800;
+        color: var(--ad-text);
+        font-size: 0.92rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .section-title i { font-size: 1rem; opacity: 0.7; }
+    .section-badge {
+        background: rgba(99,102,241,0.12);
+        color: var(--ad-accent2);
+        padding: 4px 12px;
+        border-radius: 50px;
+        font-size: 0.72rem;
+        font-weight: 800;
+        border: 1px solid rgba(99,102,241,0.2);
+    }
+    .section-body {
+        padding: 0;
+    }
+    .section-body.scrollable {
+        max-height: 550px;
+        overflow: auto;
+    }
+    
+    @media (max-width: 768px) {
+        .section-body {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        .item-card {
+            min-width: 300px;
+        }
+    }
+    .section-body::-webkit-scrollbar { width: 5px; }
+    .section-body::-webkit-scrollbar-track { background: transparent; }
+    .section-body::-webkit-scrollbar-thumb { background: #2d3a52; border-radius: 10px; }
+
+    /* ═══════ CLICKABLE ITEM CARDS ═══════ */
+    .item-card {
+        display: block;
+        padding: 16px 24px;
+        border-bottom: 1px solid rgba(31,45,71,0.6);
+        text-decoration: none;
+        transition: all 0.2s;
+        position: relative;
+    }
+    .item-card:last-child { border-bottom: none; }
+    .item-card:hover {
+        background: rgba(99,102,241,0.04);
+        padding-left: 28px;
+    }
+    .item-card:hover .item-arrow { opacity: 1; transform: translateX(0); }
+    .item-card:hover .item-title { color: var(--ad-accent2); }
+    .item-title {
+        font-weight: 700;
+        color: var(--ad-text);
+        font-size: 0.88rem;
+        margin-bottom: 4px;
+        transition: color 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .item-type-badge {
+        font-size: 0.6rem;
+        padding: 2px 8px;
+        border-radius: 5px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .item-type-badge.blog { background: rgba(99,102,241,0.15); color: var(--ad-accent2); }
+    .item-type-badge.soru { background: rgba(245,158,11,0.15); color: #fbbf24; }
+    .item-type-badge.haber { background: rgba(16,185,129,0.15); color: #34d399; }
+    .item-body {
+        font-size: 0.8rem;
+        color: #8896ad;
+        margin: 5px 0;
+        line-height: 1.5;
+    }
+    .item-meta {
+        font-size: 0.73rem;
+        color: var(--ad-muted);
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+        margin-top: 6px;
+    }
+    .item-meta span {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+    .item-arrow {
+        position: absolute;
+        right: 20px;
+        top: 50%;
+        transform: translateX(-8px) translateY(-50%);
+        opacity: 0;
+        color: var(--ad-accent);
+        font-size: 0.9rem;
+        transition: all 0.25s;
+    }
+
+    /* ═══════ SHOW MORE BUTTON ═══════ */
+    .show-more-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        width: 100%;
+        padding: 14px;
+        border: none;
+        border-top: 1px solid var(--ad-border);
+        background: rgba(99,102,241,0.04);
+        color: var(--ad-accent2);
+        font-size: 0.82rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .show-more-btn:hover {
+        background: rgba(99,102,241,0.1);
+        color: white;
+    }
+
+    /* ═══════ DETAIL MODAL ═══════ */
+    .detail-modal-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 30px;
+    }
+    .detail-modal-overlay.active { display: flex; }
+    .detail-modal-backdrop {
+        position: absolute;
+        inset: 0;
+        background: rgba(0,0,0,0.6);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+    }
+    .detail-modal-content {
+        position: relative;
+        z-index: 2;
+        width: 100%;
+        max-width: 620px;
+        max-height: 80vh;
+        background: var(--ad-surface);
+        border: 1px solid var(--ad-border);
+        border-radius: 24px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 25px 60px rgba(0,0,0,0.5);
+        animation: modalIn 0.25s ease-out;
+    }
+    @keyframes modalIn {
+        from { opacity: 0; transform: scale(0.95) translateY(10px); }
+        to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .detail-modal-header {
+        padding: 20px 24px;
+        border-bottom: 1px solid var(--ad-border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: rgba(17,24,39,0.6);
+        flex-shrink: 0;
+    }
+    .detail-modal-header h4 {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 800;
+        color: var(--ad-text);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .detail-modal-close {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        border: 1px solid var(--ad-border);
+        background: var(--ad-bg);
+        color: var(--ad-muted);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 1rem;
+    }
+    .detail-modal-close:hover {
+        color: var(--ad-danger);
+        border-color: var(--ad-danger);
+        background: rgba(239,68,68,0.1);
+    }
+    .detail-modal-body {
+        overflow-y: auto;
+        flex: 1;
+    }
+    .detail-modal-body::-webkit-scrollbar { width: 5px; }
+    .detail-modal-body::-webkit-scrollbar-track { background: transparent; }
+    .detail-modal-body::-webkit-scrollbar-thumb { background: #2d3a52; border-radius: 10px; }
+
+    /* ═══════ HEATMAP ═══════ */
+    .heatmap-container { padding: 22px 24px 8px; }
+    .heatmap-grid {
+        display: flex;
+        gap: 5px;
+        flex-wrap: wrap;
+    }
+    .heatmap-cell {
+        width: 26px;
+        height: 26px;
+        border-radius: 6px;
+        position: relative;
+        cursor: default;
+        transition: transform 0.15s;
+    }
+    .heatmap-cell:hover { transform: scale(1.3); z-index: 5; }
+    .heatmap-cell.level-0 { background: rgba(31,45,71,0.5); }
+    .heatmap-cell.level-1 { background: rgba(99,102,241,0.2); box-shadow: inset 0 0 0 1px rgba(99,102,241,0.3); }
+    .heatmap-cell.level-2 { background: rgba(99,102,241,0.4); box-shadow: inset 0 0 0 1px rgba(99,102,241,0.4); }
+    .heatmap-cell.level-3 { background: rgba(99,102,241,0.6); box-shadow: 0 0 8px rgba(99,102,241,0.2); }
+    .heatmap-cell.level-4 { background: var(--ad-accent); box-shadow: 0 0 12px rgba(99,102,241,0.35); }
+    .heatmap-cell::after {
+        content: attr(data-tip);
+        position: absolute;
+        bottom: calc(100% + 8px);
+        left: 50%;
+        transform: translateX(-50%);
+        background: #0c1222;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 8px;
+        font-size: 0.65rem;
+        white-space: nowrap;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.15s;
+        z-index: 20;
+        border: 1px solid var(--ad-border);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    }
+    .heatmap-cell:hover::after { opacity: 1; }
+    .heatmap-legend {
+        padding: 12px 24px 18px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 0.7rem;
+        color: var(--ad-muted);
+    }
+    .heatmap-legend-colors { display: flex; gap: 3px; }
+    .legend-sq { width: 12px; height: 12px; border-radius: 3px; }
+
+    /* ═══════ TIMELINE ═══════ */
+    .timeline-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+        padding: 14px 24px;
+        border-bottom: 1px solid rgba(31,45,71,0.5);
+        text-decoration: none;
+        transition: background 0.15s;
+    }
+    a.timeline-item:hover {
+        background: rgba(99,102,241,0.04);
+    }
+    a.timeline-item:hover .timeline-text { color: var(--ad-accent2); }
+    .timeline-item:last-child { border-bottom: none; }
+    .timeline-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.85rem;
+        flex-shrink: 0;
+    }
+    .timeline-icon.icerik { background: rgba(96,165,250,0.12); color: var(--ad-blue); }
+    .timeline-icon.yorum { background: rgba(16,185,129,0.12); color: #34d399; }
+    .timeline-icon.begeni { background: rgba(244,114,182,0.12); color: var(--ad-pink); }
+    .timeline-icon.kayit { background: rgba(245,158,11,0.12); color: #fbbf24; }
+    .timeline-icon.rozet { background: rgba(167,139,250,0.12); color: var(--ad-purple); }
+    .timeline-text {
+        font-size: 0.82rem;
+        color: var(--ad-text);
+        font-weight: 600;
+        transition: color 0.2s;
+    }
+    .timeline-time {
+        font-size: 0.7rem;
+        color: var(--ad-muted);
+        margin-top: 3px;
+    }
+    .timeline-target {
+        font-size: 0.72rem;
+        color: var(--ad-accent2);
+        margin-top: 2px;
+        opacity: 0.7;
+    }
+    .timeline-item.disabled-link {
+        pointer-events: none;
+        opacity: 0.6;
+        cursor: default;
+    }
+
+
+    /* ═══════ EMPTY ═══════ */
+    .empty-section {
+        padding: 35px;
+        text-align: center;
+        color: var(--ad-muted);
+        font-size: 0.82rem;
+    }
+    .empty-section i {
+        font-size: 2rem;
+        display: block;
+        margin-bottom: 10px;
+        opacity: 0.25;
+    }
+
+    /* ═══════ RESPONSIVE ═══════ */
+    @media (max-width: 1200px) { .stats-grid { grid-template-columns: repeat(3, 1fr); } }
+    @media (max-width: 768px) {
+        .stats-grid { grid-template-columns: repeat(2, 1fr); }
+        .user-hero-info { flex-direction: column; text-align: center; align-items: center; }
+        .user-hero-avatar-wrapper { margin-top: -30px; }
+        .hero-actions { width: 100%; margin-top: 10px; }
+        .hero-actions .hero-action-btn { flex: 1; justify-content: center; }
+        .user-hero-body { padding: 0 20px 24px; }
+        .detail-modal-overlay { padding: 15px; }
+        .user-hero-chips { justify-content: center; }
+        .heatmap-container { overflow-x: auto; padding-bottom: 15px; }
+        .heatmap-grid { min-width: 320px; }
+    }
+    @media (max-width: 576px) {
+        .stats-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+        .stat-tile { padding: 16px 12px; }
+        .stat-tile-value { font-size: 1.3rem; }
+        .stat-tile-label { font-size: 0.6rem; }
+        .user-hero-banner { height: 100px; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-detail">
+    <div class="container">
+
+        <!-- BACK -->
+        <a href="{% url 'admin_monitor' %}" class="back-link">
+            <i class="bi bi-arrow-left"></i> Yönetim Paneline Dön
+        </a>
+
+        <!-- ═══════ USER HERO ═══════ -->
+        <div class="user-hero">
+            <div class="user-hero-banner"></div>
+            <div class="user-hero-body">
+                <div class="user-hero-avatar-wrapper">
+                    {% with hero_avatar=hedef_user|avatar_url %}
+                    <div class="user-hero-avatar" style="overflow: hidden;">
+                        {% if hero_avatar %}
+                        <img src="{{ hero_avatar }}" alt="{{ hedef_user.username }}" style="width: 100%; height: 100%; object-fit: cover; display: block;">
+                        {% else %}
+                        {{ hedef_user.username|make_list|first|upper }}
+                        {% endif %}
+                    </div>
+                    {% endwith %}
+                    <div class="user-hero-status-dot {{ durum }}"></div>
+                </div>
+                <div class="user-hero-info">
+                    <div>
+                        <h2>{{ hedef_user.username }}</h2>
+                        <div class="user-hero-email">{{ hedef_user.email|default:"E-posta adresi yok" }}</div>
+                        <div class="user-hero-chips">
+                            <span class="hero-chip {{ durum }}">
+                                <i class="bi bi-circle-fill" style="font-size: 0.45rem;"></i>
+                                {{ durum_text }}
+                            </span>
+                            <span class="hero-chip info">
+                                <i class="bi bi-calendar3"></i>
+                                Katılım: {{ hedef_user.date_joined|date:"d.m.Y" }}
+                            </span>
+                            {% if hedef_user.last_login %}
+                            <span class="hero-chip info">
+                                <i class="bi bi-clock-history"></i>
+                                Son giriş: {{ hedef_user.last_login|safe_timesince }} önce
+                            </span>
+                            {% endif %}
+                            {% if hedef_user.profil.timeout_until and durum == 'susturulmus' %}
+                            <span class="hero-chip susturulmus">
+                                <i class="bi bi-hourglass-split"></i>
+                                Bitiş: {{ hedef_user.profil.timeout_until|date:"d.m.Y H:i" }}
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="hero-actions">
+                        <a href="{% url 'profil' hedef_user.username %}" class="hero-action-btn primary">
+                            <i class="bi bi-person-circle"></i> Profili Gör
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════ STATS ═══════ -->
+        <div class="stats-grid">
+            <div class="stat-tile">
+                <div class="stat-tile-icon"><i class="bi bi-file-earmark-text-fill"></i></div>
+                <div class="stat-tile-value">{{ toplam_icerik }}</div>
+                <div class="stat-tile-label">İçerik</div>
+            </div>
+            <div class="stat-tile">
+                <div class="stat-tile-icon"><i class="bi bi-chat-dots-fill"></i></div>
+                <div class="stat-tile-value">{{ toplam_yorum }}</div>
+                <div class="stat-tile-label">Yorum</div>
+            </div>
+            <div class="stat-tile">
+                <div class="stat-tile-icon"><i class="bi bi-bookmark-fill"></i></div>
+                <div class="stat-tile-value">{{ toplam_kayit }}</div>
+                <div class="stat-tile-label">Kaydedilen</div>
+            </div>
+            <div class="stat-tile">
+                <div class="stat-tile-icon"><i class="bi bi-heart-fill"></i></div>
+                <div class="stat-tile-value">{{ toplam_begeni_yapilan }}</div>
+                <div class="stat-tile-label">Beğeni Yaptığı</div>
+            </div>
+            <div class="stat-tile">
+                <div class="stat-tile-icon"><i class="bi bi-hearts"></i></div>
+                <div class="stat-tile-value">{{ alinan_begeni }}</div>
+                <div class="stat-tile-label">Aldığı Beğeni</div>
+            </div>
+            <div class="stat-tile">
+                <div class="stat-tile-icon"><i class="bi bi-lightning-charge-fill"></i></div>
+                <div class="stat-tile-value">{{ gunluk_ortalama }}<span style="font-size: 0.65rem; color: var(--ad-muted); font-weight: 600;"> dk</span></div>
+                <div class="stat-tile-label">Gün. Ortalama</div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <!-- ═══════ LEFT COLUMN ═══════ -->
+            <div class="col-lg-8">
+
+                <!-- AKTİVİTE HARİTASI -->
+                <div class="section-card">
+                    <div class="section-header">
+                        <div class="section-title"><i class="bi bi-grid-3x3-gap-fill"></i> Aktivite Haritası</div>
+                        <span class="section-badge">Son 30 Gün</span>
+                    </div>
+                    <div class="heatmap-container">
+                        <div class="heatmap-grid">
+                            {% for gun in gunluk_veriler %}
+                            <div class="heatmap-cell {% if gun.sure == 0 %}level-0{% elif gun.sure <= 10 %}level-1{% elif gun.sure <= 30 %}level-2{% elif gun.sure <= 60 %}level-3{% else %}level-4{% endif %}"
+                                 data-tip="{{ gun.tarih }} — {{ gun.sure }} dakika"></div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="heatmap-legend">
+                        <span>Az</span>
+                        <div class="heatmap-legend-colors">
+                            <div class="legend-sq" style="background: rgba(31,45,71,0.5);"></div>
+                            <div class="legend-sq" style="background: rgba(99,102,241,0.2);"></div>
+                            <div class="legend-sq" style="background: rgba(99,102,241,0.4);"></div>
+                            <div class="legend-sq" style="background: rgba(99,102,241,0.6);"></div>
+                            <div class="legend-sq" style="background: var(--ad-accent);"></div>
+                        </div>
+                        <span>Çok</span>
+                    </div>
+                </div>
+
+                <!-- ═══════ İÇERİKLER (İlk 5 + Modal) ═══════ -->
+                <div class="section-card">
+                    <div class="section-header">
+                        <div class="section-title"><i class="bi bi-file-earmark-text-fill"></i> Paylaşımları</div>
+                        <span class="section-badge">{{ toplam_icerik }}</span>
+                    </div>
+                    <div class="section-body">
+                        {% for icerik in icerikler %}
+                            {% if forloop.counter <= 5 %}
+                            <a href="{% url 'detay' icerik.id %}" class="item-card">
+                                <div class="item-title">
+                                    {{ icerik.baslik }}
+                                    <span class="item-type-badge {{ icerik.tur }}">{{ icerik.get_tur_display }}</span>
+                                </div>
+                                <div class="item-meta">
+                                    <span><i class="bi bi-tag-fill"></i> {{ icerik.kategori.isim|default:"—" }}</span>
+                                    <span><i class="bi bi-chat-dots-fill"></i> {{ icerik.yorumlar.count }} yorum</span>
+                                    <span><i class="bi bi-bookmark-fill"></i> {{ icerik.kaydedenler.count }} kayıt</span>
+                                    <span><i class="bi bi-clock-fill"></i> {{ icerik.tarih|date:"d.m.Y H:i" }}</span>
+                                </div>
+                                <i class="bi bi-arrow-right item-arrow"></i>
+                            </a>
+                            {% endif %}
+                        {% empty %}
+                        <div class="empty-section">
+                            <i class="bi bi-file-earmark-x"></i>
+                            Henüz içerik paylaşılmamış.
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% if toplam_icerik > 5 %}
+                    <button class="show-more-btn" onclick="openDetailModal('iceriklerModal')">
+                        <i class="bi bi-grid-3x3"></i> Tümünü Göster ({{ toplam_icerik }})
+                    </button>
+                    {% endif %}
+                </div>
+
+                <!-- ═══════ YORUMLAR (İlk 5 + Modal) ═══════ -->
+                <div class="section-card">
+                    <div class="section-header">
+                        <div class="section-title"><i class="bi bi-chat-left-text-fill"></i> Yorumları</div>
+                        <span class="section-badge">{{ toplam_yorum }}</span>
+                    </div>
+                    <div class="section-body">
+                        {% for yorum in yorumlar %}
+                            {% if forloop.counter <= 5 %}
+                            <a href="{% url 'detay' yorum.icerik.id %}#comment-{{ yorum.id }}" class="item-card">
+                                <div class="item-title">
+                                    <i class="bi bi-reply-fill" style="color: var(--ad-muted); font-size: 0.8rem;"></i>
+                                    {{ yorum.icerik.baslik }}
+                                </div>
+                                <div class="item-body">{{ yorum.mesaj|truncatewords:35 }}</div>
+                                <div class="item-meta">
+                                    <span><i class="bi bi-heart-fill"></i> {{ yorum.begenenler.count }} beğeni</span>
+                                    {% if yorum.parent %}<span><i class="bi bi-arrow-return-right"></i> Yanıt</span>{% endif %}
+                                    <span><i class="bi bi-clock-fill"></i> {{ yorum.tarih|date:"d.m.Y H:i" }}</span>
+                                </div>
+                                <i class="bi bi-arrow-right item-arrow"></i>
+                            </a>
+                            {% endif %}
+                        {% empty %}
+                        <div class="empty-section">
+                            <i class="bi bi-chat-left-dots"></i>
+                            Henüz yorum yapılmamış.
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% if toplam_yorum > 5 %}
+                    <button class="show-more-btn" onclick="openDetailModal('yorumlarModal')">
+                        <i class="bi bi-grid-3x3"></i> Tümünü Göster ({{ toplam_yorum }})
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- ═══════ RIGHT COLUMN ═══════ -->
+            <div class="col-lg-4">
+
+
+                <!-- ═══════ AKTİVİTE AKIŞI (İlk 5 + Modal) ═══════ -->
+                <div class="section-card">
+                    <div class="section-header">
+                        <div class="section-title"><i class="bi bi-activity"></i> Son Aktiviteler</div>
+                        <span class="section-badge">{{ son_aktiviteler|length }}</span>
+                    </div>
+                    <div class="section-body">
+                        {% for akt in son_aktiviteler %}
+                            {% if forloop.counter <= 5 %}
+                            <a href="{% if akt.icerik %}{% url 'detay' akt.icerik.id %}{% if akt.yorum %}#comment-{{ akt.yorum.id }}{% endif %}{% else %}#{% endif %}" class="timeline-item {% if not akt.icerik %}disabled-link{% endif %}">
+                                <div class="timeline-icon {{ akt.tur }}">
+                                    {% if akt.tur == 'icerik' %}<i class="bi bi-file-earmark-plus-fill"></i>
+                                    {% elif akt.tur == 'yorum' %}<i class="bi bi-chat-dots-fill"></i>
+                                    {% elif akt.tur == 'begeni' %}<i class="bi bi-heart-fill"></i>
+                                    {% elif akt.tur == 'kayit' %}<i class="bi bi-bookmark-fill"></i>
+                                    {% elif akt.tur == 'rozet' %}<i class="bi bi-trophy-fill"></i>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <div class="timeline-text">{{ akt.detay }}</div>
+                                    {% if akt.icerik %}<div class="timeline-target">{{ akt.icerik.baslik|truncatewords:8 }}</div>{% endif %}
+                                    <div class="timeline-time">{{ akt.tarih|safe_timesince }} önce</div>
+                                </div>
+                            </a>
+                            {% endif %}
+                        {% empty %}
+                        <div class="empty-section">
+                            <i class="bi bi-activity"></i>
+                            Henüz aktivite yok.
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% if son_aktiviteler|length > 5 %}
+                    <button class="show-more-btn" onclick="openDetailModal('aktivitelerModal')">
+                        <i class="bi bi-grid-3x3"></i> Tümünü Göster ({{ son_aktiviteler|length }})
+                    </button>
+                    {% endif %}
+                </div>
+
+                <!-- ═══════ KAYDEDİLENLER (İlk 5 + Modal) ═══════ -->
+                <div class="section-card">
+                    <div class="section-header">
+                        <div class="section-title"><i class="bi bi-bookmark-fill"></i> Kaydettikleri</div>
+                        <span class="section-badge">{{ toplam_kayit }}</span>
+                    </div>
+                    <div class="section-body">
+                        {% for kayit in kaydedilenler %}
+                            {% if forloop.counter <= 5 %}
+                            <a href="{% url 'detay' kayit.id %}" class="item-card">
+                                <div class="item-title">{{ kayit.baslik }}</div>
+                                <div class="item-meta">
+                                    <span><i class="bi bi-person-fill"></i> {{ kayit.yazar.username }}</span>
+                                    <span><i class="bi bi-tag-fill"></i> {{ kayit.kategori.isim|default:"—" }}</span>
+                                    <span><i class="bi bi-clock-fill"></i> {{ kayit.tarih|date:"d.m.Y" }}</span>
+                                </div>
+                                <i class="bi bi-arrow-right item-arrow"></i>
+                            </a>
+                            {% endif %}
+                        {% empty %}
+                        <div class="empty-section">
+                            <i class="bi bi-bookmark"></i>
+                            Kaydedilen içerik yok.
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% if toplam_kayit > 5 %}
+                    <button class="show-more-btn" onclick="openDetailModal('kaydedilenlerModal')">
+                        <i class="bi bi-grid-3x3"></i> Tümünü Göster ({{ toplam_kayit }})
+                    </button>
+                    {% endif %}
+                </div>
+
+                <!-- ═══════ BEĞENDİKLERİ (İlk 5 + Modal) ═══════ -->
+                <div class="section-card">
+                    <div class="section-header">
+                        <div class="section-title"><i class="bi bi-heart-fill"></i> Beğendikleri</div>
+                        <span class="section-badge">{{ toplam_begeni_yapilan }}</span>
+                    </div>
+                    <div class="section-body">
+                        {% for yorum in begenilenler %}
+                            {% if forloop.counter <= 5 %}
+                            <a href="{% url 'detay' yorum.icerik.id %}#comment-{{ yorum.id }}" class="item-card">
+                                <div class="item-title">{{ yorum.icerik.baslik }}</div>
+                                <div class="item-body">{{ yorum.mesaj|truncatewords:18 }}</div>
+                                <div class="item-meta">
+                                    <span><i class="bi bi-person-fill"></i> {{ yorum.yazar.username }}</span>
+                                    <span><i class="bi bi-clock-fill"></i> {{ yorum.tarih|date:"d.m.Y" }}</span>
+                                </div>
+                                <i class="bi bi-arrow-right item-arrow"></i>
+                            </a>
+                            {% endif %}
+                        {% empty %}
+                        <div class="empty-section">
+                            <i class="bi bi-heart"></i>
+                            Beğenilen yorum yok.
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% if toplam_begeni_yapilan > 5 %}
+                    <button class="show-more-btn" onclick="openDetailModal('begenilenlerModal')">
+                        <i class="bi bi-grid-3x3"></i> Tümünü Göster ({{ toplam_begeni_yapilan }})
+                    </button>
+                    {% endif %}
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!--          MODALS - Tüm İçerikleri Gösteren Pencereler  -->
+<!-- ═══════════════════════════════════════════════════════ -->
+
+<!-- İÇERİKLER MODAL -->
+<div class="detail-modal-overlay" id="iceriklerModal">
+    <div class="detail-modal-backdrop" onclick="closeDetailModal('iceriklerModal')"></div>
+    <div class="detail-modal-content">
+        <div class="detail-modal-header">
+            <h4><i class="bi bi-file-earmark-text-fill"></i> Tüm Paylaşımlar</h4>
+            <button class="detail-modal-close" onclick="closeDetailModal('iceriklerModal')"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div class="detail-modal-body">
+            {% for icerik in icerikler %}
+            <a href="{% url 'detay' icerik.id %}" class="item-card">
+                <div class="item-title">
+                    {{ icerik.baslik }}
+                    <span class="item-type-badge {{ icerik.tur }}">{{ icerik.get_tur_display }}</span>
+                </div>
+                <div class="item-meta">
+                    <span><i class="bi bi-tag-fill"></i> {{ icerik.kategori.isim|default:"—" }}</span>
+                    <span><i class="bi bi-chat-dots-fill"></i> {{ icerik.yorumlar.count }} yorum</span>
+                    <span><i class="bi bi-bookmark-fill"></i> {{ icerik.kaydedenler.count }} kayıt</span>
+                    <span><i class="bi bi-clock-fill"></i> {{ icerik.tarih|date:"d.m.Y H:i" }}</span>
+                </div>
+                <i class="bi bi-arrow-right item-arrow"></i>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- YORUMLAR MODAL -->
+<div class="detail-modal-overlay" id="yorumlarModal">
+    <div class="detail-modal-backdrop" onclick="closeDetailModal('yorumlarModal')"></div>
+    <div class="detail-modal-content">
+        <div class="detail-modal-header">
+            <h4><i class="bi bi-chat-left-text-fill"></i> Tüm Yorumlar</h4>
+            <button class="detail-modal-close" onclick="closeDetailModal('yorumlarModal')"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div class="detail-modal-body">
+            {% for yorum in yorumlar %}
+            <a href="{% url 'detay' yorum.icerik.id %}#comment-{{ yorum.id }}" class="item-card">
+                <div class="item-title">
+                    <i class="bi bi-reply-fill" style="color: var(--ad-muted); font-size: 0.8rem;"></i>
+                    {{ yorum.icerik.baslik }}
+                </div>
+                <div class="item-body">{{ yorum.mesaj|truncatewords:35 }}</div>
+                <div class="item-meta">
+                    <span><i class="bi bi-heart-fill"></i> {{ yorum.begenenler.count }} beğeni</span>
+                    {% if yorum.parent %}<span><i class="bi bi-arrow-return-right"></i> Yanıt</span>{% endif %}
+                    <span><i class="bi bi-clock-fill"></i> {{ yorum.tarih|date:"d.m.Y H:i" }}</span>
+                </div>
+                <i class="bi bi-arrow-right item-arrow"></i>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- KAYDEDİLENLER MODAL -->
+<div class="detail-modal-overlay" id="kaydedilenlerModal">
+    <div class="detail-modal-backdrop" onclick="closeDetailModal('kaydedilenlerModal')"></div>
+    <div class="detail-modal-content">
+        <div class="detail-modal-header">
+            <h4><i class="bi bi-bookmark-fill"></i> Tüm Kaydedilenler</h4>
+            <button class="detail-modal-close" onclick="closeDetailModal('kaydedilenlerModal')"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div class="detail-modal-body">
+            {% for kayit in kaydedilenler %}
+            <a href="{% url 'detay' kayit.id %}" class="item-card">
+                <div class="item-title">{{ kayit.baslik }}</div>
+                <div class="item-meta">
+                    <span><i class="bi bi-person-fill"></i> {{ kayit.yazar.username }}</span>
+                    <span><i class="bi bi-tag-fill"></i> {{ kayit.kategori.isim|default:"—" }}</span>
+                    <span><i class="bi bi-clock-fill"></i> {{ kayit.tarih|date:"d.m.Y" }}</span>
+                </div>
+                <i class="bi bi-arrow-right item-arrow"></i>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- BEĞENİLENLER MODAL -->
+<div class="detail-modal-overlay" id="begenilenlerModal">
+    <div class="detail-modal-backdrop" onclick="closeDetailModal('begenilenlerModal')"></div>
+    <div class="detail-modal-content">
+        <div class="detail-modal-header">
+            <h4><i class="bi bi-heart-fill"></i> Tüm Beğenilenler</h4>
+            <button class="detail-modal-close" onclick="closeDetailModal('begenilenlerModal')"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div class="detail-modal-body">
+            {% for yorum in begenilenler %}
+            <a href="{% url 'detay' yorum.icerik.id %}#comment-{{ yorum.id }}" class="item-card">
+                <div class="item-title">{{ yorum.icerik.baslik }}</div>
+                <div class="item-body">{{ yorum.mesaj|truncatewords:20 }}</div>
+                <div class="item-meta">
+                    <span><i class="bi bi-person-fill"></i> {{ yorum.yazar.username }}</span>
+                    <span><i class="bi bi-clock-fill"></i> {{ yorum.tarih|date:"d.m.Y" }}</span>
+                </div>
+                <i class="bi bi-arrow-right item-arrow"></i>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- AKTİVİTELER MODAL -->
+<div class="detail-modal-overlay" id="aktivitelerModal">
+    <div class="detail-modal-backdrop" onclick="closeDetailModal('aktivitelerModal')"></div>
+    <div class="detail-modal-content">
+        <div class="detail-modal-header">
+            <h4><i class="bi bi-activity"></i> Tüm Aktiviteler</h4>
+            <button class="detail-modal-close" onclick="closeDetailModal('aktivitelerModal')"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div class="detail-modal-body">
+            {% for akt in son_aktiviteler %}
+            <a href="{% if akt.icerik %}{% url 'detay' akt.icerik.id %}{% if akt.yorum %}#comment-{{ akt.yorum.id }}{% endif %}{% else %}#{% endif %}" class="timeline-item {% if not akt.icerik %}disabled-link{% endif %}">
+                <div class="timeline-icon {{ akt.tur }}">
+                    {% if akt.tur == 'icerik' %}<i class="bi bi-file-earmark-plus-fill"></i>
+                    {% elif akt.tur == 'yorum' %}<i class="bi bi-chat-dots-fill"></i>
+                    {% elif akt.tur == 'begeni' %}<i class="bi bi-heart-fill"></i>
+                    {% elif akt.tur == 'kayit' %}<i class="bi bi-bookmark-fill"></i>
+                    {% elif akt.tur == 'rozet' %}<i class="bi bi-trophy-fill"></i>
+                    {% endif %}
+                </div>
+                <div>
+                    <div class="timeline-text">{{ akt.detay }}</div>
+                    {% if akt.icerik %}<div class="timeline-target">{{ akt.icerik.baslik|truncatewords:8 }}</div>{% endif %}
+                    <div class="timeline-time">{{ akt.tarih|safe_timesince }} önce</div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // ═══════ Modal açma/kapatma ═══════
+    function openDetailModal(id) {
+        document.getElementById(id).classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+    function closeDetailModal(id) {
+        document.getElementById(id).classList.remove('active');
+        document.body.style.overflow = '';
+    }
+    // ESC ile kapat
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            document.querySelectorAll('.detail-modal-overlay.active').forEach(m => {
+                m.classList.remove('active');
+            });
+            document.body.style.overflow = '';
+        }
+    });
+
+    // ═══════ Yorum odaklama (anchor scroll + highlight) ═══════
+    // Detay sayfasına gidildiğinde #comment-XX'e scroll yapar
+    // Bu script bu sayfada değil, hedef sayfada çalışır.
+    // Burada ek olarak: sayfada hash varsa oraya scroll et
+    if (window.location.hash) {
+        setTimeout(function() {
+            const el = document.querySelector(window.location.hash);
+            if (el) {
+                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                el.style.transition = 'box-shadow 0.3s, outline 0.3s';
+                el.style.outline = '2px solid #6366f1';
+                el.style.boxShadow = '0 0 20px rgba(99,102,241,0.3)';
+                setTimeout(() => {
+                    el.style.outline = '';
+                    el.style.boxShadow = '';
+                }, 3000);
+            }
+        }, 500);
+    }
+</script>
+{% endblock %}

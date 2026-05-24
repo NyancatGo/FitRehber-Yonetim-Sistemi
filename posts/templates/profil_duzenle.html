@@ -1,0 +1,370 @@
+{% extends "base.html" %}
+{% load posts_image_tags %}
+
+{% block title %}Hesap Ayarları | FitRehber{% endblock %}
+{% block meta_description %}FitRehber hesap ayarlarınızı düzenleyin.{% endblock %}
+{% block meta_robots %}noindex,nofollow{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Arka Plan Deseni */
+    body {
+        background-color: #f8fafc;
+        background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+        background-size: 30px 30px;
+    }
+
+    .main-container {
+        max-width: 800px;
+        margin: 50px auto;
+        animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* KART TASARIMI */
+    .settings-card {
+        background: white;
+        border: none;
+        border-radius: 24px;
+        box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+    }
+
+    /* Header (Başlık Kısmı) */
+    .settings-header {
+        background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+        padding: 40px;
+        text-align: center;
+        color: white;
+        position: relative;
+    }
+
+    .settings-header::after {
+        content: '';
+        position: absolute;
+        bottom: -20px;
+        left: 0;
+        width: 100%;
+        height: 40px;
+        background: white;
+        border-radius: 50% 50% 0 0;
+    }
+
+    .header-icon {
+        width: 80px;
+        height: 80px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        backdrop-filter: blur(5px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    /* FORM ELEMANLARI */
+    .form-section-title {
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #94a3b8;
+        font-weight: 700;
+        margin-bottom: 20px;
+        border-bottom: 1px solid #f1f5f9;
+        padding-bottom: 10px;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: #475569;
+        font-size: 0.9rem;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .custom-input {
+        background-color: #f8fafc;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 14px;
+        font-size: 0.95rem;
+        transition: all 0.2s ease;
+        color: #1e293b;
+    }
+
+    .custom-input:focus {
+        background-color: white;
+        border-color: #6366f1;
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        outline: none;
+    }
+
+    /* BUTONLAR */
+    .btn-kaydet {
+        background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+        color: white;
+        padding: 16px 32px;
+        border-radius: 14px;
+        font-weight: 700;
+        border: none;
+        transition: transform 0.2s, box-shadow 0.2s;
+        width: 100%;
+    }
+
+    .btn-kaydet:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px -5px rgba(79, 70, 229, 0.4);
+        color: white;
+    }
+
+    .btn-iptal {
+        background: white;
+        color: #64748b;
+        border: 2px solid #e2e8f0;
+        padding: 14px 32px;
+        border-radius: 14px;
+        font-weight: 600;
+        text-align: center;
+        text-decoration: none;
+        display: block;
+        transition: all 0.2s;
+        width: 100%;
+    }
+
+    .btn-iptal:hover {
+        background: #f1f5f9;
+        color: #334155;
+        border-color: #cbd5e1;
+    }
+
+    /* Animasyon */
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* MOBİL OVERFLOW DÜZELTMESİ - sticky'yi bozmadan */
+    @media (max-width: 768px) {
+        .container.main-container {
+            overflow-x: hidden !important;
+            max-width: 100% !important;
+            box-sizing: border-box !important;
+        }
+
+        .row {
+            margin-left: 0 !important;
+            margin-right: 0 !important;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container main-container">
+    <div class="settings-card">
+
+        <div class="settings-header">
+            <div class="header-icon">
+                <i class="bi bi-person-gear fs-1 text-white"></i>
+            </div>
+            <h2 class="fw-bold mb-1">Hesap Ayarları</h2>
+            <p class="mb-0 opacity-75 small">Kişisel bilgilerini ve profil detaylarını buradan yönetebilirsin.</p>
+        </div>
+
+        <div class="p-4 p-md-5 mt-3">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                {% if user_form.errors or profil_form.errors %}
+                <div class="alert alert-danger rounded-3 mb-4 border-0 bg-danger-subtle text-danger">
+                    <strong>⚠️ Lütfen hataları giderin:</strong>
+                    <ul class="mb-0 small ps-3 mt-2">
+                        {% for field in user_form %}
+                            {% for error in field.errors %}
+                            <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+                            {% endfor %}
+                        {% endfor %}
+                        {% for error in user_form.non_field_errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+
+                        {% for field in profil_form %}
+                            {% for error in field.errors %}
+                            <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+                            {% endfor %}
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+
+                <div class="form-section-title">
+                    <i class="bi bi-card-heading me-2"></i> Temel Bilgiler
+                </div>
+
+                <div class="row g-4 mb-4">
+                    <div class="col-12">
+                        <label class="form-label">
+                            <i class="bi bi-person-badge text-primary"></i> Kullanıcı Adı
+                        </label>
+                        {{ user_form.username }}
+                        <div class="form-text ms-1 text-muted small">
+                            Sitede görünecek benzersiz takma adın.
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">
+                            <i class="bi bi-input-cursor-text text-primary"></i> Ad
+                        </label>
+                        {{ user_form.first_name }}
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">
+                            <i class="bi bi-input-cursor-text text-primary"></i> Soyad
+                        </label>
+                        {{ user_form.last_name }}
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label">
+                            <i class="bi bi-envelope-at text-primary"></i> E-Posta Adresi
+                        </label>
+                        {{ user_form.email }}
+                    </div>
+                </div>
+
+                <div class="form-section-title mt-5">
+                    <i class="bi bi-person-vcard me-2"></i> Profil Detayları
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label">
+                        <i class="bi bi-image text-primary"></i> Profil Fotoğrafı
+                    </label>
+                    {% with profile_avatar=user|avatar_url %}
+                    <div class="d-flex flex-column flex-md-row align-items-start gap-4 p-3 rounded-4 border" style="background: #f8fafc; border-color: #e2e8f0 !important;">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold text-white shadow-sm"
+                            style="width: 96px; height: 96px; background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%); font-size: 2rem; overflow: hidden; flex-shrink: 0;">
+                            {% if profile_avatar %}
+                            <img src="{{ profile_avatar }}" alt="{{ user.username }}" style="width: 100%; height: 100%; object-fit: cover; display: block;">
+                            {% else %}
+                            {{ user.username|first|upper }}
+                            {% endif %}
+                        </div>
+                        <div class="w-100">
+                            {{ profil_form.foto }}
+                            <div class="form-text ms-1 text-muted small mt-2">
+                                JPG, JPEG, PNG veya WebP yükleyebilirsin. Maksimum dosya boyutu 5MB'dir.
+                            </div>
+                            <div class="form-check mt-3">
+                                {{ profil_form.foto_sil }}
+                                <label class="form-check-label small text-muted" for="{{ profil_form.foto_sil.id_for_label }}">
+                                    Mevcut profil fotoğrafını kaldır
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    {% endwith %}
+                </div>
+
+                <div class="mb-5">
+                    <label class="form-label">
+                        <i class="bi bi-text-paragraph text-primary"></i> Hakkında / Biyografi
+                    </label>
+                    {{ profil_form.hakkinda }}
+                    <div class="form-text ms-1 text-muted small">
+                        Kendini kısaca tanıt. Hobilerin, hedeflerin veya spor geçmişin...
+                    </div>
+                </div>
+
+                <div class="form-section-title mt-5">
+                    <i class="bi bi-activity me-2"></i> Biyometrik Bilgiler
+                </div>
+
+                <div class="row g-4 mb-5">
+                    <div class="col-md-6">
+                        <label class="form-label">
+                            <i class="bi bi-rulers text-primary"></i> Boy
+                        </label>
+                        {{ profil_form.boy }}
+                        <div class="form-text ms-1 text-muted small">Santimetre cinsinden gir.</div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">
+                            <i class="bi bi-speedometer2 text-primary"></i> Kilo
+                        </label>
+                        {{ profil_form.kilo }}
+                        <div class="form-text ms-1 text-muted small">Güncel kilonu kg cinsinden gir.</div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">
+                            <i class="bi bi-bullseye text-primary"></i> Hedef Kilo
+                        </label>
+                        {{ profil_form.hedef_kilo }}
+                        <div class="form-text ms-1 text-muted small">Hedef kilon ilerleme kartında görünür.</div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">
+                            <i class="bi bi-cake2 text-primary"></i> Doğum Tarihi
+                        </label>
+                        {{ profil_form.dogum_tarihi }}
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label">
+                            <i class="bi bi-flag text-primary"></i> Fitness Hedefi
+                        </label>
+                        {{ profil_form.fitness_hedefi }}
+                    </div>
+                </div>
+
+                <div class="row g-3 pt-3 border-top">
+                    <div class="col-md-8">
+                        <button type="submit" class="btn-kaydet">
+                            <i class="bi bi-check-lg me-2"></i> Değişiklikleri Kaydet
+                        </button>
+                    </div>
+                    <div class="col-md-4">
+                        <a href="{% url 'anasayfa' %}" class="btn-iptal">
+                            İptal
+                        </a>
+                    </div>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Tüm inputlara modern stil sınıfını ekle
+        const inputs = document.querySelectorAll('input[type="text"], input[type="email"], input[type="file"], input[type="number"], input[type="date"], textarea');
+
+        inputs.forEach(el => {
+            el.classList.add('custom-input', 'form-control'); // form-control Bootstrap uyumu için
+
+            // Textarea özelleştirmesi
+            if (el.tagName === 'TEXTAREA') {
+                el.rows = 4;
+                el.placeholder = "Merhaba! Ben spora yeni başladım ve...";
+            }
+        });
+    });
+</script>
+{% endblock %}

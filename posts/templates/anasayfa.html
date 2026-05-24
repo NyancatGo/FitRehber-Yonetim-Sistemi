@@ -1,0 +1,689 @@
+{% extends "base.html" %}
+
+{% block title %}{{ seo_title }}{% endblock %}
+{% block meta_description %}{{ seo_description }}{% endblock %}
+{% block og_title %}{{ seo_title }}{% endblock %}
+{% block og_description %}{{ seo_description }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Hero Alanı (Üst Başlık) */
+    .hero-section {
+        background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+        color: white;
+        padding: 40px 0;
+        border-radius: 0 0 50px 50px;
+        margin-bottom: 50px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    /* Mobil Hero Ayarları */
+    @media (max-width: 768px) {
+        .hero-section {
+            padding: 20px 0 !important;
+            border-radius: 0 0 20px 20px;
+            margin-bottom: 20px;
+        }
+
+        .hero-section h1 {
+            font-size: 1.4rem;
+        }
+
+        .hero-section .lead {
+            font-size: 0.85rem;
+            margin-bottom: 12px !important;
+            padding: 0 10px;
+        }
+
+        .hero-section .btn-new-post {
+            padding: 8px 16px;
+            font-size: 0.85rem;
+        }
+
+        .hero-section .btn-new-post {
+            padding: 8px 16px;
+            font-size: 0.85rem;
+        }
+    }
+
+    /* MOBİL OVERFLOW DÜZELTMESİ - sticky'yi bozmadan */
+    @media (max-width: 768px) {
+        .container.pb-5 {
+            overflow-x: hidden !important;
+            max-width: 100% !important;
+            box-sizing: border-box !important;
+        }
+
+        .row {
+            margin-left: 0 !important;
+            margin-right: 0 !important;
+        }
+    }
+
+    /* Kart Tasarımı */
+    .blog-card {
+        border: none;
+        border-radius: 20px;
+        overflow: hidden;
+        background: white;
+        transition: all 0.3s ease;
+        height: 100%;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        position: relative;
+    }
+
+    .blog-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Kart Resmi */
+    .card-img-wrapper {
+        height: 240px;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .card-img-top {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+
+    .blog-card:hover .card-img-top {
+        transform: scale(1.05);
+    }
+
+    /* Kategori Rozeti (Resmin Üstünde) */
+    .category-badge {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        background: rgba(255, 255, 255, 0.95);
+        color: #4f46e5;
+        padding: 6px 14px;
+        border-radius: 30px;
+        font-weight: 700;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        z-index: 2;
+    }
+
+    /* Admin Silme Butonu */
+    .delete-btn-overlay {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: rgba(220, 53, 69, 0.9);
+        color: white;
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 3;
+        transition: 0.2s;
+    }
+
+    .delete-btn-overlay:hover {
+        background: #dc3545;
+        transform: scale(1.1);
+        color: white;
+    }
+
+    /* Kart İçeriği */
+    .card-title {
+        font-weight: 800;
+        font-size: 1.25rem;
+        margin-bottom: 10px;
+        line-height: 1.4;
+    }
+
+    .card-text {
+        color: #64748b;
+        font-size: 0.95rem;
+        line-height: 1.6;
+    }
+
+    .card-action-row {
+        position: relative;
+        z-index: 4;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 16px;
+    }
+
+    .content-like-btn {
+        border: 1px solid #e5e7eb;
+        background: #fff;
+        color: #64748b;
+        border-radius: 999px;
+        font-weight: 700;
+        font-size: 0.85rem;
+        padding: 7px 12px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.2s ease;
+        text-decoration: none;
+    }
+
+    .content-like-btn:hover,
+    .content-like-btn.liked {
+        background: #fff1f2;
+        border-color: #fecdd3;
+        color: #e11d48;
+    }
+
+    .content-like-btn.comment-count:hover {
+        background: #eff6ff;
+        border-color: #bfdbfe;
+        color: #2563eb;
+    }
+
+    .content-like-btn.saved,
+    .content-like-btn.save-action:hover {
+        background: #eef2ff;
+        border-color: #c7d2fe;
+        color: #4f46e5;
+    }
+
+    @media (max-width: 768px) {
+        .blog-card {
+            border-radius: 16px;
+            box-shadow: 0 6px 18px rgba(15, 23, 42, 0.07);
+        }
+
+        .blog-card:hover {
+            transform: none;
+        }
+
+        .blog-card .card-body {
+            padding: 18px !important;
+        }
+
+        .blog-card .card-title {
+            font-size: 1rem !important;
+            line-height: 1.28;
+            margin-bottom: 8px;
+        }
+
+        .blog-card .card-text {
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 3;
+            overflow: hidden;
+            font-size: 0.82rem !important;
+            line-height: 1.45 !important;
+            margin-bottom: 14px !important;
+        }
+
+        .blog-card .card-action-row {
+            display: flex !important;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: nowrap;
+            margin-bottom: 16px;
+        }
+
+        .blog-card .content-like-btn {
+            width: auto !important;
+            min-width: 38px;
+            height: 34px !important;
+            margin: 0 !important;
+            padding: 0 12px !important;
+            border-radius: 999px !important;
+            display: inline-flex !important;
+            align-items: center;
+            justify-content: center;
+            flex: 0 0 auto;
+            gap: 5px;
+            font-size: 0.78rem !important;
+            line-height: 1;
+        }
+
+        .blog-card .save-action {
+            width: 38px !important;
+            padding: 0 !important;
+        }
+
+        .blog-card .author-box {
+            padding-top: 14px;
+        }
+    }
+
+    /* Yazar Bilgisi (Alt Kısım) */
+    .author-box {
+        border-top: 1px solid #f1f5f9;
+        padding-top: 15px;
+        margin-top: auto;
+    }
+
+    /* Yeni Yazı Ekle Butonu */
+    .btn-new-post {
+        background: #f59e0b;
+        color: #1f2937;
+        font-weight: 700;
+        padding: 12px 24px;
+        border-radius: 50px;
+        border: none;
+        transition: 0.3s;
+    }
+
+    .btn-new-post:hover {
+        background: #d97706;
+        color: white;
+        transform: scale(1.05);
+    }
+
+    /* Kategori Dropdown Stilleri */
+    .kategori-dropdown {
+        position: relative;
+        z-index: 100;
+    }
+
+    .kategori-dropdown .dropdown {
+        position: relative;
+        z-index: 1000;
+    }
+
+    @media (min-width: 769px) {
+        .kategori-dropdown .dropdown:hover>.dropdown-menu {
+            display: block;
+            margin-top: 0;
+        }
+    }
+
+    .kategori-dropdown .dropdown-menu {
+        animation: fadeInDown 0.3s ease;
+        z-index: 9999 !important;
+        background-color: #ffffff !important;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15) !important;
+        border: 1px solid rgba(0, 0, 0, 0.05) !important;
+        max-height: none !important;
+        overflow: visible !important;
+        position: absolute !important;
+    }
+
+    @keyframes fadeInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Mobil Dropdown Animasyonu */
+    @media (max-width: 768px) {
+        .kategori-dropdown .dropdown-menu {
+            animation: slideInMobile 0.4s cubic-bezier(0.165, 0.84, 0.44, 1) !important;
+            transform-origin: top center;
+            /* Popper.js'in konumlandırmasını ezmek için */
+            top: 100% !important;
+            bottom: auto !important;
+            margin-top: 5px !important;
+
+            /* Varsayılan: Sol (JS ile değişecek) */
+            left: 0 !important;
+            right: auto !important;
+            transform: none !important;
+
+            /* Genişlik ayarı */
+            width: auto !important;
+            min-width: 260px !important;
+            max-width: 90vw !important;
+            /* Ekrandan taşmasın */
+        }
+
+        @keyframes slideInMobile {
+            from {
+                opacity: 0;
+                transform: translateY(10px) scale(0.98);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+    }
+
+    /* Fade In Animasyonu (AJAX sonrası kartlar için) */
+    .fade-in-up {
+        animation: fadeInUp 0.5s ease forwards;
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    @keyframes fadeInUp {
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<header class="hero-section text-center">
+    <div class="container">
+        <h1 class="display-4 fw-bold mb-3">FitRehber: Bilimsel Fitness ve Beslenme Rehberi</h1>
+        <p class="lead opacity-75 mb-4" style="max-width: 600px; margin: 0 auto;">
+            Antrenman, beslenme, supplement ve sağlıklı yaşam hakkında kaynaklı rehberler ve güncel makaleler burada.
+        </p>
+
+        {% if request.user.is_superuser %}
+        <a href="{% url 'ekle' %}?tur=haber" class="btn btn-new-post shadow-lg">
+            <i class="bi bi-pencil-square me-2"></i> Yeni Makale Yaz
+        </a>
+        {% endif %}
+    </div>
+</header>
+
+<div class="container pb-5">
+    <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
+        <h4 class="fw-bold text-dark border-start border-4 border-warning ps-3 mb-0">Son Eklenen Rehberler</h4>
+
+        <!-- Kategori Dropdown -->
+        <div class="kategori-dropdown">
+            <div class="dropdown">
+                <button
+                    class="btn btn-white d-flex align-items-center gap-2 px-4 py-2 rounded-pill border shadow-sm dropdown-toggle fw-bold text-dark"
+                    type="button" id="kategoriMenuAnasayfa" data-bs-toggle="dropdown" aria-expanded="false"
+                    data-bs-display="static" style="background-color: #fff; cursor: pointer;">
+
+                    <i class="bi bi-funnel"></i>
+                    <span class="text-truncate">
+                        {% if secili_kategori %}
+                        {% for kat in kategoriler %}
+                        {% if kat.id == secili_kategori %}
+                        {{ kat.isim }}
+                        {% endif %}
+                        {% endfor %}
+                        {% else %}
+                        Tüm Kategoriler
+                        {% endif %}
+                    </span>
+                </button>
+
+                <ul class="dropdown-menu dropdown-menu-end rounded-4 mt-0 p-2 border-0 shadow-lg" id="kategori-listesi">
+                    <li>
+                        <a class="dropdown-item rounded-3 py-2 fw-bold d-flex justify-content-between align-items-center {% if not secili_kategori %}active bg-primary text-white{% endif %}"
+                            href="{% url 'anasayfa' %}">
+                            <span>🌍 Tüm Kategoriler</span>
+                            {% if not secili_kategori %}<i class="bi bi-check-lg"></i>{% endif %}
+                        </a>
+                    </li>
+
+                    {% if kategoriler %}
+                    <li>
+                        <hr class="dropdown-divider my-2">
+                    </li>
+                    {% endif %}
+
+                    {% for kat in kategoriler %}
+                    <li>
+                        <a class="dropdown-item rounded-3 py-2 fw-bold d-flex justify-content-between align-items-center {% if secili_kategori == kat.id %}active bg-primary text-white{% endif %}"
+                            href="?kategori={{ kat.id }}">
+                            <span>{{ kat.isim }}</span>
+                            {% if secili_kategori == kat.id %}<i class="bi bi-check-lg"></i>{% endif %}
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- İçerik Alanı (AJAX ile güncellenecek) -->
+    <div class="row g-4" id="icerik-container">
+        {% include '_anasayfa_icerik.html' %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const csrfToken = "{{ csrf_token }}";
+    const isAuthenticated = "{{ user.is_authenticated|yesno:'true,false' }}" === "true";
+
+    function checkAuth() {
+        if (!isAuthenticated) {
+            window.location.href = `/giris/?next=${encodeURIComponent(window.location.pathname + window.location.search)}`;
+            return false;
+        }
+        return true;
+    }
+
+    function icerikBegen(event, id) {
+        if (event) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        if (!checkAuth()) return;
+
+        fetch(`/icerik-begen/${id}/`, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': csrfToken
+            }
+        })
+            .then(response => {
+                if (response.status === 429) return null;
+                if (!response.ok) throw new Error('Sunucu hatası');
+                return response.json();
+            })
+            .then(data => {
+                if (!data) return;
+                const btn = document.getElementById(`btn-icerik-begen-${id}`);
+                const icon = document.getElementById(`icon-icerik-begen-${id}`);
+                const count = document.getElementById(`sayi-icerik-begen-${id}`);
+
+                if (btn) btn.classList.toggle('liked', data.begenildi);
+                if (icon) {
+                    icon.classList.toggle('bi-heart-fill', data.begenildi);
+                    icon.classList.toggle('bi-heart', !data.begenildi);
+                }
+                if (count) count.innerText = data.sayi;
+            })
+            .catch(error => console.error('Icerik begeni hatasi:', error));
+    }
+
+    function icerikKaydet(event, id) {
+        if (event) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        if (!checkAuth()) return;
+
+        fetch(`/kaydet/${id}/`, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': csrfToken
+            }
+        })
+            .then(response => {
+                if (response.status === 429) return null;
+                if (!response.ok) throw new Error('Sunucu hatası');
+                return response.json();
+            })
+            .then(data => {
+                if (!data) return;
+                const btn = document.getElementById(`btn-kaydet-${id}`);
+                const icon = document.getElementById(`icon-kaydet-${id}`);
+
+                if (btn) btn.classList.toggle('saved', data.kaydedildi);
+                if (icon) {
+                    icon.classList.toggle('bi-bookmark-fill', data.kaydedildi);
+                    icon.classList.toggle('bi-bookmark', !data.kaydedildi);
+                }
+            })
+            .catch(error => console.error('Icerik kaydetme hatasi:', error));
+    }
+
+    // Mobil Dropdown Akıllı Konumlandırma
+    const kategoriBtn = document.getElementById('kategoriMenuAnasayfa');
+    if (kategoriBtn) {
+        kategoriBtn.parentElement.addEventListener('show.bs.dropdown', function () {
+            if (window.innerWidth <= 768) {
+                const rect = kategoriBtn.getBoundingClientRect();
+                const menu = this.querySelector('.dropdown-menu');
+                const screenCenter = window.innerWidth / 2;
+
+                // Reset (Önceki stilleri temizle)
+                menu.style.removeProperty('left');
+                menu.style.removeProperty('right');
+                menu.style.removeProperty('transform');
+
+                if (rect.left < screenCenter) {
+                    // Sol taraftaysa -> Sola yasla
+                    menu.style.setProperty('left', '0', 'important');
+                    menu.style.setProperty('right', 'auto', 'important');
+                } else {
+                    // Sağ taraftaysa -> Sağa yasla
+                    menu.style.setProperty('left', 'auto', 'important');
+                    menu.style.setProperty('right', '0', 'important');
+                }
+            }
+        });
+    }
+
+    // --- AJAX FİLTRELEME ---
+    document.addEventListener('click', function (e) {
+        // İlgilendiğimiz linkler mi kontrol et
+        const link = e.target.closest('a');
+        if (!link) return;
+
+        // Kategori linki veya sayfalama linki mi?
+        const isCategoryLink = link.classList.contains('dropdown-item') && link.closest('.kategori-dropdown');
+        const isPageLink = link.classList.contains('ajax-page-link') || link.classList.contains('page-link');
+
+        if (isCategoryLink || isPageLink) {
+
+            // Eğer "Yeni Makale Yaz" gibi bir buton ise yoksay
+            if (link.classList.contains('btn-new-post')) return;
+
+            const href = link.getAttribute('href');
+            // Geçersiz linkleri yoksay
+            if (!href || href.startsWith('#') || href === 'javascript:void(0);') return;
+
+            e.preventDefault();
+
+            // URL Oluştur
+            // Eğer href sadece "?page=2" gibiyse mevcut path üzerine ekle
+            // Tam URL ise onu kullan
+            let targetUrl = href;
+
+            // Kullanıcı arayüzünü güncelle (Loading feedback opsiyonel)
+            const container = document.getElementById('icerik-container');
+            container.style.opacity = '0.5';
+
+            fetch(targetUrl, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+                .then(response => {
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    return response.text();
+                })
+                .then(html => {
+                    // İçeriği güncelle
+                    container.innerHTML = html;
+                    container.style.opacity = '1';
+
+                    // URL'i güncelle (Sayfa yenilenmeden)
+                    window.history.pushState({ path: targetUrl }, '', targetUrl);
+
+                    // Eğer kategori linkine tıklandıysa dropdown'ı güncelle
+                    if (isCategoryLink) {
+                        updateDropdownUI(link);
+
+                        // Dropdown'ı kapat (Bootstrap 5 instance varsa)
+                        // Veya basitçe body'ye tıklama simüle et
+                        // document.body.click(); 
+                        // Ancak linke tıklayınca zaten kapanır genellikle.
+                    }
+
+                    // Sayfanın üstüne kaydır (İçerik alanının başına)
+                    const headerOffset = 100;
+                    const elementPosition = container.getBoundingClientRect().top;
+                    const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+                    window.scrollTo({
+                        top: offsetPosition,
+                        behavior: "smooth"
+                    });
+                })
+                .catch(err => {
+                    console.error('AJAX Hatası:', err);
+                    container.style.opacity = '1';
+                    // Hata durumunda normal yönlendirme yap (Fallback)
+                    window.location.href = targetUrl;
+                });
+        }
+    });
+
+    // Dropdown arayüzünü güncelleme fonksiyonu
+    function updateDropdownUI(activeLink) {
+        // Tüm aktif sınıfları temizle
+        const allItems = document.querySelectorAll('.kategori-dropdown .dropdown-item');
+        allItems.forEach(item => {
+            item.classList.remove('active', 'bg-primary', 'text-white');
+            const icon = item.querySelector('.bi-check-lg');
+            if (icon) icon.remove();
+        });
+
+        // Tıklanan linki aktif yap
+        activeLink.classList.add('active', 'bg-primary', 'text-white');
+
+        // Tik ikonunu ekle
+        if (!activeLink.querySelector('.bi-check-lg')) {
+            const icon = document.createElement('i');
+            icon.className = 'bi bi-check-lg';
+            activeLink.appendChild(icon);
+        }
+
+        // Buton metnini güncelle
+        const btnTextSpan = document.querySelector('#kategoriMenuAnasayfa span');
+        // İkon veya "Tüm Kategoriler" metnini temizle
+        let newText = activeLink.innerText.trim();
+        // Emoji varsa temizle (Basitçe)
+        newText = newText.replace('🌍 ', '');
+
+        btnTextSpan.innerText = newText;
+    }
+
+    // Tarayıcı Geri/İleri butonlarını dinle
+    window.addEventListener('popstate', function (event) {
+        // Sayfa değişince içeriği AJAX ile getir
+        const container = document.getElementById('icerik-container');
+        container.style.opacity = '0.5';
+
+        fetch(window.location.href, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+            .then(response => response.text())
+            .then(html => {
+                container.innerHTML = html;
+                container.style.opacity = '1';
+                // Burada dropdown state'ini de URL'ye göre güncellemek gerekebilir ama şimdilik kalsın.
+            })
+            .catch(err => {
+                location.reload(); // Hata olursa yenile
+            });
+    });
+</script>
+{% endblock %}

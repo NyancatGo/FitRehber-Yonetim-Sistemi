@@ -1,0 +1,66 @@
+{% extends 'yonetim/base_yonetim.html' %}
+
+{% block page_title %}{{ title }}{% endblock %}
+{% block page_subtitle %}Kategori detaylarını buradan düzenleyin.{% endblock %}
+
+{% block extra_css %}
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.form-control {
+    background-color: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+    color: white;
+    font-size: 0.875rem;
+    outline: none;
+    transition: all 0.3s ease;
+    width: 100%;
+}
+
+.form-control:focus {
+    border-color: var(--primary);
+    background-color: rgba(255, 255, 255, 0.05);
+    box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    border-top: 1px solid var(--border-color);
+    padding-top: 1.5rem;
+}
+{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 600px; margin: 0 auto;">
+    <form method="POST" action="">
+        {% csrf_token %}
+        
+        <div class="form-group">
+            <label for="isim">Kategori Adı <span style="color: var(--danger)">*</span></label>
+            <input type="text" id="isim" name="isim" class="form-control" required placeholder="Örn: Vücut Geliştirme"
+                   value="{% if category_data %}{{ category_data.isim }}{% endif %}">
+        </div>
+
+        <div class="form-actions">
+            <a href="{% url 'yonetim_kategoriler' %}" class="btn btn-secondary">İptal</a>
+            <button type="submit" class="btn btn-primary">
+                <i class="fa-solid fa-floppy-disk"></i> Kaydet
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

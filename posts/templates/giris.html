@@ -1,0 +1,646 @@
+{% extends "base.html" %}
+{% load socialaccount %}
+
+{% block title %}Giriş Yap | FitRehber{% endblock %}
+{% block meta_description %}FitRehber hesabınıza giriş yapın.{% endblock %}
+{% block meta_robots %}noindex,follow{% endblock %}
+
+{% block extra_css %}
+<style>
+    body {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+    }
+
+    .auth-container {
+        min-height: calc(100vh - 80px);
+        display: flex;
+        align-items: center;
+        padding: 20px 0;
+    }
+
+    .login-card {
+        background: white;
+        border-radius: 24px;
+        box-shadow: 0 25px 80px rgba(0, 0, 0, 0.3);
+        max-width: 400px;
+        margin: 0 auto;
+        overflow: hidden;
+    }
+
+    .cat-section {
+        background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+        padding: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    /* Cat SVG */
+    .cat-svg {
+        width: 160px;
+        height: 130px;
+    }
+
+    /* Animations */
+    @keyframes blink {
+        0%, 96%, 100% { transform: scaleY(1); }
+        98% { transform: scaleY(0.1); }
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-3px); }
+    }
+
+    .cat-body {
+        animation: float 3s ease-in-out infinite;
+    }
+
+    .eye-lid {
+        transform-origin: center;
+        animation: blink 4s ease-in-out infinite;
+    }
+
+    .cat-svg.covering .eye-lid {
+        animation: none;
+        transform: scaleY(0.1);
+    }
+
+    .cat-svg.covering .paw-left {
+        transform: translate(10px, -35px) rotate(10deg);
+        opacity: 1;
+    }
+
+    .cat-svg.covering .paw-right {
+        transform: translate(-10px, -35px) rotate(-10deg);
+        opacity: 1;
+    }
+
+    /* Peeking State (Yarım Bakış) */
+    .cat-svg.peeking .paw-left {
+        transform: translate(10px, -8px) rotate(10deg);
+        opacity: 1;
+    }
+
+    .cat-svg.peeking .paw-right {
+        transform: translate(-10px, -8px) rotate(-10deg);
+        opacity: 1;
+    }
+
+    .paw-left,
+    .paw-right {
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        opacity: 1;
+        transform-origin: center bottom;
+    }
+
+    .ear-left,
+    .ear-right {
+        transition: transform 0.3s ease;
+        transform-origin: bottom center;
+    }
+
+    .pupil {
+        transition: transform 0.1s ease-out;
+    }
+
+    /* Smile when happy */
+    .mouth-line {
+        transition: d 0.3s ease;
+    }
+
+    .cat-svg.happy .mouth-line {
+        d: path("M70 92 Q75 105 80 92 Q85 105 90 92");
+    }
+
+    /* Form Styles */
+    .form-section {
+        padding: 25px 35px 30px;
+    }
+
+    .form-header {
+        text-align: center;
+        margin-bottom: 22px;
+    }
+
+    .form-header h3 {
+        font-weight: 800;
+        font-size: 1.4rem;
+        color: #1e293b;
+        margin-bottom: 4px;
+    }
+
+    .form-header p {
+        color: #64748b;
+        font-size: 0.85rem;
+    }
+
+    .form-group {
+        margin-bottom: 16px;
+    }
+
+    .form-label {
+        display: block;
+        font-weight: 600;
+        font-size: 0.8rem;
+        color: #374151;
+        margin-bottom: 6px;
+    }
+
+    .form-input {
+        width: 100%;
+        border-radius: 12px;
+        border: 2px solid #e5e7eb;
+        padding: 12px 16px;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+        background: #f9fafb;
+    }
+
+    .form-input:focus {
+        outline: none;
+        border-color: #6366f1;
+        background: white;
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+    }
+
+    /* Password Toggle Styles */
+    .password-wrapper {
+        position: relative;
+    }
+
+    .password-toggle {
+        position: absolute;
+        top: 50%;
+        right: 15px;
+        transform: translateY(-50%);
+        cursor: pointer;
+        color: #9ca3af;
+        transition: color 0.3s;
+        z-index: 10;
+        padding: 5px;
+    }
+
+    .password-toggle:hover {
+        color: #6366f1;
+    }
+
+    .form-input.password-input {
+        padding-right: 45px;
+    }
+
+    .btn-login {
+        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+        border: none;
+        border-radius: 12px;
+        padding: 13px;
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: white;
+        width: 100%;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(99, 102, 241, 0.35);
+    }
+
+    .btn-login:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(99, 102, 241, 0.45);
+    }
+
+    .divider {
+        display: flex;
+        align-items: center;
+        margin: 18px 0;
+        color: #9ca3af;
+        font-size: 0.75rem;
+    }
+
+    .divider::before,
+    .divider::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: #e5e7eb;
+    }
+
+    .divider span {
+        padding: 0 12px;
+    }
+
+    .btn-google {
+        width: 100%;
+        padding: 11px;
+        border-radius: 12px;
+        border: 2px solid #e5e7eb;
+        background: white;
+        font-weight: 600;
+        font-size: 0.85rem;
+        color: #ea4335;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .btn-google:hover {
+        background: #fef2f2;
+        border-color: #fecaca;
+    }
+
+    .auth-footer {
+        text-align: center;
+        margin-top: 18px;
+        color: #6b7280;
+        font-size: 0.85rem;
+    }
+
+    .auth-footer a {
+        color: #6366f1;
+        font-weight: 700;
+        text-decoration: none;
+    }
+
+    .alert-error {
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        border-radius: 10px;
+        color: #b91c1c;
+        padding: 10px 14px;
+        font-size: 0.8rem;
+        margin-bottom: 18px;
+        text-align: center;
+    }
+
+
+
+    @media (max-width: 768px) {
+        body {
+            background: white !important;
+        }
+
+        .container {
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+            max-width: 100% !important;
+            overflow-x: hidden !important;
+        }
+
+        .auth-container {
+            padding: 0 !important;
+            align-items: flex-start !important;
+            min-height: calc(100vh - 60px) !important;
+            width: 100% !important;
+            overflow-x: hidden !important;
+        }
+
+        .login-card {
+            width: 100% !important;
+            margin: 0 !important;
+            border-radius: 0 !important;
+            box-shadow: none !important;
+            min-height: calc(100vh - 60px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-section {
+            flex-grow: 1;
+            padding: 30px 25px !important;
+        }
+        
+        .cat-section {
+            padding: 30px 20px !important;
+            border-radius: 0 0 50% 50% / 20px !important;
+        }
+
+        .cat-svg {
+            width: 180px !important;
+            height: 140px !important;
+        }
+
+        .form-header h3 {
+            font-size: 2rem !important;
+            margin-bottom: 10px !important;
+        }
+
+        .form-label {
+            font-size: 1rem !important;
+            margin-bottom: 8px !important;
+        }
+
+        .form-input {
+            height: 60px !important;
+            font-size: 1.1rem !important;
+            padding: 0 18px !important;
+        }
+
+        .btn-login,
+        .btn-google {
+            height: 60px !important;
+            font-size: 1.1rem !important;
+            border-radius: 15px !important;
+        }
+
+        .btn-login {
+            margin-top: 20px !important;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="container">
+        <div class="login-card">
+            <div class="cat-section" id="cat-section">
+                <svg class="cat-svg" id="cat-svg" viewBox="0 0 160 130">
+                    <g class="cat-body">
+                        <!-- Left Ear -->
+                        <g class="ear-left">
+                            <path d="M35 45 L50 15 L65 45" fill="#f97316" stroke="#222" stroke-width="3" stroke-linejoin="round" />
+                            <path d="M43 42 L50 25 L57 42" fill="#ffc0cb" />
+                        </g>
+
+                        <!-- Right Ear -->
+                        <g class="ear-right">
+                            <path d="M95 45 L110 15 L125 45" fill="#f97316" stroke="#222" stroke-width="3" stroke-linejoin="round" />
+                            <path d="M103 42 L110 25 L117 42" fill="#ffc0cb" />
+                        </g>
+
+                        <!-- Face -->
+                        <ellipse cx="80" cy="70" rx="50" ry="45" fill="#fff" stroke="#222" stroke-width="3" />
+
+                        <!-- Orange spots -->
+                        <ellipse cx="50" cy="55" rx="18" ry="14" fill="#f97316" />
+                        <ellipse cx="110" cy="55" rx="18" ry="14" fill="#f97316" />
+
+                        <!-- Left Eye -->
+                        <ellipse cx="55" cy="65" rx="14" ry="14" fill="#fff" stroke="#222" stroke-width="2" />
+                        <g class="eye-lid">
+                            <ellipse class="pupil" id="pupil-left" cx="55" cy="65" rx="9" ry="9" fill="#3b82f6" />
+                            <ellipse class="pupil-inner" cx="55" cy="65" rx="5" ry="5" fill="#1e40af" />
+                            <ellipse cx="58" cy="62" rx="3" ry="3" fill="#fff" />
+                            <ellipse cx="53" cy="67" rx="1.5" ry="1.5" fill="#fff" opacity="0.6" />
+                        </g>
+
+                        <!-- Right Eye -->
+                        <ellipse cx="105" cy="65" rx="14" ry="14" fill="#fff" stroke="#222" stroke-width="2" />
+                        <g class="eye-lid">
+                            <ellipse class="pupil" id="pupil-right" cx="105" cy="65" rx="9" ry="9" fill="#3b82f6" />
+                            <ellipse class="pupil-inner" cx="105" cy="65" rx="5" ry="5" fill="#1e40af" />
+                            <ellipse cx="108" cy="62" rx="3" ry="3" fill="#fff" />
+                            <ellipse cx="103" cy="67" rx="1.5" ry="1.5" fill="#fff" opacity="0.6" />
+                        </g>
+
+                        <!-- Blush -->
+                        <ellipse cx="35" cy="80" rx="10" ry="6" fill="#ffc0cb" opacity="0.6" />
+                        <ellipse cx="125" cy="80" rx="10" ry="6" fill="#ffc0cb" opacity="0.6" />
+
+                        <!-- Nose -->
+                        <ellipse cx="80" cy="82" rx="6" ry="5" fill="#ff69b4" />
+                        <ellipse cx="80" cy="81" rx="2.5" ry="2" fill="#ffb6c1" opacity="0.5" />
+
+                        <!-- Mouth -->
+                        <path class="mouth-line" d="M70 92 Q75 100 80 92 Q85 100 90 92" fill="none" stroke="#222" stroke-width="2.5" stroke-linecap="round" />
+
+                        <!-- Whiskers -->
+                        <g stroke="#666" stroke-width="2" stroke-linecap="round">
+                            <line x1="15" y1="75" x2="38" y2="78" />
+                            <line x1="12" y1="85" x2="38" y2="85" />
+                            <line x1="15" y1="95" x2="38" y2="92" />
+                            <line x1="145" y1="75" x2="122" y2="78" />
+                            <line x1="148" y1="85" x2="122" y2="85" />
+                            <line x1="145" y1="95" x2="122" y2="92" />
+                        </g>
+
+                        <!-- Paws -->
+                        <g class="paw-left">
+                            <ellipse cx="45" cy="95" rx="18" ry="15" fill="#fff" stroke="#222" stroke-width="2.5" />
+                            <ellipse cx="45" cy="92" rx="11" ry="7" fill="#f97316" />
+                            <ellipse cx="45" cy="100" rx="8" ry="5" fill="#ffc0cb" />
+                            <circle cx="39" cy="97" r="3" fill="#ffc0cb" />
+                            <circle cx="45" cy="96" r="3" fill="#ffc0cb" />
+                            <circle cx="51" cy="97" r="3" fill="#ffc0cb" />
+                        </g>
+
+                        <g class="paw-right">
+                            <ellipse cx="115" cy="95" rx="18" ry="15" fill="#fff" stroke="#222" stroke-width="2.5" />
+                            <ellipse cx="115" cy="92" rx="11" ry="7" fill="#f97316" />
+                            <ellipse cx="115" cy="100" rx="8" ry="5" fill="#ffc0cb" />
+                            <circle cx="109" cy="97" r="3" fill="#ffc0cb" />
+                            <circle cx="115" cy="96" r="3" fill="#ffc0cb" />
+                            <circle cx="121" cy="97" r="3" fill="#ffc0cb" />
+                        </g>
+                    </g>
+                </svg>
+            </div>
+
+            <div class="form-section">
+                <div class="form-header">
+                    <h3>Hoş Geldin!</h3>
+                    <p>Hesabına giriş yap</p>
+                </div>
+
+                {% if form.errors %}
+                <div class="alert-error">😿 Kullanıcı adı veya şifre hatalı!</div>
+                {% endif %}
+
+                <form method="post">
+                    {% csrf_token %}
+
+                    <div class="form-group">
+                        <label class="form-label">Kullanıcı Adı</label>
+                        <input type="text" class="form-input" id="id_username" name="username"
+                            placeholder="Kullanıcı adınız" required autocomplete="off">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Şifre</label>
+                        <div class="password-wrapper">
+                            <input type="password" class="form-input password-input" id="id_password" name="password"
+                                placeholder="••••••••" required>
+                            <i class="bi bi-eye password-toggle" id="togglePassword"></i>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-login"> Giriş Yap <i class="bi bi-activity text-warning"> </i>
+                    </button>
+                </form>
+
+                <div class="text-center mt-3">
+                    <a href="{% url 'password_reset' %}" class="text-decoration-none small text-muted">
+                        Şifreni mi unuttun?
+                    </a>
+                </div>
+
+                <div class="divider"><span>veya</span></div>
+
+                <a href="{% provider_login_url 'google' %}" class="btn-google text-decoration-none">
+                    <i class="bi bi-google"></i> Google ile Giriş Yap
+                </a>
+
+                <div class="auth-footer">
+                    Hesabın yok mu? <a href="{% url 'kayit' %}">Kayıt Ol</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if verification_pending %}
+    {% include '_email_verify_modal.html' %}
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    (function () {
+        const catSvg = document.getElementById('cat-svg');
+        const catSection = document.getElementById('cat-section');
+        const pupilLeft = document.getElementById('pupil-left');
+        const pupilRight = document.getElementById('pupil-right');
+        const usernameInput = document.getElementById('id_username');
+        const passwordInput = document.getElementById('id_password');
+        const togglePassword = document.getElementById('togglePassword');
+        const loginBtn = document.querySelector('.btn-login');
+
+        let covering = false;
+
+        // Get all movable parts (pupils and inner elements)
+        const leftEyeParts = pupilLeft.parentElement.querySelectorAll('.pupil, .pupil-inner, ellipse');
+        const rightEyeParts = pupilRight.parentElement.querySelectorAll('.pupil, .pupil-inner, ellipse');
+
+        function moveEyes(x, y) {
+            if (covering) return;
+
+            // Move left eye parts
+            leftEyeParts.forEach(part => {
+                const baseX = 55;
+                const baseY = 65;
+                const currentCx = parseFloat(part.getAttribute('cx')) || baseX;
+
+                if (part.classList.contains('pupil') || part.classList.contains('pupil-inner')) {
+                    part.setAttribute('cx', baseX + x);
+                    part.setAttribute('cy', baseY + y);
+                }
+            });
+
+            // Move right eye parts
+            rightEyeParts.forEach(part => {
+                const baseX = 105;
+                const baseY = 65;
+
+                if (part.classList.contains('pupil') || part.classList.contains('pupil-inner')) {
+                    part.setAttribute('cx', baseX + x);
+                    part.setAttribute('cy', baseY + y);
+                }
+            });
+        }
+
+        function updateCatState() {
+            const isPassword = passwordInput.getAttribute('type') === 'password';
+            const isFocused = document.activeElement === passwordInput;
+
+            if (!isPassword) {
+                // Şifre AÇIK
+                catSvg.classList.add('peeking');
+                catSvg.classList.remove('covering');
+                covering = false;
+            } else {
+                // Şifre KAPALI
+                catSvg.classList.remove('peeking');
+                
+                if (isFocused) {
+                    catSvg.classList.add('covering');
+                    covering = true;
+                } else {
+                    catSvg.classList.remove('covering');
+                    covering = false;
+                }
+            }
+        }
+
+        // Mouse tracking
+        document.addEventListener('mousemove', function (e) {
+            if (covering) return;
+
+            const rect = catSection.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+
+            const deltaX = e.clientX - centerX;
+            const deltaY = e.clientY - centerY;
+
+            const maxMove = 5;
+            const moveX = Math.max(-maxMove, Math.min(maxMove, deltaX / 50));
+            const moveY = Math.max(-maxMove, Math.min(maxMove, deltaY / 50));
+
+            moveEyes(moveX, moveY);
+        });
+
+        // Username events
+        usernameInput.addEventListener('focus', function () {
+            catSvg.classList.add('happy');
+        });
+
+        usernameInput.addEventListener('blur', function () {
+            catSvg.classList.remove('happy');
+        });
+
+        usernameInput.addEventListener('input', function (e) {
+            if (covering) return;
+            const len = e.target.value.length;
+            const x = Math.min(len * 0.4, 4);
+            moveEyes(x, 3);
+        });
+
+        // Password visibility toggle
+        togglePassword.addEventListener('click', function (e) {
+            e.preventDefault();
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            
+            this.classList.toggle('bi-eye');
+            this.classList.toggle('bi-eye-slash');
+
+            updateCatState();
+            passwordInput.focus();
+        });
+        
+        togglePassword.addEventListener('mousedown', function(e) {
+            e.preventDefault();
+        });
+
+        // Password events
+        passwordInput.addEventListener('focus', function () {
+            catSvg.classList.remove('happy');
+            updateCatState();
+        });
+
+        passwordInput.addEventListener('blur', function () {
+            // Şifre açık olsa bile blur olunca normal dönsün isteniyor (peeking kalksın)
+            // KULLANICI İŞTEĞİ: "mausla başka yere tıkladığımda kedi normal haline dönsün"
+            catSvg.classList.remove('covering');
+            catSvg.classList.remove('peeking');
+            covering = false;
+            moveEyes(0, 0);
+        });
+
+        // Button hover
+        loginBtn.addEventListener('mouseenter', function () {
+            if (!covering) catSvg.classList.add('happy');
+        });
+
+        loginBtn.addEventListener('mouseleave', function () {
+            if (!usernameInput.matches(':focus')) catSvg.classList.remove('happy');
+        });
+
+        // Initial state check
+        updateCatState();
+    })();
+</script>
+{% endblock %}

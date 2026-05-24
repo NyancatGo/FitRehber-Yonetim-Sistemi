@@ -1,0 +1,150 @@
+{% extends 'yonetim/base_yonetim.html' %}
+
+{% block page_title %}{{ title }}{% endblock %}
+{% block page_subtitle %}İçerik/Makale detaylarını buradan düzenleyin.{% endblock %}
+
+{% block extra_css %}
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+@media (min-width: 768px) {
+    .form-grid-split {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+    }
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-group label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.form-control {
+    background-color: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+    color: white;
+    font-size: 0.875rem;
+    outline: none;
+    transition: all 0.3s ease;
+    width: 100%;
+}
+
+.form-control:focus {
+    border-color: var(--primary);
+    background-color: rgba(255, 255, 255, 0.05);
+    box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
+}
+
+select.form-control {
+    cursor: pointer;
+}
+
+select.form-control option {
+    background-color: var(--panel-bg);
+    color: white;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    border-top: 1px solid var(--border-color);
+    padding-top: 1.5rem;
+}
+{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 900px; margin: 0 auto;">
+    <form method="POST" action="">
+        {% csrf_token %}
+        
+        <div class="form-grid">
+            <!-- Title -->
+            <div class="form-group">
+                <label for="baslik">İçerik Başlığı <span style="color: var(--danger)">*</span></label>
+                <input type="text" id="baslik" name="baslik" class="form-control" required placeholder="Örn: 5 Adımda Doğru Squat Tekniği"
+                       value="{% if content_data %}{{ content_data.baslik }}{% endif %}">
+            </div>
+
+            <div class="form-grid-split">
+                <!-- Category -->
+                <div class="form-group">
+                    <label for="kategori_id">Kategori <span style="color: var(--danger)">*</span></label>
+                    <select id="kategori_id" name="kategori_id" class="form-control" required>
+                        <option value="" disabled {% if not content_data %}selected{% endif %}>Kategori Seçin</option>
+                        {% for k in kategoriler %}
+                            <option value="{{ k.id }}" {% if content_data.kategori_id == k.id %}selected{% endif %}>
+                                {{ k.isim }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Content Type -->
+                <div class="form-group">
+                    <label for="tur">İçerik Türü <span style="color: var(--danger)">*</span></label>
+                    <select id="tur" name="tur" class="form-control" required>
+                        <option value="haber" {% if content_data.tur == 'haber' %}selected{% endif %}>Haber / Blog Yazısı</option>
+                        <option value="soru" {% if content_data.tur == 'soru' %}selected{% endif %}>Forum Sorusu</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Author (Only on Create, or Read-Only display on Edit) -->
+            {% if not content_data %}
+            <div class="form-group">
+                <label for="yazar_id">Yazar <span style="color: var(--danger)">*</span></label>
+                <select id="yazar_id" name="yazar_id" class="form-control" required>
+                    <option value="" disabled selected>Yazar Seçin</option>
+                    {% for y in yazarlar %}
+                        <option value="{{ y.id }}" {% if request.user.id == y.id %}selected{% endif %}>
+                            {{ y.username }} ({{ y.email }})
+                        </option>
+                    {% endfor %}
+                </select>
+                <small style="color: var(--text-secondary)">Tetikleyici Testi: Eğer pasif bir kullanıcı seçilirse veritabanı triggerı eklemeyi engelleyecektir.</small>
+            </div>
+            {% else %}
+            <div class="form-group">
+                <label>Yazar</label>
+                <input type="text" class="form-control" readonly style="opacity: 0.7; cursor: not-allowed;" value="{{ content_data.yazar_adi }}">
+            </div>
+            {% endif %}
+
+            <!-- Image path -->
+            <div class="form-group">
+                <label for="resim">Resim Yolu / Dosya Adı</label>
+                <input type="text" id="resim" name="resim" class="form-control" placeholder="Örn: icerik_resimleri/squat.jpg"
+                       value="{% if content_data %}{{ content_data.resim }}{% endif %}">
+            </div>
+
+            <!-- Text Content -->
+            <div class="form-group">
+                <label for="yazi">İçerik Metni <span style="color: var(--danger)">*</span></label>
+                <textarea id="yazi" name="yazi" class="form-control" rows="12" required placeholder="İçeriğin detaylı metnini buraya yazın..." style="resize: vertical; font-family: monospace;">{% if content_data %}{{ content_data.yazi }}{% endif %}</textarea>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <a href="{% url 'yonetim_icerikler' %}" class="btn btn-secondary">İptal</a>
+            <button type="submit" class="btn btn-primary">
+                <i class="fa-solid fa-floppy-disk"></i> Kaydet
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,2238 @@
+{% extends "base.html" %}
+{% load posts_image_tags %}
+
+{% block title %}{{ seo_title }}{% endblock %}
+{% block meta_description %}{{ seo_description }}{% endblock %}
+{% block og_title %}{{ seo_title }}{% endblock %}
+{% block og_description %}{{ seo_description }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --primary-color: #4f46e5;
+        --primary-dark: #4338ca;
+        --secondary-color: #3b82f6;
+        --success-color: #10b981;
+        --warning-color: #f59e0b;
+        --danger-color: #ef4444;
+        --dark-color: #1e293b;
+        --light-bg: #f8fafc;
+        --border-color: #e2e8f0;
+        --text-muted: #64748b;
+        --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
+        --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    body {
+        background: linear-gradient(135deg, #f8fafc 0%, #e0e7ff 100%);
+        min-height: 100vh;
+    }
+
+    /* PROFILE CARD - SOL TARAF */
+    .profile-main-card {
+        background: white;
+        border-radius: 24px;
+        overflow: visible;
+        box-shadow: var(--shadow-lg);
+        position: sticky;
+        top: 20px;
+        border: 1px solid var(--border-color);
+    }
+
+    .avatar-section {
+        position: relative;
+        text-align: center;
+        padding: 40px 30px 20px;
+    }
+
+    .avatar-wrapper {
+        width: 140px;
+        height: 140px;
+        margin: 0 auto 20px;
+        border-radius: 50%;
+        background: white;
+        padding: 6px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+        position: relative;
+        cursor: pointer;
+        transition: transform 0.3s;
+    }
+
+    .avatar-wrapper:hover {
+        transform: scale(1.05);
+    }
+
+    .avatar-circle {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        font-weight: 800;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .avatar-circle img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .avatar-upload-overlay {
+        position: absolute;
+        bottom: 5px;
+        right: 5px;
+        width: 40px;
+        height: 40px;
+        background: var(--primary-color);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        cursor: pointer;
+        transition: all 0.3s;
+        box-shadow: var(--shadow-md);
+    }
+
+    /* BADGE CURSOR STYLES */
+    .badge-clickable {
+        cursor: pointer !important;
+    }
+
+    .badge-readonly {
+        cursor: default !important;
+    }
+
+    .avatar-upload-overlay:hover {
+        background: var(--primary-dark);
+        transform: scale(1.1);
+    }
+
+    .modal-backdrop.show {
+        z-index: 10040;
+    }
+
+    .modal {
+        z-index: 10050;
+    }
+
+    .profile-username {
+        font-size: 1.75rem;
+        font-weight: 800;
+        margin-bottom: 8px;
+        color: var(--dark-color);
+    }
+
+    .profile-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 20px;
+        border-radius: 25px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        margin-bottom: 20px;
+    }
+
+    .badge-admin {
+        background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+        color: white;
+        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+    }
+
+    .badge-member {
+        background: #f1f5f9;
+        color: var(--text-muted);
+    }
+
+    /* STATS GRID */
+    .admin-section {
+        padding: 20px 25px;
+        border-bottom: 1px solid var(--border-color);
+        background: #fff1f2;
+    }
+
+    .admin-title {
+        color: #be123c;
+        font-weight: 700;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .admin-buttons {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+
+    .btn-admin {
+        padding: 8px;
+        border-radius: 8px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        text-decoration: none;
+        color: white;
+    }
+
+    .btn-ban {
+        background: #ef4444;
+    }
+    .btn-ban:hover { background: #dc2626; }
+
+    .btn-timeout {
+        background: #f59e0b;
+    }
+    .btn-timeout:hover { background: #d97706; }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+        padding: 25px;
+        border-top: 1px solid var(--border-color);
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .stat-card {
+        text-align: center;
+        padding: 15px;
+        background: var(--light-bg);
+        border-radius: 16px;
+        transition: all 0.3s;
+    }
+
+    .stat-card:hover {
+        background: #e0e7ff;
+        transform: translateY(-3px);
+    }
+
+    .stat-number {
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: var(--primary-color);
+        display: block;
+        margin-bottom: 5px;
+    }
+
+    .stat-label {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* PROGRESS - YouTube Tarzı İstatistik */
+    .biometric-section {
+        padding: 22px 25px;
+        border-top: 1px solid var(--border-color);
+    }
+
+    .biometric-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        margin-bottom: 12px;
+    }
+
+    .biometric-tile {
+        min-height: 92px;
+        padding: 13px;
+        background: var(--light-bg);
+        border: 1px solid #eef2f7;
+        border-radius: 12px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .biometric-icon {
+        width: 32px;
+        height: 32px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+        background: rgba(79, 70, 229, 0.12);
+        color: var(--primary-color);
+        margin-bottom: 8px;
+    }
+
+    .biometric-label {
+        color: var(--text-muted);
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+    }
+
+    .biometric-value {
+        color: var(--dark-color);
+        font-size: 1rem;
+        font-weight: 800;
+        line-height: 1.2;
+        word-break: break-word;
+    }
+
+    .biometric-goal-card {
+        padding: 14px;
+        background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%);
+        border: 1px solid #e0e7ff;
+        border-radius: 14px;
+    }
+
+    .biometric-goal-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--dark-color);
+        font-weight: 800;
+        margin-bottom: 4px;
+    }
+
+    .biometric-goal-text {
+        color: var(--text-muted);
+        font-size: 0.84rem;
+        font-weight: 600;
+        margin-bottom: 10px;
+    }
+
+    .biometric-progress {
+        width: 100%;
+        height: 8px;
+        background: rgba(79, 70, 229, 0.12);
+        border-radius: 999px;
+        overflow: hidden;
+    }
+
+    .biometric-progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #10b981, #22d3ee);
+        border-radius: inherit;
+        transition: width 0.4s ease;
+    }
+
+    .activity-progress {
+        padding: 20px 25px;
+    }
+
+    .daily-time-mini {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        margin-bottom: 20px;
+        font-weight: 600;
+        background: #f8fafc;
+        padding: 8px 12px;
+        border-radius: 8px;
+        width: fit-content;
+    }
+
+    .daily-time-mini i {
+        color: var(--primary-color);
+        font-size: 1rem;
+    }
+
+    /* HEATMAP - GitHub Contribution Style */
+    .heatmap-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        padding: 8px 0;
+        justify-content: flex-start;
+        max-width: 100%;
+    }
+
+    .heatmap-cell {
+        width: 13px;
+        height: 13px;
+        border-radius: 3px;
+        cursor: pointer;
+        transition: transform 0.1s ease-in-out, box-shadow 0.1s ease-in-out;
+        position: relative;
+    }
+
+    .heatmap-cell:hover {
+        transform: scale(1.3);
+        box-shadow: 0 0 8px rgba(79, 70, 229, 0.4);
+        z-index: 5;
+    }
+
+    /* 5-tier color scale */
+    .heatmap-cell.level-0 {
+        background-color: #e2e8f0;
+    }
+
+    .heatmap-cell.level-1 {
+        background-color: #c7d2fe;
+    }
+
+    .heatmap-cell.level-2 {
+        background-color: #818cf8;
+    }
+
+    .heatmap-cell.level-3 {
+        background-color: #4f46e5;
+    }
+
+    .heatmap-cell.level-4 {
+        background-color: #312e81;
+    }
+
+    /* Tooltip */
+    .heatmap-cell::after {
+        content: attr(data-tooltip);
+        position: absolute;
+        bottom: calc(100% + 6px);
+        left: 50%;
+        transform: translateX(-50%);
+        background: #1e293b;
+        color: #fff;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 11px;
+        white-space: nowrap;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.2s;
+        z-index: 10;
+        font-weight: 500;
+    }
+
+    .heatmap-cell:hover::after,
+    .heatmap-cell:focus::after {
+        opacity: 1;
+    }
+
+    .heatmap-cell:focus {
+        outline: none; /* Varsayılan odaklanma çerçevesini kaldır */
+        transform: scale(1.3); /* Odaklanınca da büyüsün */
+        z-index: 5;
+    }
+
+    /* Mobile Responsive */
+    @media (max-width: 576px) {
+        .heatmap-container {
+            justify-content: center;
+        }
+
+        .heatmap-cell:active {
+            transform: scale(1.4);
+            z-index: 10;
+        }
+
+        /* MOBİL TOOLTIP KONUMLANDIRMASI - Sola/Sağa Taşmayı Önle */
+        .badges-grid > .badge-item:nth-child(3n+1) .badge-tooltip {
+            left: 0;
+            right: auto;
+            transform: translateY(10px);
+            margin-left: -10px; /* Kenardan hafif pay */
+        }
+        
+        .badges-grid > .badge-item:nth-child(3n+1) .badge-tooltip::after {
+            left: 20%; /* Oku sola kaydır */
+        }
+
+        .badges-grid > .badge-item:nth-child(3n+3) .badge-tooltip {
+            left: auto;
+            right: 0;
+            transform: translateY(10px);
+            margin-right: -10px; /* Kenardan hafif pay */
+        }
+
+        .badges-grid > .badge-item:nth-child(3n+3) .badge-tooltip::after {
+            left: 80%; /* Oku sağa kaydır */
+        }
+
+        /* Mobilde genişliği biraz kıs, taşmayı kesinleştir */
+        .badge-tooltip {
+            width: 250px !important;
+            max-width: 90vw !important;
+        }
+    }
+
+    /* ACHIEVEMENTS / ROZETLER */
+    .achievements-section {
+        padding: 25px;
+        border-top: 1px solid var(--border-color);
+    }
+
+    .section-title {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 15px;
+    }
+
+    .badges-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+    }
+
+    .badge-item {
+        text-align: center;
+        padding: 12px 8px;
+        background: var(--light-bg);
+        border-radius: 12px;
+        transition: all 0.3s;
+        cursor: pointer;
+        position: relative;
+    }
+
+    .badge-item:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .badge-item.locked {
+        opacity: 0.4;
+        filter: grayscale(1);
+    }
+
+    .badge-icon {
+        font-size: 1.8rem;
+        margin-bottom: 5px;
+    }
+
+    .badge-name {
+        font-size: 0.65rem;
+        font-weight: 600;
+        color: var(--text-muted);
+    }
+
+    /* BADGE TOOLTIP */
+    .badge-item .badge-tooltip {
+        visibility: hidden;
+        opacity: 0;
+        position: absolute;
+        bottom: 100%;
+        left: 50%;
+        transform: translateX(-50%) translateY(10px);
+        background: #0f172a;
+        /* Çok koyu lacivert/siyah */
+        color: white;
+        padding: 16px;
+        /* Daha geniş padding */
+        border-radius: 12px;
+        width: 220px;
+        /* Daha geniş */
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+        /* Güçlü gölge */
+        z-index: 100;
+        transition: all 0.2s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        pointer-events: none;
+        margin-bottom: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        /* Hafif çerçeve */
+    }
+
+    .badge-item:hover .badge-tooltip {
+        visibility: visible;
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+
+    .badge-tooltip::after {
+        content: '';
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        border-width: 8px;
+        border-style: solid;
+        border-color: #0f172a transparent transparent transparent;
+    }
+
+    .tooltip-header {
+        font-size: 0.9rem;
+        font-weight: 800;
+        margin-bottom: 6px;
+        color: white;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .tooltip-desc {
+        font-size: 0.75rem;
+        color: #94a3b8;
+        margin-bottom: 12px;
+        line-height: 1.4;
+    }
+
+    .tooltip-stats {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.7rem;
+        font-weight: 600;
+        margin-bottom: 6px;
+        color: #e2e8f0;
+    }
+
+    .tooltip-row {
+        margin-bottom: 8px;
+    }
+
+    .tooltip-row:last-child {
+        margin-bottom: 0;
+    }
+
+    .tooltip-label {
+        font-size: 0.7rem;
+        color: #cbd5e1;
+        margin-bottom: 2px;
+        display: block;
+    }
+
+    .progress-bar-sm {
+        width: 100%;
+        height: 6px;
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 3px;
+        overflow: hidden;
+    }
+
+    .progress-bar-sm .fill {
+        height: 100%;
+        background: linear-gradient(90deg, #3b82f6, #06b6d4);
+        /* Mavi tonları */
+        border-radius: 3px;
+        transition: width 0.5s ease;
+    }
+
+    .badge-item.locked .progress-bar-sm .fill {
+        background: #475569;
+    }
+
+    /* ABOUT SECTION */
+    .about-section {
+        padding: 25px;
+        border-top: 1px solid var(--border-color);
+    }
+
+    .about-text {
+        padding: 15px;
+        background: var(--light-bg);
+        border-radius: 12px;
+        color: var(--text-muted);
+        font-size: 0.9rem;
+        line-height: 1.6;
+        margin-bottom: 15px;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn-primary-custom {
+        flex: 1;
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+        color: white;
+        border: none;
+        padding: 12px 20px;
+        border-radius: 12px;
+        font-weight: 700;
+        transition: all 0.3s;
+        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        text-decoration: none;
+    }
+
+    .btn-primary-custom:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(79, 70, 229, 0.4);
+        color: white;
+    }
+
+    .btn-outline-custom {
+        flex: 1;
+        background: white;
+        color: var(--primary-color);
+        border: 2px solid var(--primary-color);
+        padding: 12px 20px;
+        border-radius: 12px;
+        font-weight: 700;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .btn-outline-custom:hover {
+        background: var(--primary-color);
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    /* SAĞ TARAF - İÇERİK ALANI */
+    .content-area {
+        background: white;
+        border-radius: 24px;
+        padding: 30px;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--border-color);
+    }
+
+    .content-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 25px;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .content-title {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: var(--dark-color);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    /* FİLTRE BUTONLARI */
+    .filter-container {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .filter-btn {
+        background: white;
+        border: 2px solid var(--border-color);
+        color: var(--text-muted);
+        border-radius: 25px;
+        padding: 10px 20px;
+        font-weight: 700;
+        font-size: 0.85rem;
+        transition: all 0.3s;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .filter-btn:hover {
+        border-color: var(--primary-color);
+        color: var(--primary-color);
+        transform: translateY(-2px);
+    }
+
+    .filter-btn.active {
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+        color: white;
+        border-color: transparent;
+        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+    }
+
+    /* İÇERİK KARTLARI */
+    .content-card {
+        background: white;
+        border: 2px solid var(--border-color);
+        border-radius: 16px;
+        padding: 20px;
+        margin-bottom: 15px;
+        transition: all 0.3s;
+        display: flex;
+        gap: 20px;
+        align-items: flex-start;
+        position: relative;
+    }
+
+    .content-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-md);
+        border-color: var(--primary-color);
+    }
+
+    .content-icon {
+        width: 55px;
+        height: 55px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        font-size: 1.6rem;
+    }
+
+    .icon-soru {
+        background: linear-gradient(135deg, #fff7ed 0%, #fed7aa 100%);
+        color: #ea580c;
+    }
+
+    .icon-haber {
+        background: linear-gradient(135deg, #eff6ff 0%, #bfdbfe 100%);
+        color: #2563eb;
+    }
+
+    .icon-kayit {
+        background: linear-gradient(135deg, #f0f9ff 0%, #bae6fd 100%);
+        color: #0284c7;
+    }
+
+    .icon-begeni {
+        background: linear-gradient(135deg, #fef2f2 0%, #fecaca 100%);
+        color: #ef4444;
+    }
+
+    .content-body {
+        flex: 1;
+    }
+
+    .content-meta {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 8px;
+        flex-wrap: wrap;
+    }
+
+    .meta-badge {
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 4px 12px;
+        border-radius: 6px;
+    }
+
+    .meta-soru {
+        background: #fff7ed;
+        color: #ea580c;
+    }
+
+    .meta-haber {
+        background: #eff6ff;
+        color: #2563eb;
+    }
+
+    .meta-date {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        font-weight: 600;
+    }
+
+    .content-title-link {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--dark-color);
+        text-decoration: none;
+        display: block;
+        margin-bottom: 8px;
+        line-height: 1.4;
+    }
+
+    .content-title-link:hover {
+        color: var(--primary-color);
+    }
+
+    .content-excerpt {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+        line-height: 1.5;
+        margin-bottom: 12px;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        word-break: break-word;
+        overflow-wrap: anywhere;
+        hyphens: auto;
+    }
+
+    .content-stats {
+        display: flex;
+        gap: 20px;
+        font-size: 0.8rem;
+        color: var(--text-muted);
+    }
+
+    .stat-item-inline {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    /* TIMELINE - AKTİVİTE */
+    .activity-timeline {
+        background: white;
+        border-radius: 24px;
+        padding: 25px;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--border-color);
+        margin-top: 20px;
+    }
+
+    .timeline-item {
+        display: flex;
+        gap: 15px;
+        padding: 15px;
+        border-left: 3px solid var(--border-color);
+        margin-left: 10px;
+        position: relative;
+        transition: all 0.3s;
+    }
+
+    .timeline-item:hover {
+        border-left-color: var(--primary-color);
+        background: var(--light-bg);
+        border-radius: 12px;
+    }
+
+    .timeline-item::before {
+        content: '';
+        position: absolute;
+        left: -8px;
+        top: 20px;
+        width: 13px;
+        height: 13px;
+        background: white;
+        border: 3px solid var(--primary-color);
+        border-radius: 50%;
+    }
+
+    .timeline-icon {
+        width: 40px;
+        height: 40px;
+        background: var(--light-bg);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        flex-shrink: 0;
+    }
+
+    .timeline-content {
+        flex: 1;
+    }
+
+    .timeline-title {
+        font-weight: 700;
+        color: var(--dark-color);
+        font-size: 0.9rem;
+        margin-bottom: 4px;
+    }
+
+    .timeline-desc {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        margin-bottom: 5px;
+    }
+
+    .timeline-time {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        font-weight: 600;
+    }
+
+    /* EMPTY STATE */
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+    }
+
+    .empty-icon {
+        font-size: 4rem;
+        color: var(--border-color);
+        margin-bottom: 20px;
+    }
+
+    .empty-title {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--dark-color);
+        margin-bottom: 10px;
+    }
+
+    .empty-desc {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+    }
+
+    .profile-content-loading {
+        opacity: 0.55;
+        pointer-events: none;
+        transition: opacity 0.2s ease;
+    }
+
+    .profile-content-error {
+        margin-top: 8px;
+        color: #dc2626;
+        font-weight: 700;
+        font-size: 0.88rem;
+        text-align: center;
+    }
+
+    .profile-page-btn,
+    .profile-pagination-ellipsis {
+        width: 32px;
+        height: 32px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 7px;
+        font-weight: 700;
+        flex: 0 0 auto;
+    }
+
+    .profile-page-btn {
+        border: 1px solid var(--primary-color);
+        color: var(--primary-color);
+        background: white;
+    }
+
+    .profile-page-btn.active {
+        background: var(--primary-color);
+        border-color: var(--primary-color);
+        color: white;
+    }
+
+    .profile-page-btn:disabled {
+        border-color: var(--border-color);
+        color: var(--text-muted);
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
+
+    .profile-pagination-ellipsis {
+        color: var(--text-muted);
+    }
+
+    /* MOBILE DROPDOWN FOR FILTERS */
+    .filter-dropdown {
+        display: none;
+        width: 100%;
+    }
+
+    .filter-dropdown select {
+        width: 100%;
+        padding: 12px 16px;
+        border: 2px solid var(--border-color);
+        border-radius: 12px;
+        font-weight: 700;
+        color: var(--dark-color);
+        background: white;
+    }
+
+    /* RESPONSIVE - MOBILE */
+    @media (max-width: 991px) {
+        .avatar-section {
+            padding: 30px 20px 15px;
+        }
+
+        .avatar-wrapper {
+            width: 100px;
+            height: 100px;
+        }
+
+        .avatar-circle {
+            font-size: 2rem;
+        }
+
+        .profile-username {
+            font-size: 1.4rem;
+        }
+
+        .profile-main-card {
+            position: relative;
+            top: 0;
+            margin-bottom: 20px;
+        }
+
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            padding: 20px;
+        }
+
+        .stat-number {
+            font-size: 1.4rem;
+        }
+
+        .badges-grid {
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+
+        .badge-icon {
+            font-size: 1.4rem;
+        }
+
+        .content-area {
+            padding: 20px;
+            border-radius: 20px;
+        }
+
+        .content-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .content-title {
+            font-size: 1.3rem;
+        }
+
+        .filter-container {
+            display: none;
+        }
+
+        .filter-dropdown {
+            display: block;
+        }
+
+        .content-card {
+            flex-direction: column;
+            gap: 15px;
+            padding: 15px;
+        }
+
+        .content-icon {
+            width: 100%;
+            height: 60px;
+        }
+
+        .activity-timeline {
+            padding: 20px;
+            border-radius: 20px;
+        }
+
+        .timeline-item {
+            padding: 12px;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .badges-grid {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .content-meta {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+        }
+    }
+
+    /* ANİMASYONLAR */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .content-card,
+    .timeline-item {
+        animation: fadeInUp 0.5s ease;
+    }
+
+    .stats-row {
+        padding: 8px 16px 14px;
+    }
+
+    .stat-box {
+        background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%);
+        border-color: #c7d2fe;
+        min-height: 108px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease, background 0.25s ease;
+    }
+
+    .stat-box:hover {
+        transform: translateY(-6px) scale(1.03);
+        border-color: #4f46e5;
+        background: linear-gradient(135deg, #ffffff 0%, #e0e7ff 100%);
+        box-shadow: 0 18px 36px rgba(79, 70, 229, 0.28);
+    }
+
+    .stat-label-text {
+        color: #4f46e5;
+        font-weight: 800;
+        letter-spacing: 1.6px;
+    }
+
+    .stat-value {
+        color: #0b1b3a;
+    }
+
+    /* LOADING SKELETON */
+    .skeleton {
+        background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+        background-size: 200% 100%;
+        animation: loading 1.5s infinite;
+        border-radius: 8px;
+    }
+
+    @keyframes loading {
+        0% {
+            background-position: 200% 0;
+        }
+
+        100% {
+            background-position: -200% 0;
+        }
+    }
+
+    /* MOBİL OVERFLOW DÜZELTMESİ - sticky'yi bozmadan */
+    @media (max-width: 768px) {
+        .container {
+            overflow-x: hidden !important;
+            max-width: 100% !important;
+            box-sizing: border-box !important;
+        }
+
+        .row {
+            margin-left: 0 !important;
+            margin-right: 0 !important;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row g-4">
+        <!-- SOL TARAF - PROFİL KARTI -->
+        <div class="col-lg-4">
+            <div class="profile-main-card">
+                <!-- AVATAR SECTION -->
+                <div class="avatar-section">
+                    <div class="avatar-wrapper">
+                        <a href="{% url 'profil' profil_sahibi.username %}" class="text-decoration-none">
+                            <div class="avatar-circle">
+                                {% with profile_avatar=profil_sahibi|avatar_url %}
+                                {% if profile_avatar %}
+                                <img src="{{ profile_avatar }}" alt="{{ profil_sahibi.username }}">
+                                {% else %}
+                                {{ profil_sahibi.username|make_list|first|upper }}
+                                {% endif %}
+                                {% endwith %}
+                            </div>
+                        </a>
+                        {% if request.user == profil_sahibi %}
+                        <form id="quick-profile-photo-form" method="post" action="{% url 'profil_foto_guncelle' %}" enctype="multipart/form-data" class="d-none">
+                            {% csrf_token %}
+                            <input type="file" name="foto" id="quick-profile-photo-input" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp">
+                        </form>
+                        <div class="avatar-upload-overlay" title="Profil fotoğrafı" role="button" data-bs-toggle="modal" data-bs-target="#profilePhotoModal">
+                            <i class="bi bi-camera-fill"></i>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <a href="{% url 'profil' profil_sahibi.username %}" class="text-decoration-none">
+                        <h3 class="profile-username">{{ profil_sahibi.username }}</h3>
+                    </a>
+
+                    {% if profil_sahibi.is_superuser %}
+                    <span class="profile-badge badge-admin">
+                        <i class="bi bi-shield-check"></i> Admin
+                    </span>
+                    {% else %}
+                    <span class="profile-badge badge-member">
+                        <i class="bi bi-person"></i> Üye
+                    </span>
+                    {% endif %}
+                </div>
+
+                {% if request.user.is_superuser and request.user != profil_sahibi %}
+                <div class="admin-section">
+                    <div class="admin-title">
+                        <i class="bi bi-shield-lock-fill"></i> Yönetici İşlemleri
+                    </div>
+                    <div class="admin-buttons">
+                        <button type="button" class="btn-admin btn-ban" data-bs-toggle="modal" data-bs-target="#banModal">
+                            <i class="bi bi-slash-circle"></i>
+                            {{ profil_sahibi.profil.is_banned|yesno:"Yasağı Kaldır,Yasakla" }}
+                        </button>
+                        <button type="button" class="btn-admin btn-timeout" data-bs-toggle="modal" data-bs-target="#timeoutModal">
+                            <i class="bi bi-clock-history"></i> Sustur
+                        </button>
+                    </div>
+                </div>
+
+                {% endif %}
+
+                {% if request.user == profil_sahibi and request.user.is_superuser %}
+                <a href="{% url 'admin_monitor' %}" class="btn-admin-panel mb-3" style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 12px; border-radius: 12px; background: linear-gradient(135deg, #1e1b4b 0%, #4338ca 100%); color: white; text-decoration: none; font-weight: 700; transition: all 0.3s; box-shadow: 0 4px 15px rgba(67, 56, 202, 0.3);">
+                    <i class="bi bi-speedometer2"></i> Yönetim Paneli
+                </a>
+                <style>
+                    .btn-admin-panel:hover {
+                        transform: translateY(-2px);
+                        box-shadow: 0 8px 25px rgba(67, 56, 202, 0.4);
+                        color: white;
+                    }
+                </style>
+                {% endif %}
+
+                <div class="row g-4 mb-4 stats-row">
+                    <div class="col-6">
+                        <div class="p-3 bg-white rounded-4 text-center h-100 border shadow-sm stat-box">
+                            <div class="small mb-1 text-uppercase stat-label-text" style="font-size: 0.7rem;">
+                                PAYLAŞIM
+                            </div>
+                            <div class="fs-4 fw-bold stat-value">
+                                {{ toplam_icerik_sayisi }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-6">
+                        <div class="p-3 bg-white rounded-4 text-center h-100 border shadow-sm stat-box">
+                            <div class="small mb-1 text-uppercase stat-label-text" style="font-size: 0.7rem;">
+                                KATILIM
+                            </div>
+                            <div class="fs-5 fw-bold stat-value pt-1">
+                                {{ profil_sahibi.date_joined|date:"j M Y" }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AKTİVİTE HEATMAP - GitHub Contribution Style -->
+                {% if request.user == profil_sahibi %}
+                <div class="biometric-section">
+                    <h6 class="section-title">BİYOMETRİ</h6>
+                    <div class="biometric-grid">
+                        <div class="biometric-tile">
+                            <div>
+                                <span class="biometric-icon"><i class="bi bi-rulers"></i></span>
+                                <div class="biometric-label">Boy</div>
+                            </div>
+                            <div class="biometric-value">{{ biyometri.height|default:"Eklenmedi" }}</div>
+                        </div>
+                        <div class="biometric-tile">
+                            <div>
+                                <span class="biometric-icon"><i class="bi bi-speedometer2"></i></span>
+                                <div class="biometric-label">Kilo</div>
+                            </div>
+                            <div class="biometric-value">{{ biyometri.weight|default:"Eklenmedi" }}</div>
+                        </div>
+                        <div class="biometric-tile">
+                            <div>
+                                <span class="biometric-icon"><i class="bi bi-activity"></i></span>
+                                <div class="biometric-label">BMI</div>
+                            </div>
+                            <div class="biometric-value">
+                                {{ biyometri.bmi|default:"-" }}
+                                <small class="d-block text-muted fw-semibold">{{ biyometri.bmi_category }}</small>
+                            </div>
+                        </div>
+                        <div class="biometric-tile">
+                            <div>
+                                <span class="biometric-icon"><i class="bi bi-cake2"></i></span>
+                                <div class="biometric-label">Doğum</div>
+                            </div>
+                            <div class="biometric-value">
+                                {% if biyometri.birth_date %}{{ biyometri.birth_date|date:"j M Y" }}{% else %}Eklenmedi{% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="biometric-goal-card">
+                        <div class="biometric-goal-title">
+                            <i class="bi bi-flag-fill text-success"></i>
+                            <span>{{ biyometri.goal|default:"Fitness hedefi eklenmedi" }}</span>
+                        </div>
+                        <div class="biometric-goal-text">
+                            {{ biyometri.target_status }}
+                            {% if biyometri.target %}<span class="text-success fw-bold"> · {{ biyometri.target }}</span>{% endif %}
+                        </div>
+                        <div class="biometric-progress" aria-hidden="true">
+                            <div class="biometric-progress-fill" style="width: {{ biyometri.target_progress }}%;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="activity-progress">
+                    <h6 class="section-title">AKTİVİTE HARİTASI</h6>
+
+                    <!-- Günlük Ortalama -->
+                    <div class="daily-time-mini">
+                        <i class="bi bi-grid-3x3-gap-fill"></i>
+                        <span>Son 30 gün: <strong>{{ gunluk_ortalama|default:0 }} dk</strong> günlük ortalama</span>
+                    </div>
+
+                    <!-- Heatmap Grid -->
+                    <div class="heatmap-container">
+                        {% for gun in gunluk_aktivite_verisi %}
+                        <div class="heatmap-cell {% if gun.sure == 0 %}level-0{% elif gun.sure <= 20 %}level-1{% elif gun.sure <= 45 %}level-2{% elif gun.sure <= 90 %}level-3{% else %}level-4{% endif %}"
+                            data-tooltip="{{ gun.tarih }}: {{ gun.sure }} dk" tabindex="0">
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                </div>
+                {% endif %}
+
+                <!-- ACHIEVEMENTS / ROZETLER -->
+                <div class="achievements-section">
+                    <h6 class="section-title">BAŞARILAR</h6>
+                    <div class="badges-grid">
+                        <!-- 1. İLK ADIM (1 Gönderi) -->
+                        <div
+                            class="badge-item {% if rozetler.ilk_adim < 100 %}locked{% endif %} {% if request.user == profil_sahibi %}badge-clickable{% else %}badge-readonly{% endif %}">
+                            <div class="badge-icon">🎯</div>
+                            <div class="badge-name">İlk Adım</div>
+
+                            {% if request.user == profil_sahibi %}
+                            <div class="badge-tooltip">
+                                <div class="tooltip-header">İlk Adım</div>
+                                <div class="tooltip-desc">Merak ettiğin bir konuda <strong>ilk sorunu</strong> sorarak
+                                    başla.</div>
+
+                                <div class="tooltip-stats">
+                                    <span>Soru Sor</span>
+                                    <span>{{ toplam_soru }} / 1</span>
+                                </div>
+
+                                <div class="progress-bar-sm">
+                                    <div class="fill progress-fill" data-width="{{ rozetler.ilk_adim }}%"></div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- 2. AKTİF (10 Gönderi) -->
+                        <div
+                            class="badge-item {% if rozetler.aktif < 100 %}locked{% endif %} {% if request.user == profil_sahibi %}badge-clickable{% else %}badge-readonly{% endif %}">
+                            <div class="badge-icon">⭐</div>
+                            <div class="badge-name">Aktif</div>
+
+                            {% if request.user == profil_sahibi %}
+                            <div class="badge-tooltip" style="width: 240px;">
+                                <div class="tooltip-header">Aktif Üye</div>
+                                <div class="tooltip-desc">Topluluğun parçası ol. Aşağıdaki görevleri tamamla:</div>
+
+                                <div class="tooltip-row">
+                                    <div class="tooltip-stats">
+                                        <span>Soru Sor</span>
+                                        <span>{{ toplam_soru }} / 10</span>
+                                    </div>
+                                    <div class="progress-bar-sm">
+                                        <div class="fill progress-fill" data-width="{{ rozetler.aktif_detay.soru }}%"
+                                            style="background: #fbbf24;"></div>
+                                    </div>
+                                </div>
+
+                                <div class="tooltip-row">
+                                    <div class="tooltip-stats">
+                                        <span>Yorum Yap</span>
+                                        <span>{{ toplam_yorum }} / 15</span>
+                                    </div>
+                                    <div class="progress-bar-sm">
+                                        <div class="fill progress-fill" data-width="{{ rozetler.aktif_detay.yorum }}%"
+                                            style="background: #fbbf24;"></div>
+                                    </div>
+                                </div>
+
+                                <div class="tooltip-row">
+                                    <div class="tooltip-stats">
+                                        <span>Beğeni At</span>
+                                        <span>{{ yapilan_begeni_sayisi }} / 20</span>
+                                    </div>
+                                    <div class="progress-bar-sm">
+                                        <div class="fill progress-fill" data-width="{{ rozetler.aktif_detay.begeni }}%"
+                                            style="background: #fbbf24;"></div>
+                                    </div>
+                                </div>
+
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- 3. SEVİLEN (200 Beğeni Verme) -->
+                        <div
+                            class="badge-item {% if rozetler.begenme < 100 %}locked{% endif %} {% if request.user == profil_sahibi %}badge-clickable{% else %}badge-readonly{% endif %}">
+                            <div class="badge-icon">❤️</div>
+                            <div class="badge-name">Beğenme</div>
+
+                            {% if request.user == profil_sahibi %}
+                            <div class="badge-tooltip">
+                                <div class="tooltip-header">Beğeni Tutkunu</div>
+                                <div class="tooltip-desc">Toplam <strong>200 içerik veya yorumu beğenerek</strong> topluluğa destek
+                                    ol.</div>
+
+                                <div class="tooltip-stats">
+                                    <span>Beğeni At</span>
+                                    <span>{{ yapilan_begeni_sayisi }} / 200</span>
+                                </div>
+
+                                <div class="progress-bar-sm">
+                                    <div class="fill progress-fill" data-width="{{ rozetler.begenme }}%"></div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+
+
+                        <!-- 5. KONUŞKAN (150 Yorum) -->
+                        <div
+                            class="badge-item {% if rozetler.konuskan < 100 %}locked{% endif %} {% if request.user == profil_sahibi %}badge-clickable{% else %}badge-readonly{% endif %}">
+                            <div class="badge-icon">💬</div>
+                            <div class="badge-name">Konuşkan</div>
+
+                            {% if request.user == profil_sahibi %}
+                            <div class="badge-tooltip">
+                                <div class="tooltip-header">Konuşkan</div>
+                                <div class="tooltip-desc">150 yorum yaparak tartışmalara katıl.</div>
+
+                                <div class="tooltip-stats">
+                                    <span>Yorum Yap</span>
+                                    <span>{{ toplam_yorum|default:0 }} / 150</span>
+                                </div>
+
+                                <div class="progress-bar-sm">
+                                    <div class="fill progress-fill" data-width="{{ rozetler.konuskan }}%"></div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- 4. POPÜLER (100 Soru) -->
+                        <div
+                            class="badge-item {% if rozetler.populer < 100 %}locked{% endif %} {% if request.user == profil_sahibi %}badge-clickable{% else %}badge-readonly{% endif %}">
+                            <div class="badge-icon">🔥</div>
+                            <div class="badge-name">Popüler</div>
+
+                            {% if request.user == profil_sahibi %}
+                            <div class="badge-tooltip">
+                                <div class="tooltip-header">Popüler</div>
+                                <div class="tooltip-desc">Toplam <strong>100 soru sorarak</strong> topluluğun yıldızı
+                                    ol.</div>
+
+                                <div class="tooltip-stats">
+                                    <span>Soru Sor</span>
+                                    <span>{{ toplam_soru }} / 100</span>
+                                </div>
+
+                                <div class="progress-bar-sm">
+                                    <div class="fill progress-fill" data-width="{{ rozetler.populer }}%"></div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- 6. VIP (Özel) -->
+                        <div
+                            class="badge-item {% if toplam_soru < 300 or toplam_yorum < 450 or yapilan_begeni_sayisi < 600 %}locked{% endif %} {% if request.user == profil_sahibi %}badge-clickable{% else %}badge-readonly{% endif %}">
+                            <div class="badge-icon">👑</div>
+                            <div class="badge-name">VIP</div>
+
+                            {% if request.user == profil_sahibi %}
+                            <div class="badge-tooltip" style="width: 260px;">
+                                <div class="tooltip-header" style="color: #fbbf24;">VIP Üye</div>
+                                <div class="tooltip-desc">Gerçek bir efsane ol. Aşağıdaki tüm şartları tamamla.</div>
+
+                                <div class="tooltip-row">
+                                    <div class="tooltip-stats">
+                                        <span>Soru Sor</span>
+                                        <span>{{ toplam_soru }} / 300</span>
+                                    </div>
+                                    <div class="progress-bar-sm">
+                                        <div class="fill progress-fill" data-width="{{ rozetler.vip_soru }}%"
+                                            style="background: #fbbf24;"></div>
+
+                                    </div>
+                                </div>
+
+                                <div class="tooltip-row">
+                                    <div class="tooltip-stats">
+                                        <span>Yorum Yap</span>
+                                        <span>{{ toplam_yorum }} / 450</span>
+                                    </div>
+                                    <div class="progress-bar-sm">
+                                        <div class="fill progress-fill" data-width="{{ rozetler.vip_yorum }}%"
+                                            style="background: #fbbf24;"></div>
+
+                                    </div>
+                                </div>
+
+                                <div class="tooltip-row">
+                                    <div class="tooltip-stats">
+                                        <span>Beğeni At</span>
+                                        <span>{{ yapilan_begeni_sayisi }} / 600</span>
+                                    </div>
+                                    <div class="progress-bar-sm">
+                                        <div class="fill progress-fill" data-width="{{ rozetler.vip_begeni }}%"
+                                            style="background: #fbbf24;"></div>
+
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ABOUT SECTION -->
+                <div class="about-section">
+                    <h6 class="section-title">HAKKINDA</h6>
+                    <div class="about-text">
+                        {% if profil_sahibi.profil.hakkinda %}
+                        {{ profil_sahibi.profil.hakkinda }}
+                        {% else %}
+                        Merhaba! Ben spor ve sağlıklı yaşam tutkunuyum. Burada tecrübelerimi paylaşıyor ve yeni şeyler
+                        öğreniyorum. 💪
+                        {% endif %}
+                    </div>
+
+                    <!-- ACTION BUTTONS -->
+                    {% if request.user == profil_sahibi %}
+                    <div class="action-buttons mb-3">
+                        <a href="{% url 'profil_duzenle' %}" class="btn-primary-custom">
+                            <i class="bi bi-pencil-square"></i> Profili Düzenle
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- SAĞ TARAF - İÇERİK ALANI -->
+        <div class="col-lg-8">
+            <!-- İÇERİK KARTLARI -->
+            <div class="content-area">
+                <div class="content-header">
+                    <h4 class="content-title">
+                        <i class="bi bi-pin-angle-fill"></i> Profil İçeriği
+                    </h4>
+
+                    <!-- Desktop Filters -->
+                    <div class="filter-container">
+                        <button class="filter-btn active" onclick="filterContent('paylasim', this)">
+                            <i class="bi bi-grid-3x3-gap"></i> Paylaşımlar
+                        </button>
+                        {% if request.user == profil_sahibi %}
+                        <button class="filter-btn" onclick="filterContent('kaydedilen', this)">
+                            <i class="bi bi-bookmark"></i> Kaydedilenler
+                        </button>
+                        <button class="filter-btn" onclick="filterContent('begeni', this)">
+                            <i class="bi bi-heart"></i> Beğenilenler
+                        </button>
+                        {% endif %}
+                    </div>
+
+                    <!-- Mobile Dropdown -->
+                    <div class="filter-dropdown">
+                        <select onchange="filterContentMobile(this.value)">
+                            <option value="paylasim">📋 Paylaşımlar</option>
+                            {% if request.user == profil_sahibi %}
+                            <option value="kaydedilen">🔖 Kaydedilenler</option>
+                            <option value="begeni">❤️ Beğenilenler</option>
+                            {% endif %}
+                        </select>
+                    </div>
+                </div>
+
+                <div id="content-list" aria-live="polite">
+                    {% include "_profil_content_items.html" with content_type="paylasim" content_items=profile_content_items %}
+                </div>
+                <!-- PAGINATION CONTROLS -->
+                <div id="pagination-controls" class="d-flex justify-content-center align-items-center flex-wrap gap-2 mt-3 pb-3">
+                    <!-- JS ile doldurulacak -->
+                </div>
+                <div id="profile-content-error" class="profile-content-error d-none"></div>
+            </div>
+
+
+
+            <!-- AKTİVİTE TİMELINE -->
+            {% if request.user == profil_sahibi %}
+            <div class="activity-timeline">
+                <h5 class="content-title mb-4">
+                    <i class="bi bi-clock-history"></i> Son Aktiviteler
+                </h5>
+
+                {% for aktivite in aktiviteler_timeline %}
+                <div class="timeline-item">
+                    <!-- İKON VE RENK AYARLAMASI -->
+                    {% if aktivite.tur == 'icerik' %}
+                    <div class="timeline-icon text-primary bg-primary-subtle">
+                        <i class="bi bi-plus-circle-fill"></i>
+                    </div>
+                    {% elif aktivite.tur == 'yorum' %}
+                    <div class="timeline-icon text-success bg-success-subtle">
+                        <i class="bi bi-chat-fill"></i>
+                    </div>
+                    {% elif aktivite.tur == 'begeni' %}
+                    <div class="timeline-icon text-danger bg-danger-subtle">
+                        <i class="bi bi-heart-fill"></i>
+                    </div>
+                    {% elif aktivite.tur == 'kayit' %}
+                    <div class="timeline-icon text-warning bg-warning-subtle">
+                        <i class="bi bi-bookmark-fill"></i>
+                    </div>
+                    {% endif %}
+
+                    <div class="timeline-content">
+                        <div class="timeline-title">
+                            {{ aktivite.detay }}
+                        </div>
+
+                        <!-- LİNK VE BAŞLIK AYARLAMASI -->
+                        {% if aktivite.tur == 'icerik' and aktivite.icerik %}
+                        <a href="{% url 'detay' aktivite.icerik.id %}" class="text-decoration-none">
+                            <div class="timeline-desc">{{ aktivite.icerik.baslik }}</div>
+                        </a>
+                        {% elif aktivite.tur == 'yorum' and aktivite.icerik %}
+                        <a href="{% url 'detay' aktivite.icerik.id %}?odak={{ aktivite.yorum.id }}"
+                            class="text-decoration-none">
+                            <div class="timeline-desc">{{ aktivite.icerik.baslik }}</div>
+                        </a>
+                        {% elif aktivite.tur == 'begeni' and aktivite.icerik %}
+                        <a href="{% url 'detay' aktivite.icerik.id %}?odak={{ aktivite.yorum.id }}"
+                            class="text-decoration-none">
+                            <div class="timeline-desc">{{ aktivite.icerik.baslik }}</div>
+                        </a>
+                        {% elif aktivite.tur == 'kayit' and aktivite.icerik %}
+                        <a href="{% url 'detay' aktivite.icerik.id %}" class="text-decoration-none">
+                            <div class="timeline-desc">{{ aktivite.icerik.baslik }}</div>
+                        </a>
+                        {% endif %}
+
+                        <div class="timeline-time">{{ aktivite.tarih|safe_timesince }} önce</div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="empty-state">
+                    <div class="empty-icon">🔕</div>
+                    <h5 class="empty-title">Henüz Bir Aktivite Yok</h5>
+                    <p class="empty-desc">Paylaşım veya yorum yaparak aktivite oluşturabilirsin.</p>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const profileContentUrl = "{% url 'profil_icerikleri' profil_sahibi.username %}";
+    let currentPage = {{ profile_content_page.number|default:1 }};
+    let currentTotalPages = {{ profile_content_total_pages|default:1 }};
+    let currentType = 'paylasim';
+    let isProfileContentLoading = false;
+
+    document.addEventListener('DOMContentLoaded', function () {
+        renderPaginationControls(currentTotalPages);
+    });
+
+    function filterContent(type, btn) {
+        if (isProfileContentLoading) return;
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        if (btn) btn.classList.add('active');
+        syncMobileFilter(type);
+        loadProfileContent(type, 1, false);
+    }
+
+    function filterContentMobile(type) {
+        if (isProfileContentLoading) return;
+        syncDesktopFilter(type);
+        loadProfileContent(type, 1, false);
+    }
+
+    function syncMobileFilter(type) {
+        const select = document.querySelector('.filter-dropdown select');
+        if (select) select.value = type;
+    }
+
+    function syncDesktopFilter(type) {
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            const handler = btn.getAttribute('onclick') || '';
+            const isTarget = handler.includes(`'${type}'`);
+            btn.classList.toggle('active', Boolean(isTarget));
+        });
+    }
+
+    function loadProfileContent(type, page, shouldScroll = true) {
+        if (isProfileContentLoading) return;
+
+        isProfileContentLoading = true;
+        setProfileContentLoading(true);
+        hideProfileContentError();
+
+        const url = new URL(profileContentUrl, window.location.origin);
+        url.searchParams.set('type', type);
+        url.searchParams.set('page', page);
+
+        fetch(url.toString(), {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Profil içeriği yüklenemedi.');
+                }
+                return response.json();
+            })
+            .then(data => {
+                document.getElementById('content-list').innerHTML = data.html;
+                currentType = data.type;
+                currentPage = data.page;
+                currentTotalPages = data.total_pages;
+                renderPaginationControls(currentTotalPages);
+
+                if (shouldScroll) {
+                    scrollToContentArea();
+                }
+            })
+            .catch(error => {
+                console.error(error);
+                showProfileContentError('İçerik yüklenemedi. Lütfen tekrar deneyin.');
+                syncDesktopFilter(currentType);
+                syncMobileFilter(currentType);
+            })
+            .finally(() => {
+                isProfileContentLoading = false;
+                setProfileContentLoading(false);
+            });
+    }
+
+    function setProfileContentLoading(isLoading) {
+        const list = document.getElementById('content-list');
+        const controls = document.getElementById('pagination-controls');
+        if (list) list.classList.toggle('profile-content-loading', isLoading);
+        if (controls) {
+            controls.querySelectorAll('button').forEach(button => {
+                button.disabled = isLoading || button.dataset.disabled === 'true';
+            });
+        }
+    }
+
+    function showProfileContentError(message) {
+        const errorBox = document.getElementById('profile-content-error');
+        if (!errorBox) return;
+        errorBox.textContent = message;
+        errorBox.classList.remove('d-none');
+    }
+
+    function hideProfileContentError() {
+        const errorBox = document.getElementById('profile-content-error');
+        if (!errorBox) return;
+        errorBox.textContent = '';
+        errorBox.classList.add('d-none');
+    }
+
+    function renderPaginationControls(totalPages) {
+        const container = document.getElementById('pagination-controls');
+        if (!container) return;
+
+        if (totalPages <= 1) {
+            container.innerHTML = '';
+            return;
+        }
+
+        const parts = [];
+        parts.push(renderPageArrow(currentPage - 1, 'bi-chevron-left', currentPage === 1));
+
+        getVisiblePaginationItems(totalPages, currentPage).forEach(item => {
+            parts.push(item === 'ellipsis' ? renderEllipsis() : renderPageButton(item));
+        });
+
+        parts.push(renderPageArrow(currentPage + 1, 'bi-chevron-right', currentPage === totalPages));
+        container.innerHTML = parts.join('');
+    }
+
+    function getVisiblePaginationItems(totalPages, page) {
+        if (totalPages <= 5) {
+            return Array.from({ length: totalPages }, (_, index) => index + 1);
+        }
+
+        const pages = new Set([1, totalPages, page]);
+
+        if (page <= 3) {
+            [2, 3].forEach(value => pages.add(value));
+        } else if (page >= totalPages - 2) {
+            [totalPages - 2, totalPages - 1].forEach(value => pages.add(value));
+        } else {
+            [page - 1, page + 1].forEach(value => pages.add(value));
+        }
+
+        const sortedPages = Array.from(pages)
+            .filter(value => value >= 1 && value <= totalPages)
+            .sort((a, b) => a - b);
+
+        const items = [];
+        sortedPages.forEach((value, index) => {
+            if (index > 0 && value - sortedPages[index - 1] > 1) {
+                items.push('ellipsis');
+            }
+            items.push(value);
+        });
+        return items;
+    }
+
+    function renderPageButton(page) {
+        const activeClass = page === currentPage ? ' active' : '';
+        return `
+            <button type="button" class="profile-page-btn${activeClass}" onclick="changePage(${page})" aria-label="${page}. sayfa">
+                ${page}
+            </button>
+        `;
+    }
+
+    function renderPageArrow(page, icon, disabled) {
+        return `
+            <button type="button" class="profile-page-btn" data-disabled="${disabled}" ${disabled ? 'disabled' : ''} onclick="changePage(${page})" aria-label="Sayfa değiştir">
+                <i class="bi ${icon}"></i>
+            </button>
+        `;
+    }
+
+    function renderEllipsis() {
+        return '<span class="profile-pagination-ellipsis" aria-hidden="true">...</span>';
+    }
+
+    function changePage(page) {
+        if (page < 1 || page > currentTotalPages || page === currentPage) return;
+        loadProfileContent(currentType, page, true);
+    }
+
+    function scrollToContentArea() {
+        const contentArea = document.querySelector('.content-area');
+        if (!contentArea) return;
+        const listTop = contentArea.getBoundingClientRect().top + window.scrollY - 100;
+        window.scrollTo({ top: listTop, behavior: 'smooth' });
+    }
+
+    // HEARTBEAT ANIMATION - Artık statik tek grafik kullanılıyor, JS gerekmez.
+
+    // PROGRESS BAR ANİMASYONU (Eğer kullanılıyorsa, şu an kalp ritmi var ama yine de kalabilir)
+    // Kalp ritmi olduğu için bu kısmı kaldırabiliriz veya pasif bırakabiliriz.
+    document.addEventListener('DOMContentLoaded', function () {
+        const progressBars = document.querySelectorAll('.progress-fill');
+        progressBars.forEach(bar => {
+            const width = bar.getAttribute('data-width');
+            bar.style.width = '0%';
+            setTimeout(() => {
+                bar.style.width = width;
+            }, 300);
+        });
+    });
+
+    // SMOOTH SCROLL
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        });
+    });
+
+    {% if request.user == profil_sahibi %}
+    document.addEventListener('DOMContentLoaded', function () {
+        const profilePhotoUploadButton = document.getElementById('profile-photo-upload-button');
+        const avatarUploadInput = document.getElementById('quick-profile-photo-input');
+        const avatarUploadForm = document.getElementById('quick-profile-photo-form');
+        if (profilePhotoUploadButton && avatarUploadInput && avatarUploadForm) {
+            profilePhotoUploadButton.addEventListener('click', function () {
+                avatarUploadInput.click();
+            });
+            avatarUploadInput.addEventListener('change', function () {
+                if (avatarUploadInput.files.length > 0) {
+                    avatarUploadForm.submit();
+                }
+            });
+        }
+    });
+    {% endif %}
+
+    // LAZY LOADING İMAGES (Eğer profil fotoğrafları eklenirse)
+    if ('IntersectionObserver' in window) {
+        const imageObserver = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const img = entry.target;
+                    img.src = img.dataset.src;
+                    img.classList.remove('lazy');
+                    imageObserver.unobserve(img);
+                }
+            });
+        });
+
+        document.querySelectorAll('img.lazy').forEach(img => {
+            imageObserver.observe(img);
+        });
+    }
+</script>
+
+{% if request.user == profil_sahibi %}
+<div class="modal fade" id="profilePhotoModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 22px; overflow: hidden;">
+            {% with profile_avatar=profil_sahibi|avatar_url %}
+            <div class="modal-header border-0 pb-0">
+                <div>
+                    <h5 class="modal-title fw-bold">Profil Fotoğrafı</h5>
+                    <div class="text-muted small">JPG, PNG veya WebP yükleyebilirsin. Maksimum 5MB.</div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+            </div>
+            <div class="modal-body text-center px-4 pb-4">
+                <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold text-white mx-auto mb-3"
+                    style="width: 132px; height: 132px; background: linear-gradient(135deg, #4f46e5, #3b82f6); font-size: 3rem; overflow: hidden;">
+                    {% if profile_avatar %}
+                    <img src="{{ profile_avatar }}" alt="{{ profil_sahibi.username }}" style="width: 100%; height: 100%; object-fit: cover; display: block;">
+                    {% else %}
+                    {{ profil_sahibi.username|make_list|first|upper }}
+                    {% endif %}
+                </div>
+                <div class="d-grid gap-2">
+                    <button type="button" class="btn btn-primary fw-bold rounded-pill" id="profile-photo-upload-button">
+                        <i class="bi bi-upload me-2"></i>{% if profile_avatar %}Fotoğrafı Değiştir{% else %}Profil Fotoğrafı Yükle{% endif %}
+                    </button>
+                    {% if profil_sahibi.profil.foto %}
+                    <form method="post" action="{% url 'profil_foto_sil' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-outline-danger fw-bold rounded-pill w-100">
+                            <i class="bi bi-trash3 me-2"></i>Fotoğrafı Kaldır
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+            {% endwith %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if request.user.is_superuser and request.user != profil_sahibi %}
+<!-- ═══════════════════════════════════════════════ -->
+<!--          YASAKLAMA ONAY MODALI (BAN)          -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="modal fade" id="banModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 440px;">
+        <div class="modal-content" style="border: none; border-radius: 24px; overflow: hidden; box-shadow: 0 25px 60px rgba(0,0,0,0.3);">
+            <!-- Üst Gradient Bölüm -->
+            <div class="text-center" style="background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%); padding: 35px 30px 25px; position: relative; overflow: hidden;">
+                <div style="position: absolute; top: -30%; left: -30%; width: 160%; height: 160%; background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 60%); animation: rotate 20s linear infinite;"></div>
+                <div style="position: relative; z-index: 2;">
+                    <div style="width: 70px; height: 70px; background: rgba(255,255,255,0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; backdrop-filter: blur(10px); border: 2px solid rgba(255,255,255,0.2);">
+                        <i class="bi bi-shield-x" style="font-size: 2rem; color: white;"></i>
+                    </div>
+                    {% if profil_sahibi.profil.is_banned %}
+                    <h5 style="color: white; font-weight: 800; margin-bottom: 6px;">Yasağı Kaldır</h5>
+                    <p style="color: rgba(255,255,255,0.8); font-size: 0.9rem; margin: 0;">Bu kullanıcının erişim yasağını kaldırmak üzeresin.</p>
+                    {% else %}
+                    <h5 style="color: white; font-weight: 800; margin-bottom: 6px;">Kullanıcıyı Yasakla</h5>
+                    <p style="color: rgba(255,255,255,0.8); font-size: 0.9rem; margin: 0;">Bu işlem kullanıcının erişimini kalıcı olarak kısıtlar.</p>
+                    {% endif %}
+                </div>
+            </div>
+            <!-- İçerik Bölümü -->
+            <div style="padding: 25px 30px 20px; background: white;">
+                <div style="display: flex; align-items: center; gap: 12px; padding: 14px 16px; background: #fef2f2; border-radius: 14px; border: 1px solid #fecaca; margin-bottom: 20px;">
+                    {% with modal_avatar=profil_sahibi|avatar_url %}
+                    <div style="width: 42px; height: 42px; background: linear-gradient(135deg, #4f46e5, #3b82f6); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden;">
+                        {% if modal_avatar %}
+                        <img src="{{ modal_avatar }}" alt="{{ profil_sahibi.username }}" style="width: 100%; height: 100%; object-fit: cover; display: block;">
+                        {% else %}
+                        <span style="color: white; font-weight: 800; font-size: 1.1rem;">{{ profil_sahibi.username|make_list|first|upper }}</span>
+                        {% endif %}
+                    </div>
+                    {% endwith %}
+                    <div>
+                        <div style="font-weight: 700; color: #1e293b; font-size: 0.95rem;">{{ profil_sahibi.username }}</div>
+                        <div style="font-size: 0.8rem; color: #94a3b8;">{{ profil_sahibi.email|default:"E-posta bilgisi yok" }}</div>
+                    </div>
+                </div>
+                {% if not profil_sahibi.profil.is_banned %}
+                <div style="background: #f8fafc; border-radius: 12px; padding: 14px 16px; margin-bottom: 20px;">
+                    <div style="font-size: 0.75rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">Sonuçlar</div>
+                    <div style="display: flex; align-items: center; gap: 8px; padding: 6px 0; font-size: 0.85rem; color: #64748b;">
+                        <i class="bi bi-x-circle-fill" style="color: #ef4444;"></i> Siteye erişimi kısıtlanacak
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px; padding: 6px 0; font-size: 0.85rem; color: #64748b;">
+                        <i class="bi bi-x-circle-fill" style="color: #ef4444;"></i> İçerik paylaşamayacak
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px; padding: 6px 0; font-size: 0.85rem; color: #64748b;">
+                        <i class="bi bi-x-circle-fill" style="color: #ef4444;"></i> Yorum ve cevap yazamayacak
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            <!-- Butonlar -->
+            <div style="padding: 0 30px 25px; background: white; display: flex; gap: 10px;">
+                <button type="button" class="btn" data-bs-dismiss="modal" style="flex: 1; padding: 14px; border-radius: 14px; font-weight: 700; background: #f1f5f9; color: #64748b; border: none; font-size: 0.95rem; transition: all 0.2s;">
+                    Vazgeç
+                </button>
+                <form action="{% url 'admin_ban_user' profil_sahibi.id %}" method="POST" style="flex: 1; display: flex;">
+                    {% csrf_token %}
+                    <button type="submit" style="flex: 1; padding: 14px; border-radius: 14px; font-weight: 700; background: linear-gradient(135deg, #dc2626, #b91c1c); color: white; border: none; font-size: 0.95rem; text-align: center; transition: all 0.2s; box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3); cursor: pointer;">
+                    {% if profil_sahibi.profil.is_banned %}
+                    <i class="bi bi-unlock-fill me-1"></i> Yasağı Kaldır
+                    {% else %}
+                    <i class="bi bi-shield-x me-1"></i> Yasakla
+                    {% endif %}
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!--         SUSTURMA MODALI (TIMEOUT)              -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="modal fade" id="timeoutModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 440px;">
+        <div class="modal-content" style="border: none; border-radius: 24px; overflow: hidden; box-shadow: 0 25px 60px rgba(0,0,0,0.3);">
+            <!-- Üst Gradient Bölüm -->
+            <div class="text-center" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); padding: 35px 30px 25px; position: relative; overflow: hidden;">
+                <div style="position: absolute; top: -30%; left: -30%; width: 160%; height: 160%; background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 60%); animation: rotate 20s linear infinite;"></div>
+                <div style="position: relative; z-index: 2;">
+                    <div style="width: 70px; height: 70px; background: rgba(255,255,255,0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; backdrop-filter: blur(10px); border: 2px solid rgba(255,255,255,0.2);">
+                        <i class="bi bi-clock-history" style="font-size: 2rem; color: white;"></i>
+                    </div>
+                    <h5 style="color: white; font-weight: 800; margin-bottom: 6px;">Kullanıcıyı Sustur</h5>
+                    <p style="color: rgba(255,255,255,0.85); font-size: 0.9rem; margin: 0;">Geçici olarak içerik ve yorum paylaşımı kısıtlanır.</p>
+                </div>
+            </div>
+            <!-- İçerik Bölümü -->
+            <form action="{% url 'admin_timeout_user' profil_sahibi.id %}" method="POST">
+                {% csrf_token %}
+                <div style="padding: 25px 30px 20px; background: white;">
+                    <div style="display: flex; align-items: center; gap: 12px; padding: 14px 16px; background: #fffbeb; border-radius: 14px; border: 1px solid #fde68a; margin-bottom: 20px;">
+                        {% with modal_avatar=profil_sahibi|avatar_url %}
+                        <div style="width: 42px; height: 42px; background: linear-gradient(135deg, #4f46e5, #3b82f6); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden;">
+                            {% if modal_avatar %}
+                            <img src="{{ modal_avatar }}" alt="{{ profil_sahibi.username }}" style="width: 100%; height: 100%; object-fit: cover; display: block;">
+                            {% else %}
+                            <span style="color: white; font-weight: 800; font-size: 1.1rem;">{{ profil_sahibi.username|make_list|first|upper }}</span>
+                            {% endif %}
+                        </div>
+                        {% endwith %}
+                        <div>
+                            <div style="font-weight: 700; color: #1e293b; font-size: 0.95rem;">{{ profil_sahibi.username }}</div>
+                            <div style="font-size: 0.8rem; color: #94a3b8;">Geçici susturma uygulanacak</div>
+                        </div>
+                    </div>
+                    <label style="display: block; font-size: 0.75rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">Susturma Süresi</label>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 8px;">
+                        <label style="display: flex; align-items: center; gap: 10px; padding: 12px 14px; background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 12px; cursor: pointer; transition: all 0.2s;" class="timeout-option">
+                            <input type="radio" name="duration" value="1" checked style="accent-color: #f59e0b; width: 18px; height: 18px;">
+                            <div>
+                                <div style="font-weight: 700; font-size: 0.9rem; color: #1e293b;">1 Gün</div>
+                                <div style="font-size: 0.7rem; color: #94a3b8;">24 saat</div>
+                            </div>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 10px; padding: 12px 14px; background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 12px; cursor: pointer; transition: all 0.2s;" class="timeout-option">
+                            <input type="radio" name="duration" value="3" style="accent-color: #f59e0b; width: 18px; height: 18px;">
+                            <div>
+                                <div style="font-weight: 700; font-size: 0.9rem; color: #1e293b;">3 Gün</div>
+                                <div style="font-size: 0.7rem; color: #94a3b8;">72 saat</div>
+                            </div>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 10px; padding: 12px 14px; background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 12px; cursor: pointer; transition: all 0.2s;" class="timeout-option">
+                            <input type="radio" name="duration" value="7" style="accent-color: #f59e0b; width: 18px; height: 18px;">
+                            <div>
+                                <div style="font-weight: 700; font-size: 0.9rem; color: #1e293b;">1 Hafta</div>
+                                <div style="font-size: 0.7rem; color: #94a3b8;">7 gün</div>
+                            </div>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 10px; padding: 12px 14px; background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 12px; cursor: pointer; transition: all 0.2s;" class="timeout-option">
+                            <input type="radio" name="duration" value="30" style="accent-color: #f59e0b; width: 18px; height: 18px;">
+                            <div>
+                                <div style="font-weight: 700; font-size: 0.9rem; color: #1e293b;">1 Ay</div>
+                                <div style="font-size: 0.7rem; color: #94a3b8;">30 gün</div>
+                            </div>
+                        </label>
+                    </div>
+                    <label style="display: flex; align-items: center; gap: 10px; padding: 12px 14px; background: #f0fdf4; border: 2px solid #bbf7d0; border-radius: 12px; cursor: pointer; transition: all 0.2s;" class="timeout-option">
+                        <input type="radio" name="duration" value="remove" style="accent-color: #10b981; width: 18px; height: 18px;">
+                        <div>
+                            <div style="font-weight: 700; font-size: 0.9rem; color: #1e293b;"><i class="bi bi-unlock-fill text-success me-1"></i>Susturmayı Kaldır</div>
+                            <div style="font-size: 0.7rem; color: #94a3b8;">Tüm kısıtlamaları kaldır</div>
+                        </div>
+                    </label>
+                </div>
+                <!-- Butonlar -->
+                <div style="padding: 0 30px 25px; background: white; display: flex; gap: 10px;">
+                    <button type="button" class="btn" data-bs-dismiss="modal" style="flex: 1; padding: 14px; border-radius: 14px; font-weight: 700; background: #f1f5f9; color: #64748b; border: none; font-size: 0.95rem; transition: all 0.2s;">
+                        Vazgeç
+                    </button>
+                    <button type="submit" style="flex: 1; padding: 14px; border-radius: 14px; font-weight: 700; background: linear-gradient(135deg, #f59e0b, #d97706); color: white; border: none; font-size: 0.95rem; transition: all 0.2s; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);">
+                        <i class="bi bi-check-lg me-1"></i> Uygula
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .timeout-option:has(input:checked) {
+        border-color: #f59e0b !important;
+        background: #fffbeb !important;
+    }
+    .timeout-option:hover {
+        border-color: #cbd5e1 !important;
+        background: #f1f5f9 !important;
+    }
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+</style>
+{% endif %}
+{% endblock %}
