@@ -29,7 +29,7 @@ Sistemde üç temel kullanıcı türü vardır:
 - Bir kullanıcı pasif (`is_active=0`), banlı (`is_banned=1`) veya zaman aşımı (timeout) altındaysa içerik / yorum ekleyemez, beğeni veya kaydetme işlemi yapamaz. Bu kural uygulama katmanında değil, **doğrudan veritabanı trigger'larında** zorlanır.
 - Bir kullanıcı aynı içeriği iki kez beğenemez / kaydedemez (UNIQUE composite key).
 - Bir yorum, başka bir yoruma cevap olabilir (öz-ilişki). `depth` alanı cevap zincirinin derinliğini tutar.
-- Bir içeriğin "etkileşim skoru" `(yorum*2) + beğeni + kaydetme` formülüyle veritabanı içinde bir function tarafından hesaplanır.
+- Bir içeriğin "etkileşim skoru" `(yorum × 2) + beğeni + kaydetme` formülüyle veritabanı içinde bir function tarafından hesaplanır.
 
 ---
 
