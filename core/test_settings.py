@@ -20,6 +20,11 @@ PASSWORD_HASHERS = [
 ]
 
 STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
+MIDDLEWARE = [
+    middleware
+    for middleware in MIDDLEWARE
+    if middleware != "whitenoise.middleware.WhiteNoiseMiddleware"
+]
 
 # Test ortamı için güvenlik kısıtlamalarını kapat (301 redirect hatalarını önler)
 DEBUG = True

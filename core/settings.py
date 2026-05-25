@@ -234,6 +234,11 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# django-allauth, MySQL'de desteklenmeyen koşullu unique constraint için
+# model uyarısı üretir. Ödev demo kurulumu MySQL hedeflediği için bu bilinen
+# framework uyarısını susturuyoruz; uygulama veritabanı kurulumu etkilenmez.
+SILENCED_SYSTEM_CHECKS = ['models.W036']
+
 # ==================== SEO SETTINGS ====================
 SITE_BASE_URL = os.environ.get('SITE_BASE_URL', 'https://fitrehber.com.tr').rstrip('/')
 SITE_NAME = 'FitRehber'

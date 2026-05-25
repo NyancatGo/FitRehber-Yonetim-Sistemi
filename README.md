@@ -10,19 +10,17 @@ Bartın Üniversitesi · Fen Fakültesi · Bilgisayar Teknolojisi ve Bilişim Si
 
 Bu repository, GitHub'dan indirildikten sonra Windows üzerinde lokal olarak kurulup çalıştırılabilecek şekilde hazırlanmıştır.
 
-### En Kolay Yol
+### Tek Dosya: `baslat.bat`
 
-ZIP dosyasını çıkarınca önce şu dosyayı çalıştırın:
+ZIP'i çıkardıktan sonra **tek yapılması gereken `baslat.bat`'a çift tıklamaktır**. Başka bir dosya çalıştırmaya gerek yoktur.
 
-```bat
-BASLA.bat
-```
+`baslat.bat` akıllıdır ve şunları kendisi yapar:
 
-`BASLA.bat` öğretmen/hoca bilgisayarı için en güvenli başlangıç noktasıdır:
-
-- Docker Desktop açık ve çalışır durumdaysa otomatik olarak Docker kurulumunu kullanır.
-- Docker yoksa veya kullanılmayacaksa local MySQL kurulumuna geçer.
-- Docker bulundu ama açık değilse ekranda açıkça söyler; istenirse local MySQL kurulumu denenebilir.
+1. Kurulum yapılmış mı diye kontrol eder.
+2. **Kurulum yoksa** otomatik olarak yapar:
+   - Docker Desktop açıksa Docker yolunu kullanır (MySQL şifresi sormaz).
+   - Docker yoksa local MySQL yolunu kullanır (root şifresini bir kez sorar, varsayılan `root` / `123`).
+3. Kurulum bitince sunucuyu başlatır ve tarayıcıyı otomatik açar.
 
 Kurulum bitince panel adresi ekranda yazılır:
 
@@ -31,28 +29,26 @@ Panel: http://127.0.0.1:8001/yonetim-sistemi/
 Giriş: Nyancat / demo1234
 ```
 
-`8001` portu doluysa scriptler otomatik olarak boş port arar. Bu durumda tarayıcıda mutlaka ekranda yazan adres açılmalıdır.
+`8001` portu doluysa script otomatik olarak boş port arar. Bu durumda tarayıcıda mutlaka ekranda yazan adres açılır (otomatik açılır).
 
-### Önce Hangi Dosyayı Çalıştırmalıyım?
-
-Bu proje normal bir masaüstü programı gibi tek tıkla açılmaya en yakın hale getirilmiştir. Yine de Django + MySQL kullandığı için ilk çalıştırmada bir defalık veritabanı kurulumu gerekir.
-
-| Durum | Çalıştırılacak dosya | Açıklama |
-|---|---|---|
-| En kolay otomatik başlangıç | `BASLA.bat` | Docker varsa Docker yolunu, yoksa local MySQL yolunu yönlendirir. |
-| MySQL Server / Workbench kurulu ve yönetici şifresi biliniyor | `kurulum.bat` | Önerilen ana kurulum yoludur. Demo veritabanını lokal MySQL içine kurar. |
-| MySQL şifresi bilinmiyor veya lokal MySQL ayarıyla uğraşılmak istenmiyor | `docker-kurulum.bat` | Docker Desktop varsa kendi MySQL container'ını açar; bilgisayardaki MySQL şifresine ihtiyaç duymaz. |
-| Kurulum daha önce tamamlandı, sadece site açılacak | `baslat.bat` | Var olan `.venv`, `.env` ve demo veritabanını kullanarak sunucuyu başlatır. |
-
-PowerShell kullanılıyorsa dosyalar şu şekilde çalıştırılabilir:
+PowerShell kullanılıyorsa:
 
 ```powershell
-.\BASLA.bat
-.\kurulum.bat
 .\baslat.bat
 ```
 
-Dosyaya çift tıklamak da yeterlidir. `kurulum.bat` ilk kurulum içindir; her açılışta tekrar çalıştırmak gerekmez. Günlük kullanımda sadece `baslat.bat` çalıştırılır.
+### Diger Dosyalar (Manuel Kurulum İçin)
+
+Tek tık deneyimini bozmadan eski script'ler de elden çıkarılmadı; isteyen doğrudan çağırabilir:
+
+| Dosya | Ne işe yarar |
+|---|---|
+| `baslat.bat` | Tek tık akıllı giriş noktası. Kurulum yoksa yapar, varsa sunucuyu başlatır. |
+| `BASLA.bat` | Geriye dönük uyumluluk için bırakıldı — sadece `baslat.bat`'ı çağırır. |
+| `kurulum.bat` | Yalnızca local MySQL kurulumunu doğrudan yapmak isteyenler için. |
+| `docker-kurulum.bat` | Yalnızca Docker kurulumunu doğrudan yapmak isteyenler için. |
+
+Pratikte tek dosya: **`baslat.bat`**.
 
 > Güvenlik notu: Kurulum scripti yalnızca `fitrehber_yonetim_demo` adlı demo şemasını sıfırlar. Bilgisayardaki diğer MySQL şemalarına dokunmaz. Gerçek `.env`, token, session, cache ve sosyal giriş verileri repository içinde yoktur.
 
@@ -134,9 +130,8 @@ Docker yolunda Workbench ile bağlanmak istenirse port `3307` kullanılmalıdır
 
 | Durum | Çözüm |
 |---|---|
-| `baslat.bat` çalışınca `.venv bulunamadı` hatası | Önce bir kez `kurulum.bat` veya Docker kullanılıyorsa `docker-kurulum.bat` çalıştırılmalıdır. |
 | PowerShell `/baslat.bat` komutunu tanımıyor | PowerShell'de geçerli klasördeki dosya `.\baslat.bat` şeklinde çalıştırılır. |
-| MySQL şifresi bilinmiyor | `docker-kurulum.bat` kullanılmalıdır. |
+| MySQL şifresi bilinmiyor | Docker Desktop açıksa `baslat.bat` Docker yolunu otomatik tercih eder ve MySQL şifresi sormaz. |
 | `8001` portu dolu | Script otomatik boş port seçer; ekranda yazan URL açılmalıdır. |
 | Python bulunamadı | Python 3 kurulmalı ve PATH'e eklenmelidir. Alternatif olarak `set PYTHON_BOOTSTRAP=C:\Python311\python.exe` komutu ile Python yolu verilebilir. |
 | Kurulum tekrar çalıştırılırsa ne olur? | Sadece `fitrehber_yonetim_demo` demo şeması sıfırlanır ve demo verisi yeniden yüklenir. Diğer veritabanlarına dokunulmaz. |

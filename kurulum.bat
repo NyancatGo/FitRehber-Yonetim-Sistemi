@@ -183,5 +183,7 @@ echo.
 echo Not: 8001 portu doluysa baslat.bat otomatik olarak 8002-8010 arasinda bos port secer.
 echo Tarayicida mutlaka baslat.bat ekraninda yazan URL acilmalidir.
 echo.
-echo Sunucuyu acmak icin baslat.bat calistirin.
-pause
+if not defined BASLAT_AUTORUN (
+    echo Sunucuyu acmak icin baslat.bat calistirin.
+    pause
+)

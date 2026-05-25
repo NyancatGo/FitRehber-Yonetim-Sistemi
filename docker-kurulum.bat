@@ -155,8 +155,8 @@ echo Workbench Docker DB: 127.0.0.1 port 3307, root / 123
 echo.
 echo Tarayicida yukarida yazan Panel adresini acin.
 echo Docker servislerini kapatmak icin: %COMPOSE_CMD% down
-start "" "http://127.0.0.1:%APP_PORT%/yonetim-sistemi/"
-pause
+start "" powershell -NoProfile -WindowStyle Hidden -Command "Start-Sleep -Seconds 3; Start-Process 'http://127.0.0.1:%APP_PORT%/yonetim-sistemi/'"
+if not defined BASLAT_AUTORUN pause
 exit /b 0
 
 :port_free
