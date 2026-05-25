@@ -39,6 +39,13 @@ Panel    : http://127.0.0.1:8001/yonetim-sistemi/
 Giriş    : Nyancat / demo1234
 ```
 
+`8001` portu başka bir program tarafından kullanılıyorsa `baslat.bat` otomatik olarak `8002-8010` aralığında boş port seçer ve doğru adresi ekrana yazar. Elle port seçmek için:
+
+```bat
+set APP_PORT=8020
+baslat.bat
+```
+
 MySQL Workbench bağlantısı:
 
 ```text
@@ -59,7 +66,7 @@ Docker Desktop kuruluysa:
 docker-kurulum.bat
 ```
 
-Docker kullanımında uygulama yine `http://127.0.0.1:8001/` adresinden açılır. MySQL container portu dışarıya `3307` olarak açılır:
+Docker kullanımında uygulama varsayılan olarak `http://127.0.0.1:8001/` adresinden açılır. `8001` doluysa `docker-kurulum.bat` boş port arar veya `APP_PORT` ile elle seçilebilir. MySQL container portu dışarıya `3307` olarak açılır:
 
 ```text
 Host: 127.0.0.1

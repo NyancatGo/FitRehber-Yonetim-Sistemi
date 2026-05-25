@@ -134,5 +134,7 @@ echo Giris: Nyancat / demo1234
 echo Workbench DB: %DB_NAME%
 echo Workbench uygulama kullanicisi: %APP_DB_USER% / %APP_DB_PASS%
 echo.
+echo Not: 8001 portu doluysa baslat.bat otomatik olarak 8002-8010 arasinda bos port secer.
+echo.
 echo Sunucuyu acmak icin baslat.bat calistirin.
 pause

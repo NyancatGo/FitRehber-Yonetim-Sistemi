@@ -10,7 +10,7 @@ services:
       - DB_HOST=db
       - DB_PORT=3306
     ports:
-      - "8001:8000"
+      - "${APP_PORT:-8001}:8000"
     depends_on:
       - db
     env_file:
