@@ -15,6 +15,14 @@ def _validate_email(email):
     email_regex = r'^[\w\.-]+@[\w\.-]+\.\w+$'
     return bool(re.match(email_regex, email))
 
+def _ensure_user_is_unique(username, email, exclude_id=None):
+    """Kullanici adi ve e-posta benzersizligini veritabaninda kontrol eder."""
+    conflict = dal.check_user_conflict(username, email, exclude_id)
+    if int(conflict.get('username_var_mi') or 0):
+        raise ValidationError(f"'{username}' kullanÄ±cÄ± adÄ± zaten kullanÄ±mda.")
+    if int(conflict.get('email_var_mi') or 0):
+        raise ValidationError(f"'{email}' e-posta adresi zaten kullanÄ±mda.")
+
 
 # ==========================================
 # 1. KULLANICI Ä°Å MANTIÄI (auth_user)
@@ -45,12 +53,7 @@ def add_user(username, email, password, first_name, last_name, is_active, is_sta
     if not password or len(password) < 6:
         raise ValidationError("Åifre en az 6 karakter olmalÄ±dÄ±r.")
         
-    # KullanÄ±cÄ± adÄ± benzersizlik kontrolÃ¼
-    existing_users = dal.list_users()
-    if any(u['username'].lower() == username.lower() for u in existing_users):
-        raise ValidationError(f"'{username}' kullanÄ±cÄ± adÄ± zaten kullanÄ±mda.")
-    if any(u['email'].lower() == email.lower() for u in existing_users):
-        raise ValidationError(f"'{email}' e-posta adresi zaten kullanÄ±mda.")
+    _ensure_user_is_unique(username, email)
         
     # Åifre hashleme: Django entegrasyonu iÃ§in Django'nun standardÄ±nÄ± kullanmak isterseniz
     # formlarda make_password kullanÄ±lÄ±r. Burada basitlik iÃ§in make_password import edip uygulayabiliriz.
@@ -77,12 +80,7 @@ def update_user_profile(user_id, username, email, first_name, last_name, is_acti
     if not _validate_email(email):
         raise ValidationError("GeÃ§ersiz e-posta formatÄ±.")
         
-    existing_users = dal.list_users()
-    # Kendisi hariÃ§ baÅŸkasÄ±nÄ±n kullanÄ±cÄ± adÄ±/epostasÄ±yla Ã§akÄ±ÅŸÄ±yor mu?
-    if any(u['username'].lower() == username.lower() and u['id'] != int(user_id) for u in existing_users):
-        raise ValidationError(f"'{username}' kullanÄ±cÄ± adÄ± zaten kullanÄ±mda.")
-    if any(u['email'].lower() == email.lower() and u['id'] != int(user_id) for u in existing_users):
-        raise ValidationError(f"'{email}' e-posta adresi zaten kullanÄ±mda.")
+    _ensure_user_is_unique(username, email, user_id)
 
     try:
         dal.update_user(
@@ -98,6 +96,9 @@ def remove_user(user_id):
     try:
         dal.delete_user(user_id)
     except django.db.DatabaseError as e:
+        error_msg = str(e)
+        if "Kullanici silinemez" in error_msg or "iliskili" in error_msg:
+            raise ValidationError("Kullanici silinemez: Bu kullaniciya ait icerik, yorum veya etkilesim kayitlari var. Silmek yerine pasife alin.")
         raise ValidationError(f"KullanÄ±cÄ± silinirken veritabanÄ± hatasÄ± oluÅŸtu (Ä°liÅŸkili veriler olabilir): {e}")
 
 

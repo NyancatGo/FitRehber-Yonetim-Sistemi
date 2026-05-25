@@ -169,11 +169,11 @@ DDL tek dosyada toplanmıştır: [`sql/fitrehber_db.sql`](sql/fitrehber_db.sql).
 
 ### 3.2 Stored Procedure'lar (10 puan)
 
-**Her tablo için Listele / Bul / Ekle / Güncelle / Sil olmak üzere 40 temel CRUD SP ve `sp_ProfilBanGuncelle` özel aksiyonu ile toplam 41 SP:**
+**Her tablo için Listele / Bul / Ekle / Güncelle / Sil olmak üzere 40 temel CRUD SP, `sp_ProfilBanGuncelle` özel aksiyonu ve `sp_KullaniciCakismaKontrol` iş kuralı kontrol yordamı ile toplam 42 SP:**
 
 | Tablo | SP'ler |
 |---|---|
-| auth_user | `sp_KullaniciListele`, `sp_KullaniciBul`, `sp_KullaniciEkle`, `sp_KullaniciGuncelle`, `sp_KullaniciSil` |
+| auth_user | `sp_KullaniciListele`, `sp_KullaniciBul`, `sp_KullaniciCakismaKontrol`, `sp_KullaniciEkle`, `sp_KullaniciGuncelle`, `sp_KullaniciSil` |
 | profiller | `sp_ProfilListele`, `sp_ProfilBul`, `sp_ProfilEkle`, `sp_ProfilGuncelle`, `sp_ProfilSil`, `sp_ProfilBanGuncelle` *(+ban hızlı aksiyonu)* |
 | kategoriler | `sp_KategoriListele`, `sp_KategoriBul`, `sp_KategoriEkle`, `sp_KategoriGuncelle`, `sp_KategoriSil` |
 | icerikler | `sp_IcerikListele`, `sp_IcerikBul`, `sp_IcerikEkle`, `sp_IcerikGuncelle`, `sp_IcerikSil` |
@@ -182,7 +182,9 @@ DDL tek dosyada toplanmıştır: [`sql/fitrehber_db.sql`](sql/fitrehber_db.sql).
 | icerik_kaydetmeleri | `sp_IcerikKaydetmeListele`, `sp_IcerikKaydetmeBul`, `sp_IcerikKaydetmeEkle`, `sp_IcerikKaydetmeGuncelle`, `sp_IcerikKaydetmeSil` |
 | yorum_begenileri | `sp_YorumBegeniListele`, `sp_YorumBegeniBul`, `sp_YorumBegeniEkle`, `sp_YorumBegeniGuncelle`, `sp_YorumBegeniSil` |
 
-Listeleme SP'leri JOIN ile zenginleştirilmiş, içerik listesi yazar adını ve kategori adını, yorum listesi içerik başlığını da döndürür. Kullanıcı listesi ayrıca `fn_KullaniciIcerikSayisi()` fonksiyonunu çağırarak kullanıcı başına içerik sayısını hesaplar.
+Listeleme SP'leri JOIN ile zenginleştirilmiş, içerik listesi yazar adını ve kategori adını, yorum listesi içerik başlığını da döndürür. Kullanıcı listesi ayrıca `fn_KullaniciIcerikSayisi()` fonksiyonunu çağırarak kullanıcı başına içerik sayısını hesaplar. `sp_IcerikListele`, listeleme performansı için yorum/beğeni/kaydetme sayılarını satır başına scalar function çağırmak yerine toplu aggregate alt sorgularla üretir. Junction tablo güncelleme yordamları, normal kullanıcı davranışı için değil yönetim panelinden hatalı ilişki eşleşmesini düzeltmek için tutulmuştur.
+
+`sp_KullaniciSil`, kullanıcının içerik, yorum veya etkileşim kayıtları varsa fiziksel silme yapmadan önce `SIGNAL SQLSTATE '45000'` ile işlemi durdurur. Böylece foreign key hatasının ham şekilde ekrana düşmesi yerine BL katmanında kullanıcı dostu mesaja çevrilen bilinçli bir iş kuralı uygulanır.
 
 ### 3.3 Kullanıcı Tanımlı Fonksiyonlar (5 puan)
 
@@ -293,7 +295,7 @@ Video aşağıdaki sırayı izler:
 |---|---|
 | [`README.md`](README.md) | Kısa proje tanıtımı + kurulum + ödev kapsam beyanı |
 | [`veritabani_proje_raporu.md`](veritabani_proje_raporu.md) | Bu dosya (detaylı rapor) |
-| [`sql/fitrehber_db.sql`](sql/fitrehber_db.sql) | Çalıştırılabilir DDL + 41 SP + 3 Function + 8 Trigger |
+| [`sql/fitrehber_db.sql`](sql/fitrehber_db.sql) | Çalıştırılabilir DDL + 42 SP + 3 Function + 8 Trigger |
 | `docs/er_diagram.drawio` | diagrams.net görsel ER diyagramı (XML) |
 | `docs/er_diagram.png` | ER diyagramı PNG çıktısı (diagrams.net'ten export) |
 

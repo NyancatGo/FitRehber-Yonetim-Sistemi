@@ -45,7 +45,7 @@ Bu repository iki ayrı katmandan oluşur. **Ödev değerlendirmesi yalnızca a�
                            │  MySQL Stored Procedure
 ┌──────────────────────────▼──────────────────────────────────┐
 │ MySQL — sql/fitrehber_db.sql                                │
-│ 8 tablo · 41 Stored Procedure · 3 Function · 8 Trigger      │
+│ 8 tablo · 42 Stored Procedure · 3 Function · 8 Trigger      │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -100,12 +100,14 @@ ER diyagramı görseli: `docs/er_diagram.drawio` (diagrams.net'te aç) ve `docs/
 
 | Kategori | Adet | Şart | Durum |
 |---|---|---|---|
-| Stored Procedure | **41** | 8 tablo için 40 temel CRUD SP + 1 özel ban SP | ✅ Karşılıyor |
+| Stored Procedure | **42** | 8 tablo için 40 temel CRUD SP + 1 özel ban SP + 1 kullanıcı çakışma kontrol SP | ✅ Karşılıyor |
 | User-Defined Function | **3** | En az 2 | ✅ Karşılıyor |
 | Trigger | **8** | En az 2 | ✅ Karşılıyor |
 
 **Function listesi:** `fn_IcerikYorumSayisi`, `fn_KullaniciIcerikSayisi`, `fn_IcerikEtkilesimSkoru`
 **Trigger listesi:** içerik/yorum eklerken + 3 N-N tabloya ekle/güncellerken `is_active=0`, `is_banned=1` veya `timeout_until > NOW()` durumunu engelleyen 8 BEFORE INSERT/UPDATE trigger'ı.
+
+**Tasarım notu:** Junction tablo güncelleme SP'leri normal kullanıcı akışı için değil, yönetim panelinde hatalı ilişki kaydını düzeltmek için tutulmuştur. DELETE işlemleri ise `/yonetim-sistemi/` tarafında `superuser_required` yetkilendirmesiyle korunur.
 
 Tam liste için: [`veritabani_proje_raporu.md`](veritabani_proje_raporu.md) ve [`sql/fitrehber_db.sql`](sql/fitrehber_db.sql).
 

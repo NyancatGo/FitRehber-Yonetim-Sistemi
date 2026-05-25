@@ -36,6 +36,11 @@ def get_user(user_id):
     results = call_sp('sp_KullaniciBul', [user_id])
     return results[0] if results else None
 
+def check_user_conflict(username, email, exclude_id=None):
+    """Kullanici adi/e-posta cakismasini SP uzerinden denetler."""
+    results = call_sp('sp_KullaniciCakismaKontrol', [username, email, exclude_id])
+    return results[0] if results else {"username_var_mi": 0, "email_var_mi": 0}
+
 def create_user(username, email, password, first_name, last_name, is_active, is_staff, is_superuser):
     """Yeni kullanÄ±cÄ± ekler (sp_KullaniciEkle)."""
     results = call_sp('sp_KullaniciEkle', [

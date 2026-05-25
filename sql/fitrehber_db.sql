@@ -160,6 +160,7 @@ DROP FUNCTION IF EXISTS fn_IcerikEtkilesimSkoru;
 
 DROP PROCEDURE IF EXISTS sp_KullaniciListele;
 DROP PROCEDURE IF EXISTS sp_KullaniciBul;
+DROP PROCEDURE IF EXISTS sp_KullaniciCakismaKontrol;
 DROP PROCEDURE IF EXISTS sp_KullaniciEkle;
 DROP PROCEDURE IF EXISTS sp_KullaniciGuncelle;
 DROP PROCEDURE IF EXISTS sp_KullaniciSil;
@@ -295,6 +296,27 @@ BEGIN
      WHERE u.id = p_id;
 END$$
 
+CREATE PROCEDURE sp_KullaniciCakismaKontrol(
+    IN p_username VARCHAR(150),
+    IN p_email VARCHAR(254),
+    IN p_exclude_id INT
+)
+BEGIN
+    SELECT
+        EXISTS(
+            SELECT 1
+              FROM auth_user
+             WHERE LOWER(username) = LOWER(p_username)
+               AND (p_exclude_id IS NULL OR id <> p_exclude_id)
+        ) AS username_var_mi,
+        EXISTS(
+            SELECT 1
+              FROM auth_user
+             WHERE LOWER(email) = LOWER(p_email)
+               AND (p_exclude_id IS NULL OR id <> p_exclude_id)
+        ) AS email_var_mi;
+END$$
+
 CREATE PROCEDURE sp_KullaniciEkle(
     IN p_username VARCHAR(150),
     IN p_email VARCHAR(254),
@@ -354,6 +376,37 @@ END$$
 
 CREATE PROCEDURE sp_KullaniciSil(IN p_id INT)
 BEGIN
+    DECLARE v_icerik_sayisi INT DEFAULT 0;
+    DECLARE v_yorum_sayisi INT DEFAULT 0;
+    DECLARE v_icerik_begeni_sayisi INT DEFAULT 0;
+    DECLARE v_icerik_kaydetme_sayisi INT DEFAULT 0;
+    DECLARE v_yorum_begeni_sayisi INT DEFAULT 0;
+
+    SELECT COUNT(*) INTO v_icerik_sayisi
+      FROM icerikler
+     WHERE yazar_id = p_id;
+
+    SELECT COUNT(*) INTO v_yorum_sayisi
+      FROM yorumlar
+     WHERE yazar_id = p_id;
+
+    SELECT COUNT(*) INTO v_icerik_begeni_sayisi
+      FROM icerik_begenileri
+     WHERE user_id = p_id;
+
+    SELECT COUNT(*) INTO v_icerik_kaydetme_sayisi
+      FROM icerik_kaydetmeleri
+     WHERE user_id = p_id;
+
+    SELECT COUNT(*) INTO v_yorum_begeni_sayisi
+      FROM yorum_begenileri
+     WHERE user_id = p_id;
+
+    IF (v_icerik_sayisi + v_yorum_sayisi + v_icerik_begeni_sayisi + v_icerik_kaydetme_sayisi + v_yorum_begeni_sayisi) > 0 THEN
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'Kullanici silinemez: iliskili icerik, yorum veya etkilesim kayitlari var. Kullanici pasife alinmalidir.';
+    END IF;
+
     DELETE FROM profiller WHERE user_id = p_id;
     DELETE FROM auth_user WHERE id = p_id;
 END$$
@@ -510,13 +563,30 @@ BEGIN
     SELECT i.id, i.baslik, i.yazi, i.resim, i.tur, i.tarih,
            i.yazar_id, u.username AS yazar_adi,
            i.kategori_id, k.isim AS kategori_adi,
-           fn_IcerikYorumSayisi(i.id) AS yorum_sayisi,
-           (SELECT COUNT(*) FROM icerik_begenileri b WHERE b.icerik_id = i.id) AS begeni_sayisi,
-           (SELECT COUNT(*) FROM icerik_kaydetmeleri s WHERE s.icerik_id = i.id) AS kaydetme_sayisi,
-           fn_IcerikEtkilesimSkoru(i.id) AS etkilesim_skoru
+           COALESCE(yc.yorum_sayisi, 0) AS yorum_sayisi,
+           COALESCE(bc.begeni_sayisi, 0) AS begeni_sayisi,
+           COALESCE(kc.kaydetme_sayisi, 0) AS kaydetme_sayisi,
+           (COALESCE(yc.yorum_sayisi, 0) * 2)
+             + COALESCE(bc.begeni_sayisi, 0)
+             + COALESCE(kc.kaydetme_sayisi, 0) AS etkilesim_skoru
       FROM icerikler i
       INNER JOIN auth_user u ON i.yazar_id = u.id
       LEFT JOIN kategoriler k ON i.kategori_id = k.id
+      LEFT JOIN (
+          SELECT icerik_id, COUNT(*) AS yorum_sayisi
+            FROM yorumlar
+           GROUP BY icerik_id
+      ) yc ON yc.icerik_id = i.id
+      LEFT JOIN (
+          SELECT icerik_id, COUNT(*) AS begeni_sayisi
+            FROM icerik_begenileri
+           GROUP BY icerik_id
+      ) bc ON bc.icerik_id = i.id
+      LEFT JOIN (
+          SELECT icerik_id, COUNT(*) AS kaydetme_sayisi
+            FROM icerik_kaydetmeleri
+           GROUP BY icerik_id
+      ) kc ON kc.icerik_id = i.id
      ORDER BY i.tarih DESC, i.id DESC;
 END$$
 
