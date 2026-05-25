@@ -1,7 +1,16 @@
-﻿from django.db import connection
+﻿import re
+
+from django.db import connection
+
+# Sadece sp_ ve fn_ on ekli yordam/fonksiyon adlarina izin verilir.
+# Bu, proc_name'in dolayli yoldan kullanici girdisinden gelmesi durumunda
+# SQL Injection riskini sifirlar (savunma katmani).
+_SP_NAME_RE = re.compile(r'^sp_[A-Za-z_][A-Za-z0-9_]*$')
+_FN_NAME_RE = re.compile(r'^fn_[A-Za-z_][A-Za-z0-9_]*$')
+
 
 def _dict_fetchall(cursor):
-    """Cursor sonuÃ§larÄ±nÄ± sÃ¶zlÃ¼k listesi olarak dÃ¶ndÃ¼rÃ¼r."""
+    """Cursor sonuclarini sozluk listesi olarak dondurur."""
     if cursor.description is None:
         return None
     columns = [col[0] for col in cursor.description]
@@ -10,18 +19,69 @@ def _dict_fetchall(cursor):
         for row in cursor.fetchall()
     ]
 
+
 def call_sp(proc_name, params=None):
     """
-    Belirtilen SaklÄ± YordamÄ± (Stored Procedure) Ã§aÄŸÄ±rÄ±r.
-    ORM ve dÃ¼z SQL sorgularÄ±ndan kaÃ§Ä±nmak iÃ§in bu yardÄ±mcÄ± fonksiyon kullanÄ±lÄ±r.
+    Belirtilen Sakli Yordami (Stored Procedure) cagirir.
+
+    Guvenlik: proc_name beyaz liste regex'i ile dogrulanir, parametreler
+    %s placeholder uzerinden PyMySQL tarafindan escaping ile gecirilir.
+    Bu yardimci, dal.py disinda hicbir yerde direkt SQL yazilmamasini saglar.
     """
+    if not _SP_NAME_RE.match(proc_name):
+        raise ValueError(f"Gecersiz stored procedure adi: {proc_name!r}")
+
     params = params or []
     placeholders = ', '.join(['%s'] * len(params))
     sql = f"CALL {proc_name}({placeholders})"
-    
+
     with connection.cursor() as cursor:
         cursor.execute(sql, params)
         return _dict_fetchall(cursor)
+
+
+def call_fn(fn_name, params=None):
+    """
+    Belirtilen kullanici-tanimli MySQL Function'i (Function) cagirir.
+    Donus: tek skaler deger.
+
+    Ornek:
+        skor = call_fn('fn_IcerikEtkilesimSkoru', [icerik_id])
+    """
+    if not _FN_NAME_RE.match(fn_name):
+        raise ValueError(f"Gecersiz function adi: {fn_name!r}")
+
+    params = params or []
+    placeholders = ', '.join(['%s'] * len(params))
+    sql = f"SELECT {fn_name}({placeholders}) AS sonuc"
+
+    with connection.cursor() as cursor:
+        cursor.execute(sql, params)
+        row = cursor.fetchone()
+        return row[0] if row else None
+
+
+# ==========================================
+# KULLANICI TANIMLI FONKSIYON CAGRILARI
+# (Function'larin uygulama arayuzunden dogrudan kullanilmasi)
+# ==========================================
+
+def get_icerik_yorum_sayisi(icerik_id):
+    """Bir icerige yapilmis yorum sayisini doner (fn_IcerikYorumSayisi)."""
+    return call_fn('fn_IcerikYorumSayisi', [icerik_id])
+
+
+def get_kullanici_icerik_sayisi(user_id):
+    """Bir kullanicinin urettigi icerik sayisini doner (fn_KullaniciIcerikSayisi)."""
+    return call_fn('fn_KullaniciIcerikSayisi', [user_id])
+
+
+def get_icerik_etkilesim_skoru(icerik_id):
+    """
+    Bir icerigin etkilesim skorunu doner (fn_IcerikEtkilesimSkoru).
+    Skor = (yorum * 2) + begeni + kaydetme
+    """
+    return call_fn('fn_IcerikEtkilesimSkoru', [icerik_id])
 
 # ==========================================
 # 1. KULLANICI DAL METOTLARI (auth_user)

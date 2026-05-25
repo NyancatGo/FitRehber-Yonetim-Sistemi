@@ -1,7 +1,5 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseForbidden, HttpResponseRedirect
-from django.urls import reverse
+from django.shortcuts import render, redirect
+from django.http import HttpResponseForbidden
 from django.contrib import messages
 from posts import bl
 
@@ -37,6 +35,11 @@ def dashboard(request):
     aylik_etkilesim = bl.get_monthly_interaction_analysis()
     kategori_dagilimi = bl.get_category_distribution_report()
 
+    # Kullanici tanimli MySQL Function'larin dogrudan cagrilarak gosterilmesi
+    # (fn_IcerikEtkilesimSkoru, fn_IcerikYorumSayisi, fn_KullaniciIcerikSayisi)
+    fn_skor_listesi = bl.get_top_icerik_etkilesim_skorlari(contents, limit=5)
+    fn_yazar_listesi = bl.get_top_kullanici_icerik_sayilari(users, limit=5)
+
     context = {
         'total_users': len(users) if users else 0,
         'total_categories': len(categories) if categories else 0,
@@ -48,6 +51,8 @@ def dashboard(request):
         'total_yorum_begenileri': len(yorum_begenileri) if yorum_begenileri else 0,
         'aylik_etkilesim': aylik_etkilesim,
         'kategori_dagilimi': kategori_dagilimi,
+        'fn_skor_listesi': fn_skor_listesi,
+        'fn_yazar_listesi': fn_yazar_listesi,
         'active_tab': 'dashboard'
     }
     return render(request, 'yonetim/dashboard.html', context)

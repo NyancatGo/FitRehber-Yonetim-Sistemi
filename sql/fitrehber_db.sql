@@ -16,8 +16,24 @@ USE fitrehber_yonetim_demo;
 -- ==========================================
 -- 1. FIZIKSEL TASARIM: 8 TABLO
 -- ==========================================
--- Not: Django migration tablolari zaten varsa bu DDL mevcut veriyi degistirmez.
--- Bos veritabaninda rapor/sunum icin cekirdek semayi olusturur.
+-- Bu bolum Django migration'larinin olusturdugu temel tablolari
+-- biz odev icin yeniden olusturuyoruz; boylece tum CHECK constraint'ler
+-- ve diger kisitlar (PK, FK, UNIQUE, NOT NULL, DEFAULT, AUTO_INCREMENT)
+-- net bir DDL kaynagindan uygulanmis olur.
+
+-- CHECK constraint barındıran app tablolarını once dusur ve sonra
+-- CREATE TABLE ile butun kisitlarla birlikte yeniden olustur. Bu sayede
+-- Django migrate'in olusturdugu tablolar uzerinde DDL kisitlarimiz
+-- (CHECK, NOT NULL, DEFAULT vs) garanti uygulanir.
+-- FK sirasi: once junction -> yorum -> icerik -> profil.
+SET FOREIGN_KEY_CHECKS = 0;
+DROP TABLE IF EXISTS yorum_begenileri;
+DROP TABLE IF EXISTS icerik_kaydetmeleri;
+DROP TABLE IF EXISTS icerik_begenileri;
+DROP TABLE IF EXISTS yorumlar;
+DROP TABLE IF EXISTS icerikler;
+DROP TABLE IF EXISTS profiller;
+SET FOREIGN_KEY_CHECKS = 1;
 
 CREATE TABLE IF NOT EXISTS auth_user (
     id INT NOT NULL AUTO_INCREMENT,
@@ -55,7 +71,12 @@ CREATE TABLE IF NOT EXISTS profiller (
     UNIQUE KEY user_id (user_id),
     CONSTRAINT profiller_user_id_45213d38_fk_auth_user_id
         FOREIGN KEY (user_id) REFERENCES auth_user (id),
-    CONSTRAINT profiller_chk_1 CHECK (gunluk_su_hedefi_ml >= 0)
+    CONSTRAINT profiller_chk_su CHECK (gunluk_su_hedefi_ml IS NULL OR gunluk_su_hedefi_ml >= 0),
+    CONSTRAINT profiller_chk_boy CHECK (boy IS NULL OR boy > 0),
+    CONSTRAINT profiller_chk_kilo CHECK (kilo IS NULL OR kilo > 0),
+    CONSTRAINT profiller_chk_hedef_kilo CHECK (hedef_kilo IS NULL OR hedef_kilo > 0),
+    CONSTRAINT profiller_chk_baslangic_kilo CHECK (baslangic_kilo IS NULL OR baslangic_kilo > 0),
+    CONSTRAINT profiller_chk_cinsiyet CHECK (cinsiyet IN ('E','K','B'))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS kategoriler (
@@ -79,7 +100,8 @@ CREATE TABLE IF NOT EXISTS icerikler (
     CONSTRAINT icerikler_yazar_id_bd3385e7_fk_auth_user_id
         FOREIGN KEY (yazar_id) REFERENCES auth_user (id),
     CONSTRAINT icerikler_kategori_id_cab2da60_fk_kategoriler_id
-        FOREIGN KEY (kategori_id) REFERENCES kategoriler (id)
+        FOREIGN KEY (kategori_id) REFERENCES kategoriler (id),
+    CONSTRAINT icerikler_chk_tur CHECK (tur IN ('haber','soru'))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS yorumlar (
@@ -99,7 +121,8 @@ CREATE TABLE IF NOT EXISTS yorumlar (
     CONSTRAINT yorumlar_yazar_id_52904646_fk_auth_user_id
         FOREIGN KEY (yazar_id) REFERENCES auth_user (id),
     CONSTRAINT yorumlar_parent_id_2a7bc0af_fk_yorumlar_id
-        FOREIGN KEY (parent_id) REFERENCES yorumlar (id)
+        FOREIGN KEY (parent_id) REFERENCES yorumlar (id),
+    CONSTRAINT yorumlar_chk_depth CHECK (depth >= 0)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS icerik_begenileri (

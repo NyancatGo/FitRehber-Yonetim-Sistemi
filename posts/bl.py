@@ -533,3 +533,76 @@ def get_category_distribution_report():
         for row in rows
     ]
 
+
+# ==========================================
+# KULLANICI TANIMLI FONKSIYON IS MANTIGI
+# (fn_IcerikYorumSayisi, fn_KullaniciIcerikSayisi, fn_IcerikEtkilesimSkoru)
+# ==========================================
+
+def get_icerik_yorum_sayisi(icerik_id):
+    """Tek icerik icin fn_IcerikYorumSayisi ciktisini doner."""
+    return int(dal.get_icerik_yorum_sayisi(icerik_id) or 0)
+
+
+def get_kullanici_icerik_sayisi(user_id):
+    """Tek kullanici icin fn_KullaniciIcerikSayisi ciktisini doner."""
+    return int(dal.get_kullanici_icerik_sayisi(user_id) or 0)
+
+
+def get_icerik_etkilesim_skoru(icerik_id):
+    """Tek icerik icin fn_IcerikEtkilesimSkoru ciktisini doner."""
+    return int(dal.get_icerik_etkilesim_skoru(icerik_id) or 0)
+
+
+def get_top_icerik_etkilesim_skorlari(contents, limit=5):
+    """
+    En yuksek etkilesim skoruna sahip ilk N icerigi doner.
+    Skor hesabi VERITABANINDA fn_IcerikEtkilesimSkoru function'i ile yapilir.
+    Boylece function'in uygulama tarafindan dogrudan cagrildigi gosterilir.
+    """
+    if not contents:
+        return []
+    icerikler_with_skor = []
+    for c in contents:
+        icerik_id = c.get('id')
+        if icerik_id is None:
+            continue
+        skor = dal.get_icerik_etkilesim_skoru(icerik_id)
+        icerikler_with_skor.append({
+            'id': icerik_id,
+            'baslik': c.get('baslik', '')[:60],
+            'yazar': c.get('yazar_adi') or c.get('yazar_username') or '',
+            'kategori': c.get('kategori_adi') or '-',
+            'tur': c.get('tur', '-'),
+            'skor': int(skor or 0),
+        })
+    icerikler_with_skor.sort(key=lambda x: x['skor'], reverse=True)
+    return icerikler_with_skor[:limit]
+
+
+def get_top_kullanici_icerik_sayilari(users, limit=5):
+    """
+    En cok icerik ureten ilk N kullaniciyi doner.
+    Sayim VERITABANINDA fn_KullaniciIcerikSayisi function'i ile yapilir.
+    """
+    if not users:
+        return []
+    users_with_count = []
+    for u in users:
+        user_id = u.get('id')
+        if user_id is None:
+            continue
+        adet = dal.get_kullanici_icerik_sayisi(user_id)
+        adet = int(adet or 0)
+        if adet <= 0:
+            continue
+        users_with_count.append({
+            'id': user_id,
+            'username': u.get('username', ''),
+            'first_name': u.get('first_name', ''),
+            'last_name': u.get('last_name', ''),
+            'icerik_sayisi': adet,
+        })
+    users_with_count.sort(key=lambda x: x['icerik_sayisi'], reverse=True)
+    return users_with_count[:limit]
+

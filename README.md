@@ -210,7 +210,12 @@ Doğrulama (kanıt):
 - **UNIQUE:** `auth_user.username`, `profiller.user_id`, junction tablolarda çift sütun UNIQUE
 - **NOT NULL / NULL:** her sütunda bilinçli ayarlandı
 - **DEFAULT:** `profiller.is_banned=0`, `profiller.is_onboarded=0` vb.
-- **CHECK:** `profiller.gunluk_su_hedefi_ml >= 0`
+- **CHECK:** 8 adet kullanıcı tanımlı CHECK constraint:
+  - `profiller.gunluk_su_hedefi_ml >= 0`
+  - `profiller.boy > 0`, `profiller.kilo > 0`, `profiller.hedef_kilo > 0`, `profiller.baslangic_kilo > 0`
+  - `profiller.cinsiyet IN ('E','K','B')`
+  - `icerikler.tur IN ('haber','soru')`
+  - `yorumlar.depth >= 0`
 
 ### 4.3 İlişkiler
 
@@ -235,6 +240,7 @@ ER diyagramı görseli: `docs/er_diagram.drawio` (diagrams.net'te aç) ve `docs/
 | Trigger | **8** | En az 2 | ✅ Karşılıyor |
 
 **Function listesi:** `fn_IcerikYorumSayisi`, `fn_KullaniciIcerikSayisi`, `fn_IcerikEtkilesimSkoru`
+Her üçü hem stored procedure içinde (`sp_IcerikListele`, `sp_IcerikBul`, `sp_KullaniciListele`) hem de uygulama tarafından doğrudan `dal.call_fn(...)` ile çağrılır. Yönetim paneli dashboard'unda "En Yüksek Etkileşim Skoru" ve "En Üretken Yazarlar" tabloları bu function'ların canlı çıktısını gösterir.
 **Trigger listesi:** içerik/yorum eklerken + 3 N-N tabloya ekle/güncellerken `is_active=0`, `is_banned=1` veya `timeout_until > NOW()` durumunu engelleyen 8 BEFORE INSERT/UPDATE trigger'ı.
 **BI raporlama SP'leri:** `sp_AylikEtkilesimAnalizi`, `sp_KategoriDagilimiRaporu`
 
