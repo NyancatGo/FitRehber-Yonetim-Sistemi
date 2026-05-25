@@ -79,14 +79,18 @@ REM ============================================================
 call :find_python
 if errorlevel 1 exit /b 1
 
-if not defined MYSQL_ROOT_USER set /p MYSQL_ROOT_USER=MySQL yonetici kullanici adi [root]:
+echo MySQL bilgileri bu bilgisayardaki local MySQL kurulumuna aittir.
+echo Kullanici adi genelde root olabilir; sifre ise kisiye/kuruluma gore degisir.
+echo.
+if not defined MYSQL_ROOT_USER set /p MYSQL_ROOT_USER=MySQL yonetici kullanici adi:
 if "%MYSQL_ROOT_USER%"=="" set "MYSQL_ROOT_USER=root"
 
 echo.
-echo Not: MySQL sifresini bilmiyorsaniz Enter'a basmak yerine Docker Desktop'i acip
-echo baslat.bat dosyasini tekrar calistirabilirsiniz.
-if not defined MYSQL_ROOT_PASS set /p MYSQL_ROOT_PASS=MySQL yonetici sifresi [123]:
-if "%MYSQL_ROOT_PASS%"=="" set "MYSQL_ROOT_PASS=123"
+echo Not: MySQL sifresini bilmiyorsaniz Docker Desktop'i acip baslat.bat'i
+echo tekrar calistirin; Docker yolu local MySQL sifresi istemez.
+if not defined MYSQL_ROOT_PASS set /p MYSQL_ROOT_PASS=MySQL yonetici sifresi:
+set MYSQL_ROOT_ARGS=-u"%MYSQL_ROOT_USER%"
+if not "%MYSQL_ROOT_PASS%"=="" set MYSQL_ROOT_ARGS=%MYSQL_ROOT_ARGS% -p"%MYSQL_ROOT_PASS%"
 
 call :find_mysql
 if errorlevel 1 exit /b 1
@@ -128,7 +132,7 @@ if not exist ".env" (
 
 echo.
 echo [4/9] MySQL baglantisi kontrol ediliyor...
-"%MYSQL_EXE%" -u"%MYSQL_ROOT_USER%" -p"%MYSQL_ROOT_PASS%" --default-character-set=utf8mb4 -e "SELECT VERSION();" >nul
+"%MYSQL_EXE%" %MYSQL_ROOT_ARGS% --default-character-set=utf8mb4 -e "SELECT VERSION();" >nul
 if errorlevel 1 (
     echo [HATA] MySQL baglantisi basarisiz. Kullanici adi/sifreyi kontrol edin.
     echo Sifreyi bilmiyorsaniz Docker Desktop'i acip baslat.bat'i tekrar calistirin.
@@ -138,7 +142,7 @@ if errorlevel 1 (
 
 echo.
 echo [5/9] Demo veritabani ve uygulama kullanicisi olusturuluyor...
-"%MYSQL_EXE%" -u"%MYSQL_ROOT_USER%" -p"%MYSQL_ROOT_PASS%" --default-character-set=utf8mb4 -e "DROP DATABASE IF EXISTS `%DB_NAME%`; CREATE DATABASE `%DB_NAME%` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci; CREATE USER IF NOT EXISTS '%APP_DB_USER%'@'%%' IDENTIFIED BY '%APP_DB_PASS%'; ALTER USER '%APP_DB_USER%'@'%%' IDENTIFIED BY '%APP_DB_PASS%'; GRANT ALL PRIVILEGES ON `%DB_NAME%`.* TO '%APP_DB_USER%'@'%%'; FLUSH PRIVILEGES;"
+"%MYSQL_EXE%" %MYSQL_ROOT_ARGS% --default-character-set=utf8mb4 -e "DROP DATABASE IF EXISTS `%DB_NAME%`; CREATE DATABASE `%DB_NAME%` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci; CREATE USER IF NOT EXISTS '%APP_DB_USER%'@'%%' IDENTIFIED BY '%APP_DB_PASS%'; ALTER USER '%APP_DB_USER%'@'%%' IDENTIFIED BY '%APP_DB_PASS%'; GRANT ALL PRIVILEGES ON `%DB_NAME%`.* TO '%APP_DB_USER%'@'%%'; FLUSH PRIVILEGES;"
 if errorlevel 1 (
     echo [HATA] Demo veritabani olusturulamadi.
     pause
@@ -156,7 +160,7 @@ if errorlevel 1 (
 
 echo.
 echo [7/9] Stored Procedure / Function / Trigger omurgasi uygulaniyor...
-"%MYSQL_EXE%" -u"%MYSQL_ROOT_USER%" -p"%MYSQL_ROOT_PASS%" --default-character-set=utf8mb4 "%DB_NAME%" < "sql\fitrehber_db.sql"
+"%MYSQL_EXE%" %MYSQL_ROOT_ARGS% --default-character-set=utf8mb4 "%DB_NAME%" < "sql\fitrehber_db.sql"
 if errorlevel 1 (
     echo [HATA] sql\fitrehber_db.sql uygulanamadi.
     pause
@@ -165,7 +169,7 @@ if errorlevel 1 (
 
 echo.
 echo [8/9] Sanitize demo verisi yukleniyor...
-"%MYSQL_EXE%" -u"%MYSQL_ROOT_USER%" -p"%MYSQL_ROOT_PASS%" --default-character-set=utf8mb4 "%DB_NAME%" < "sql\demo_data.sql"
+"%MYSQL_EXE%" %MYSQL_ROOT_ARGS% --default-character-set=utf8mb4 "%DB_NAME%" < "sql\demo_data.sql"
 if errorlevel 1 (
     echo [HATA] sql\demo_data.sql yuklenemedi.
     pause

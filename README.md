@@ -19,7 +19,7 @@ ZIP'i çıkardıktan sonra **tek yapılması gereken `baslat.bat`'a çift tıkla
 1. Kurulum yapılmış mı diye kontrol eder.
 2. **Kurulum yoksa** otomatik olarak yapar:
    - Docker Desktop açıksa Docker yolunu kullanır (MySQL şifresi sormaz).
-   - Docker yoksa local MySQL yolunu kullanır (root şifresini bir kez sorar, varsayılan `root` / `123`).
+   - Docker yoksa local MySQL yolunu kullanır ve bu bilgisayardaki MySQL yönetici bilgilerini sorar.
 3. Kurulum bitince sunucuyu başlatır ve tarayıcıyı otomatik açar.
 4. Demo modunda `Nyancat` superuser hesabıyla otomatik giriş yapar; hoca login formuyla uğraşmadan doğrudan yönetim panelini görür.
 
@@ -65,11 +65,11 @@ Kurulum ve başlatma:
 baslat.bat
 ```
 
-Kurulum sırasında MySQL yönetici kullanıcısı sorulur. Varsayılan değerler:
+Kurulum sırasında bu bilgisayardaki MySQL yönetici kullanıcısı ve şifresi sorulur. Kullanıcı adı çoğu kurulumda `root` olabilir; şifre ise kişiye/kuruluma göre değişir ve proje tarafından bilinmez.
 
 ```text
-MySQL yönetici kullanıcısı: root
-MySQL yönetici şifresi: 123
+MySQL yönetici kullanıcısı: kendi MySQL kullanıcı adınız
+MySQL yönetici şifresi: kendi MySQL şifreniz
 ```
 
 Eğer MySQL yönetici şifresi bilinmiyorsa Docker Desktop açık halde `baslat.bat` tekrar çalıştırılmalıdır. Docker yolu, bilgisayardaki mevcut MySQL kurulumuna ve root şifresine bağlı değildir.
