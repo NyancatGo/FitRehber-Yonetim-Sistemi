@@ -6,9 +6,18 @@ set "PYTHON_EXE=%~dp0.venv\Scripts\python.exe"
 set "HOST=127.0.0.1"
 if not defined APP_PORT set "APP_PORT=8001"
 
+echo ============================================================
+echo FitRehber Yonetim Sistemi - Sunucu Baslatma
+echo ============================================================
+echo.
+echo Bu dosya kurulum tamamlandiktan sonra kullanilir.
+echo Ilk kurulum yapilmadiysa once kurulum.bat calistirilmalidir.
+echo.
+
 if not exist "%PYTHON_EXE%" (
     echo [HATA] Proje sanal ortami bulunamadi.
     echo Once kurulum.bat dosyasini calistirin.
+    echo Docker ile kurulum yapildiysa docker-kurulum.bat dosyasini kullanin.
     pause
     exit /b 1
 )
@@ -16,6 +25,7 @@ if not exist "%PYTHON_EXE%" (
 if not exist ".env" (
     echo [HATA] .env dosyasi bulunamadi.
     echo Once kurulum.bat dosyasini calistirin.
+    echo Docker ile kurulum yapildiysa docker-kurulum.bat dosyasini kullanin.
     pause
     exit /b 1
 )
@@ -45,6 +55,9 @@ echo.
 echo Ana site : http://%HOST%:%PORT%/
 echo Panel    : http://%HOST%:%PORT%/yonetim-sistemi/
 echo Giris    : Nyancat / demo1234
+echo.
+echo Tarayicida yukarida yazan Panel adresini acin.
+echo Sunucuyu kapatmak icin bu pencerede Ctrl+C yapabilirsiniz.
 echo.
 
 "%PYTHON_EXE%" manage.py runserver %HOST%:%PORT%

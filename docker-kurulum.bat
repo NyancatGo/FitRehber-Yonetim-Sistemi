@@ -6,6 +6,18 @@ set "DB_NAME=fitrehber_yonetim_demo"
 set "MYSQL_ROOT_PASSWORD=123"
 if not defined APP_PORT set "APP_PORT=8001"
 
+echo ============================================================
+echo FitRehber Yonetim Sistemi - Docker Kurulum
+echo ============================================================
+echo.
+echo Bu yol MySQL root sifresi bilinmiyorsa veya lokal MySQL
+echo ayarlariyla ugrasmak istenmiyorsa kullanilir.
+echo Docker kendi MySQL container'ini acar; bilgisayardaki MySQL
+echo kullanici adi veya sifresi gerekmez.
+echo.
+echo Gereken on kosul: Docker Desktop kurulu ve calisir durumda olmali.
+echo.
+
 call :port_free "%APP_PORT%"
 if errorlevel 1 (
     echo [UYARI] 127.0.0.1:%APP_PORT% portu dolu. Docker icin bos port araniyor...
@@ -29,6 +41,7 @@ if errorlevel 1 (
 where docker >nul 2>nul
 if errorlevel 1 (
     echo [HATA] Docker bulunamadi. Docker Desktop kurulu ve calisir durumda olmali.
+    echo Docker kullanmak istemiyorsaniz ve MySQL root sifresini biliyorsaniz kurulum.bat kullanin.
     pause
     exit /b 1
 )
@@ -68,6 +81,9 @@ echo Uygulama: http://127.0.0.1:%APP_PORT%/
 echo Panel:    http://127.0.0.1:%APP_PORT%/yonetim-sistemi/
 echo Giris:    Nyancat / demo1234
 echo Workbench Docker DB: 127.0.0.1 port 3307, root / 123
+echo.
+echo Tarayicida yukarida yazan Panel adresini acin.
+echo Docker servislerini kapatmak icin: docker compose down
 pause
 exit /b 0
 

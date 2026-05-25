@@ -11,13 +11,22 @@ echo ============================================================
 echo FitRehber Yonetim Sistemi - Tek Komut Local Kurulum
 echo ============================================================
 echo.
+echo Bu dosya ilk kurulum icindir. Kurulum bittikten sonra siteyi
+echo acmak icin gunluk olarak baslat.bat calistirilir.
+echo.
 echo Bu kurulum yerel MySQL Server/Workbench icindir.
+echo Sadece "%DB_NAME%" demo veritabani sifirlanir; baska semalara dokunulmaz.
 echo MySQL root bilgisi sadece demo DB ve demo kullanici olusturmak icin kullanilir.
+echo.
+echo MySQL yonetici sifresini bilmiyorsaniz bu pencereyi kapatin
+echo ve Docker Desktop kuruluysa docker-kurulum.bat dosyasini kullanin.
 echo.
 
 if not defined MYSQL_ROOT_USER set /p MYSQL_ROOT_USER=MySQL yonetici kullanici adi [root]:
 if "%MYSQL_ROOT_USER%"=="" set "MYSQL_ROOT_USER=root"
 
+echo.
+echo Not: Sifre bilinmiyorsa Enter'a basmak yerine Docker yolunu kullanin.
 if not defined MYSQL_ROOT_PASS set /p MYSQL_ROOT_PASS=MySQL yonetici sifresi [123]:
 if "%MYSQL_ROOT_PASS%"=="" set "MYSQL_ROOT_PASS=123"
 
@@ -29,6 +38,7 @@ if not defined MYSQL_EXE if exist "C:\Program Files\MySQL\MySQL Workbench 8.0\my
 if not defined MYSQL_EXE (
     echo [HATA] mysql.exe bulunamadi.
     echo MySQL Server 8.0 veya MySQL Workbench kurulu oldugundan emin olun.
+    echo MySQL kurulu degilse Docker Desktop ile docker-kurulum.bat kullanilabilir.
     pause
     exit /b 1
 )
@@ -50,6 +60,8 @@ if not exist ".venv\Scripts\python.exe" (
     )
     if errorlevel 1 (
         echo [HATA] Python sanal ortami olusturulamadi. Python 3 kurulu mu?
+        echo Python yoksa https://www.python.org/downloads/ adresinden Python 3 kurun.
+        echo Kurulumda "Add python.exe to PATH" seceneginin isaretli olmasi onerilir.
         echo Python kuruluysa ama PATH icinde degilse su sekilde calistirabilirsiniz:
         echo set PYTHON_BOOTSTRAP=C:\Python311\python.exe
         echo kurulum.bat
@@ -80,6 +92,8 @@ echo [4/8] MySQL baglantisi kontrol ediliyor...
 "%MYSQL_EXE%" -u"%MYSQL_ROOT_USER%" -p"%MYSQL_ROOT_PASS%" --default-character-set=utf8mb4 -e "SELECT VERSION();" >nul
 if errorlevel 1 (
     echo [HATA] MySQL baglantisi basarisiz. Kullanici adi/sifreyi kontrol edin.
+    echo Sifreyi bilmiyorsaniz bu kurulumu kapatip docker-kurulum.bat kullanin.
+    echo Docker yolu kendi MySQL container'ini acar ve lokal root sifresi istemez.
     pause
     exit /b 1
 )
@@ -135,6 +149,7 @@ echo Workbench DB: %DB_NAME%
 echo Workbench uygulama kullanicisi: %APP_DB_USER% / %APP_DB_PASS%
 echo.
 echo Not: 8001 portu doluysa baslat.bat otomatik olarak 8002-8010 arasinda bos port secer.
+echo Tarayicida mutlaka baslat.bat ekraninda yazan URL acilmalidir.
 echo.
 echo Sunucuyu acmak icin baslat.bat calistirin.
 pause

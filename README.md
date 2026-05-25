@@ -10,6 +10,27 @@ Bartın Üniversitesi · Fen Fakültesi · Bilgisayar Teknolojisi ve Bilişim Si
 
 Bu repository, GitHub'dan indirildikten sonra Windows üzerinde lokal olarak kurulup çalıştırılabilecek şekilde hazırlanmıştır.
 
+### Önce Hangi Dosyayı Çalıştırmalıyım?
+
+Bu proje normal bir masaüstü programı gibi tek tıkla açılmaya en yakın hale getirilmiştir. Yine de Django + MySQL kullandığı için ilk çalıştırmada bir defalık veritabanı kurulumu gerekir.
+
+| Durum | Çalıştırılacak dosya | Açıklama |
+|---|---|---|
+| MySQL Server / Workbench kurulu ve yönetici şifresi biliniyor | `kurulum.bat` | Önerilen ana kurulum yoludur. Demo veritabanını lokal MySQL içine kurar. |
+| MySQL şifresi bilinmiyor veya lokal MySQL ayarıyla uğraşılmak istenmiyor | `docker-kurulum.bat` | Docker Desktop varsa kendi MySQL container'ını açar; bilgisayardaki MySQL şifresine ihtiyaç duymaz. |
+| Kurulum daha önce tamamlandı, sadece site açılacak | `baslat.bat` | Var olan `.venv`, `.env` ve demo veritabanını kullanarak sunucuyu başlatır. |
+
+PowerShell kullanılıyorsa dosyalar şu şekilde çalıştırılabilir:
+
+```powershell
+.\kurulum.bat
+.\baslat.bat
+```
+
+Dosyaya çift tıklamak da yeterlidir. `kurulum.bat` ilk kurulum içindir; her açılışta tekrar çalıştırmak gerekmez. Günlük kullanımda sadece `baslat.bat` çalıştırılır.
+
+> Güvenlik notu: Kurulum scripti yalnızca `fitrehber_yonetim_demo` adlı demo şemasını sıfırlar. Bilgisayardaki diğer MySQL şemalarına dokunmaz. Gerçek `.env`, token, session, cache ve sosyal giriş verileri repository içinde yoktur.
+
 ### 1) Windows + MySQL Workbench / MySQL Server
 
 Ön koşullar:
@@ -30,6 +51,8 @@ Kurulum sırasında MySQL yönetici kullanıcısı sorulur. Varsayılan değerle
 MySQL yönetici kullanıcısı: root
 MySQL yönetici şifresi: 123
 ```
+
+Eğer MySQL yönetici şifresi bilinmiyorsa bu adımda tahmin denemek yerine `docker-kurulum.bat` kullanılmalıdır. Docker yolu, bilgisayardaki mevcut MySQL kurulumuna ve root şifresine bağlı değildir.
 
 Kurulum tamamlanınca:
 
@@ -58,6 +81,8 @@ Uygulama şifresi: FitRehberDemo2026!
 
 İstenirse Workbench'e kendi `root` kullanıcınızla da bağlanıp `fitrehber_yonetim_demo` şemasını inceleyebilirsiniz.
 
+Kurulum başarılıysa Workbench sol menüsünde `fitrehber_yonetim_demo` şeması görünür. Bu şema altında tablolar, stored procedure'lar, function'lar ve trigger'lar incelenebilir.
+
 ### 2) Docker Alternatifi
 
 Docker Desktop kuruluysa:
@@ -75,6 +100,19 @@ Kullanıcı: root
 Şifre: 123
 Schema: fitrehber_yonetim_demo
 ```
+
+Docker yolunda Workbench ile bağlanmak istenirse port `3307` kullanılmalıdır. Normal lokal MySQL yolunda Workbench portu `3306` olur.
+
+### Sık Karşılaşılan Durumlar
+
+| Durum | Çözüm |
+|---|---|
+| `baslat.bat` çalışınca `.venv bulunamadı` hatası | Önce bir kez `kurulum.bat` veya Docker kullanılıyorsa `docker-kurulum.bat` çalıştırılmalıdır. |
+| PowerShell `/baslat.bat` komutunu tanımıyor | PowerShell'de geçerli klasördeki dosya `.\baslat.bat` şeklinde çalıştırılır. |
+| MySQL şifresi bilinmiyor | `docker-kurulum.bat` kullanılmalıdır. |
+| `8001` portu dolu | Script otomatik boş port seçer; ekranda yazan URL açılmalıdır. |
+| Python bulunamadı | Python 3 kurulmalı ve PATH'e eklenmelidir. Alternatif olarak `set PYTHON_BOOTSTRAP=C:\Python311\python.exe` komutu ile Python yolu verilebilir. |
+| Kurulum tekrar çalıştırılırsa ne olur? | Sadece `fitrehber_yonetim_demo` demo şeması sıfırlanır ve demo verisi yeniden yüklenir. Diğer veritabanlarına dokunulmaz. |
 
 ### Paketlenen Demo Verisi
 
