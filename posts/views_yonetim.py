@@ -34,6 +34,8 @@ def dashboard(request):
     icerik_begenileri = bl.get_all_icerik_begenileri()
     icerik_kaydetmeleri = bl.get_all_icerik_kaydetmeleri()
     yorum_begenileri = bl.get_all_yorum_begenileri()
+    aylik_etkilesim = bl.get_monthly_interaction_analysis()
+    kategori_dagilimi = bl.get_category_distribution_report()
 
     context = {
         'total_users': len(users) if users else 0,
@@ -44,6 +46,8 @@ def dashboard(request):
         'total_icerik_begenileri': len(icerik_begenileri) if icerik_begenileri else 0,
         'total_icerik_kaydetmeleri': len(icerik_kaydetmeleri) if icerik_kaydetmeleri else 0,
         'total_yorum_begenileri': len(yorum_begenileri) if yorum_begenileri else 0,
+        'aylik_etkilesim': aylik_etkilesim,
+        'kategori_dagilimi': kategori_dagilimi,
         'active_tab': 'dashboard'
     }
     return render(request, 'yonetim/dashboard.html', context)

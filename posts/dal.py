@@ -275,3 +275,16 @@ def delete_yorum_begeni(begeni_id):
     """Yorum beÄŸenisini siler (sp_YorumBegeniSil)."""
     call_sp('sp_YorumBegeniSil', [begeni_id])
 
+
+# ==========================================
+# 9. RAPORLAMA / ANALITIK DAL METOTLARI
+# ==========================================
+
+def get_monthly_interaction_analysis():
+    """Son 6 aylik etkilesim ozetini getirir (sp_AylikEtkilesimAnalizi)."""
+    return call_sp('sp_AylikEtkilesimAnalizi')
+
+def get_category_distribution_report():
+    """Kategori bazli icerik dagilimini getirir (sp_KategoriDagilimiRaporu)."""
+    return call_sp('sp_KategoriDagilimiRaporu')
+

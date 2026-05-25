@@ -98,6 +98,47 @@
     align-items: center;
     gap: 0.5rem;
 }
+
+.analytics-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.65fr);
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+}
+
+.chart-card {
+    min-height: 360px;
+}
+
+.chart-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+}
+
+.chart-card-header h3 {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.chart-card-header span {
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+}
+
+.chart-wrap {
+    position: relative;
+    height: 280px;
+}
+
+@media (max-width: 1100px) {
+    .analytics-grid {
+        grid-template-columns: 1fr;
+    }
+}
 {% endblock %}
 
 {% block content %}
@@ -122,11 +163,40 @@
         </div>
         <div class="db-badge">
             <i class="fa-solid fa-gears" style="color: var(--warning)"></i>
-            <span>Saklı Yordamlar: Aktif (41 Adet)</span>
+            <span>Saklı Yordamlar: Aktif (44 Adet)</span>
         </div>
         <div class="db-badge">
             <i class="fa-solid fa-code" style="color: #a855f7"></i>
             <span>Kullanıcı Fonksiyonları: Aktif (3 Adet)</span>
+        </div>
+    </div>
+</div>
+
+<!-- Analytics Grid -->
+<div class="analytics-grid">
+    <div class="card chart-card">
+        <div class="chart-card-header">
+            <div>
+                <h3>Aylık Etkileşim Analizi</h3>
+                <span>Yorum, beğeni ve kaydetme toplamları</span>
+            </div>
+            <i class="fa-solid fa-chart-line" style="color: var(--primary); font-size: 1.35rem;"></i>
+        </div>
+        <div class="chart-wrap">
+            <canvas id="monthlyInteractionChart"></canvas>
+        </div>
+    </div>
+
+    <div class="card chart-card">
+        <div class="chart-card-header">
+            <div>
+                <h3>Kategori Dağılımı</h3>
+                <span>İçeriklerin kategori yüzdesi</span>
+            </div>
+            <i class="fa-solid fa-chart-pie" style="color: var(--success); font-size: 1.35rem;"></i>
+        </div>
+        <div class="chart-wrap">
+            <canvas id="categoryDistributionChart"></canvas>
         </div>
     </div>
 </div>
@@ -221,4 +291,95 @@
         </div>
     </div>
 </div>
+{{ aylik_etkilesim|json_script:"monthly-interaction-data" }}
+{{ kategori_dagilimi|json_script:"category-distribution-data" }}
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script>
+    const monthlyData = JSON.parse(document.getElementById('monthly-interaction-data').textContent);
+    const categoryData = JSON.parse(document.getElementById('category-distribution-data').textContent);
+    const gridColor = 'rgba(156, 163, 175, 0.16)';
+    const labelColor = '#9ca3af';
+
+    new Chart(document.getElementById('monthlyInteractionChart'), {
+        type: 'line',
+        data: {
+            labels: monthlyData.map(item => item.ay),
+            datasets: [
+                {
+                    label: 'Yorum',
+                    data: monthlyData.map(item => item.yorum_sayisi),
+                    borderColor: '#ef4444',
+                    backgroundColor: 'rgba(239, 68, 68, 0.14)',
+                    tension: 0.35
+                },
+                {
+                    label: 'Beğeni',
+                    data: monthlyData.map(item => item.begeni_sayisi),
+                    borderColor: '#ec4899',
+                    backgroundColor: 'rgba(236, 72, 153, 0.14)',
+                    tension: 0.35
+                },
+                {
+                    label: 'Kaydetme',
+                    data: monthlyData.map(item => item.kaydetme_sayisi),
+                    borderColor: '#f59e0b',
+                    backgroundColor: 'rgba(245, 158, 11, 0.14)',
+                    tension: 0.35
+                },
+                {
+                    label: 'Toplam',
+                    data: monthlyData.map(item => item.toplam_etkilesim),
+                    borderColor: '#6366f1',
+                    backgroundColor: 'rgba(99, 102, 241, 0.18)',
+                    tension: 0.35,
+                    fill: true
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: { labels: { color: labelColor, usePointStyle: true } }
+            },
+            scales: {
+                x: { ticks: { color: labelColor }, grid: { color: gridColor } },
+                y: { beginAtZero: true, ticks: { color: labelColor, precision: 0 }, grid: { color: gridColor } }
+            }
+        }
+    });
+
+    new Chart(document.getElementById('categoryDistributionChart'), {
+        type: 'doughnut',
+        data: {
+            labels: categoryData.map(item => item.kategori_adi),
+            datasets: [{
+                data: categoryData.map(item => item.icerik_sayisi),
+                backgroundColor: ['#6366f1', '#10b981', '#f59e0b', '#ec4899', '#06b6d4', '#ef4444'],
+                borderColor: '#111827',
+                borderWidth: 3
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '62%',
+            plugins: {
+                legend: { position: 'bottom', labels: { color: labelColor, usePointStyle: true } },
+                tooltip: {
+                    callbacks: {
+                        label: context => {
+                            const item = categoryData[context.dataIndex];
+                            return ` ${item.kategori_adi}: ${item.icerik_sayisi} içerik (${item.yuzde}%)`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+</script>
 {% endblock %}

@@ -504,3 +504,32 @@ def remove_yorum_begeni(begeni_id):
     except django.db.DatabaseError as e:
         raise ValidationError(f"Yorum beÄŸenisi silinirken veritabanÄ± hatasÄ±: {e}")
 
+
+# ==========================================
+# 9. RAPORLAMA / ANALITIK IS MANTIGI
+# ==========================================
+
+def get_monthly_interaction_analysis():
+    rows = dal.get_monthly_interaction_analysis() or []
+    return [
+        {
+            'ay': row.get('ay'),
+            'yorum_sayisi': int(row.get('yorum_sayisi') or 0),
+            'begeni_sayisi': int(row.get('begeni_sayisi') or 0),
+            'kaydetme_sayisi': int(row.get('kaydetme_sayisi') or 0),
+            'toplam_etkilesim': int(row.get('toplam_etkilesim') or 0),
+        }
+        for row in rows
+    ]
+
+def get_category_distribution_report():
+    rows = dal.get_category_distribution_report() or []
+    return [
+        {
+            'kategori_adi': row.get('kategori_adi') or 'Kategorisiz',
+            'icerik_sayisi': int(row.get('icerik_sayisi') or 0),
+            'yuzde': float(row.get('yuzde') or 0),
+        }
+        for row in rows
+    ]
+

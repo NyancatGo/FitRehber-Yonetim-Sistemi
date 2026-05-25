@@ -169,7 +169,7 @@ DDL tek dosyada toplanmıştır: [`sql/fitrehber_db.sql`](sql/fitrehber_db.sql).
 
 ### 3.2 Stored Procedure'lar (10 puan)
 
-**Her tablo için Listele / Bul / Ekle / Güncelle / Sil olmak üzere 40 temel CRUD SP, `sp_ProfilBanGuncelle` özel aksiyonu ve `sp_KullaniciCakismaKontrol` iş kuralı kontrol yordamı ile toplam 42 SP:**
+**Her tablo için Listele / Bul / Ekle / Güncelle / Sil olmak üzere 40 temel CRUD SP, `sp_ProfilBanGuncelle` özel aksiyonu, `sp_KullaniciCakismaKontrol` iş kuralı kontrol yordamı ve 2 BI raporlama yordamı ile toplam 44 SP:**
 
 | Tablo | SP'ler |
 |---|---|
@@ -181,10 +181,13 @@ DDL tek dosyada toplanmıştır: [`sql/fitrehber_db.sql`](sql/fitrehber_db.sql).
 | icerik_begenileri | `sp_IcerikBegeniListele`, `sp_IcerikBegeniBul`, `sp_IcerikBegeniEkle`, `sp_IcerikBegeniGuncelle`, `sp_IcerikBegeniSil` |
 | icerik_kaydetmeleri | `sp_IcerikKaydetmeListele`, `sp_IcerikKaydetmeBul`, `sp_IcerikKaydetmeEkle`, `sp_IcerikKaydetmeGuncelle`, `sp_IcerikKaydetmeSil` |
 | yorum_begenileri | `sp_YorumBegeniListele`, `sp_YorumBegeniBul`, `sp_YorumBegeniEkle`, `sp_YorumBegeniGuncelle`, `sp_YorumBegeniSil` |
+| BI raporlama | `sp_AylikEtkilesimAnalizi`, `sp_KategoriDagilimiRaporu` |
 
 Listeleme SP'leri JOIN ile zenginleştirilmiş, içerik listesi yazar adını ve kategori adını, yorum listesi içerik başlığını da döndürür. Kullanıcı listesi ayrıca `fn_KullaniciIcerikSayisi()` fonksiyonunu çağırarak kullanıcı başına içerik sayısını hesaplar. `sp_IcerikListele`, listeleme performansı için yorum/beğeni/kaydetme sayılarını satır başına scalar function çağırmak yerine toplu aggregate alt sorgularla üretir. Junction tablo güncelleme yordamları, normal kullanıcı davranışı için değil yönetim panelinden hatalı ilişki eşleşmesini düzeltmek için tutulmuştur.
 
 `sp_KullaniciSil`, kullanıcının içerik, yorum veya etkileşim kayıtları varsa fiziksel silme yapmadan önce `SIGNAL SQLSTATE '45000'` ile işlemi durdurur. Böylece foreign key hatasının ham şekilde ekrana düşmesi yerine BL katmanında kullanıcı dostu mesaja çevrilen bilinçli bir iş kuralı uygulanır.
+
+Dashboard'daki BI grafikleri de aynı N-Tier zincirine bağlıdır: `/yonetim-sistemi/` dashboard'u BL üzerinden DAL'ı çağırır, DAL yalnızca `CALL sp_AylikEtkilesimAnalizi()` ve `CALL sp_KategoriDagilimiRaporu()` çalıştırır. Grafikler Chart.js ile sadece sunum katmanında görselleştirilir; veri üretimi MySQL stored procedure katmanındadır.
 
 ### 3.3 Kullanıcı Tanımlı Fonksiyonlar (5 puan)
 
@@ -278,7 +281,7 @@ LAST_INSERT_ID() → BL → View → redirect + success message
 
 Video aşağıdaki sırayı izler:
 
-1. Login → `/yonetim-sistemi/` dashboard'u (8 sayaç).
+1. Login → `/yonetim-sistemi/` dashboard'u (8 sayaç + 2 BI grafik).
 2. Her tabloda **Liste / Ekle / Düzenle / Sil** ekranlarının çalıştığının gösterilmesi.
 3. MySQL Workbench'te paralel pencere açılarak `SHOW PROCEDURE STATUS` ve örnek `CALL sp_KategoriListele()` ile arka plandaki çalışan SP'lerin sergilenmesi.
 4. **Trigger demosu:** Kullanıcı banlanır → o kullanıcıyla içerik eklenmeye çalışılır → trigger `SIGNAL` ile reddeder → BL bunu friendly mesaja çevirir.
@@ -295,7 +298,7 @@ Video aşağıdaki sırayı izler:
 |---|---|
 | [`README.md`](README.md) | Kısa proje tanıtımı + kurulum + ödev kapsam beyanı |
 | [`veritabani_proje_raporu.md`](veritabani_proje_raporu.md) | Bu dosya (detaylı rapor) |
-| [`sql/fitrehber_db.sql`](sql/fitrehber_db.sql) | Çalıştırılabilir DDL + 42 SP + 3 Function + 8 Trigger |
+| [`sql/fitrehber_db.sql`](sql/fitrehber_db.sql) | Çalıştırılabilir DDL + 44 SP + 3 Function + 8 Trigger |
 | `docs/er_diagram.drawio` | diagrams.net görsel ER diyagramı (XML) |
 | `docs/er_diagram.png` | ER diyagramı PNG çıktısı (diagrams.net'ten export) |
 
