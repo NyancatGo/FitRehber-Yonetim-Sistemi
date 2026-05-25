@@ -7,7 +7,7 @@
 
 SET NAMES utf8mb4;
 
-USE fit353bercomtr_fityasam_db;
+USE fitrehber_yonetim_demo;
 
 DROP VIEW IF EXISTS v_yorum_begenileri;
 DROP VIEW IF EXISTS v_icerik_kaydetmeleri;

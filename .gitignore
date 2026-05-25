@@ -18,6 +18,7 @@ __pycache__/
 *.so
 .env
 .env.*
+!.env.example
 .venv/
 env/
 venv/
@@ -31,7 +32,14 @@ db.sqlite3-journal
 *.sqlite3
 
 # User/generated assets
-media/
+media/*
+!media/icerik_resimleri/
+!media/icerik_resimleri/**
+!media/ckeditor_resimleri/
+!media/ckeditor_resimleri/**
+!media/profil_fotograflari/
+!media/profil_fotograflari/seed_avatars/
+!media/profil_fotograflari/seed_avatars/**
 staticfiles/
 
 # Logs and local runtime files
@@ -47,7 +55,8 @@ read_docs.py
 check_output.txt
 *.legacy.txt
 SECURITY_REVIEW.md
-posts/templates/{% static 'images/
+# Accidentally generated template-like path from an old static tag typo.
+posts/templates/[{]% static 'images/
 backups/
 .test_media/
 .test_tmp/

@@ -1,6 +1,6 @@
 # FitRehber Turkce Mantiksal Sema
 
-Bu sema, odev kapsamindaki cekirdek uygulama tablolarini ana veritabani icinde Turkce fiziksel adlarla anlatmak icin hazirlanmistir. Ayrica bir sunum semasi kullanilmaz; uygulamanin ana veritabani `fit353bercomtr_fityasam_db` olarak kalir.
+Bu sema, odev kapsamindaki cekirdek uygulama tablolarini ana veritabani icinde Turkce fiziksel adlarla anlatmak icin hazirlanmistir. Fresh-install demo kurulumunda uygulama veritabani `fitrehber_yonetim_demo` olarak olusturulur.
 
 ## Fiziksel Tablo Yaklasimi
 

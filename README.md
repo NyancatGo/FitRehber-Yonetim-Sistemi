@@ -6,6 +6,75 @@ Bartın Üniversitesi · Fen Fakültesi · Bilgisayar Teknolojisi ve Bilişim Si
 
 ---
 
+## Hızlı Kurulum (Hocanın İndirdiği ZIP İçin)
+
+Bu repository, GitHub'dan indirildikten sonra Windows üzerinde lokal olarak kurulup çalıştırılabilecek şekilde hazırlanmıştır.
+
+### 1) Windows + MySQL Workbench / MySQL Server
+
+Ön koşullar:
+- Python 3 kurulu olmalıdır.
+- MySQL Server 8.x veya MySQL Workbench kurulu olmalıdır.
+- MySQL servisinin çalışıyor olması gerekir.
+
+Kurulum:
+
+```bat
+kurulum.bat
+baslat.bat
+```
+
+Kurulum sırasında MySQL yönetici kullanıcısı sorulur. Varsayılan değerler:
+
+```text
+MySQL yönetici kullanıcısı: root
+MySQL yönetici şifresi: 123
+```
+
+Kurulum tamamlanınca:
+
+```text
+Ana site : http://127.0.0.1:8001/
+Panel    : http://127.0.0.1:8001/yonetim-sistemi/
+Giriş    : Nyancat / demo1234
+```
+
+MySQL Workbench bağlantısı:
+
+```text
+Host: 127.0.0.1
+Port: 3306
+Schema: fitrehber_yonetim_demo
+Uygulama kullanıcısı: fitrehber_demo
+Uygulama şifresi: FitRehberDemo2026!
+```
+
+İstenirse Workbench'e kendi `root` kullanıcınızla da bağlanıp `fitrehber_yonetim_demo` şemasını inceleyebilirsiniz.
+
+### 2) Docker Alternatifi
+
+Docker Desktop kuruluysa:
+
+```bat
+docker-kurulum.bat
+```
+
+Docker kullanımında uygulama yine `http://127.0.0.1:8001/` adresinden açılır. MySQL container portu dışarıya `3307` olarak açılır:
+
+```text
+Host: 127.0.0.1
+Port: 3307
+Kullanıcı: root
+Şifre: 123
+Schema: fitrehber_yonetim_demo
+```
+
+### Paketlenen Demo Verisi
+
+`sql/demo_data.sql` dosyası yalnızca ödev demosu için sanitize edilmiş verileri içerir. Session, cache, email confirmation, social login token ve gerçek secret değerleri dahil edilmemiştir. Demo görselleri için seçili `media/` dosyaları repository içinde tutulur.
+
+---
+
 ## 1. Ödev Kapsamı (Değerlendirme Sınırı)
 
 Bu repository iki ayrı katmandan oluşur. **Ödev değerlendirmesi yalnızca aşağıdaki "Ödev Modülü" kapsamında yapılacaktır.**
@@ -114,28 +183,32 @@ Tam liste için: [`veritabani_proje_raporu.md`](veritabani_proje_raporu.md) ve [
 
 ---
 
-## 6. Kurulum & Çalıştırma
+## 6. Manuel Kurulum & Çalıştırma
 
 ```bash
 # 1) Bağımlılıkları kur
 pip install -r requirements.txt
 
-# 2) .env oluştur (DB_HOST, DB_NAME, DB_USER, DB_PASS, SECRET_KEY)
+# 2) .env oluştur
+# Fresh kurulum için .env.example dosyasını .env olarak kopyalayabilirsiniz.
 
-# 3) Şema + SP/Function/Trigger kurulumu
-mysql -u <user> -p <db_name> < sql/fitrehber_db.sql
-
-# 4) Migration'lar (Django framework tabloları için)
+# 3) Migration'lar (Django framework tabloları için)
 python manage.py migrate
 
-# 5) Superuser oluştur
-python manage.py createsuperuser
+# 4) Cache tablosu
+python manage.py createcachetable rate_limit_cache_table
 
-# 6) Sunucuyu başlat
-python manage.py runserver
+# 5) Şema + SP/Function/Trigger kurulumu
+mysql -u <user> -p <db_name> < sql/fitrehber_db.sql
 
-# 7) Tarayıcıdan aç
-http://127.0.0.1:8000/yonetim-sistemi/
+# 6) Demo verisi
+mysql -u <user> -p <db_name> < sql/demo_data.sql
+
+# 7) Sunucuyu başlat
+python manage.py runserver 127.0.0.1:8001
+
+# 8) Tarayıcıdan aç
+http://127.0.0.1:8001/yonetim-sistemi/
 ```
 
 ---
@@ -159,7 +232,9 @@ http://127.0.0.1:8000/yonetim-sistemi/
 
 - 📄 [`veritabani_proje_raporu.md`](veritabani_proje_raporu.md) — Detaylı ödev raporu (senaryo · ER · DDL · SP/Function/Trigger · N-Tier mimari).
 - 🗂️ [`sql/fitrehber_db.sql`](sql/fitrehber_db.sql) — Çalıştırılabilir tek dosyalık DDL + SP + Function + Trigger betiği.
+- 🗃️ [`sql/demo_data.sql`](sql/demo_data.sql) — Sanitize edilmiş demo verisi.
 - 🎨 `docs/er_diagram.drawio` — diagrams.net görsel ER diyagramı (XML).
+- ⚙️ `kurulum.bat`, `baslat.bat`, `docker-kurulum.bat` — Fresh-install kurulum ve çalıştırma yardımcıları.
 - 🎥 Sunum videosu (link rapora eklenecek).
 
 ---
