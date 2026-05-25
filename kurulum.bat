@@ -53,11 +53,20 @@ if not exist ".venv\Scripts\python.exe" (
     ) else if exist "%~dp0..\WEB\venv\Scripts\python.exe" (
         "%~dp0..\WEB\venv\Scripts\python.exe" -m venv .venv
     ) else (
-        where py >nul 2>nul
-        if "%ERRORLEVEL%"=="0" (
-        py -3 -m venv .venv
+        py -3 -c "import sys" >nul 2>nul
+        if not errorlevel 1 (
+            py -3 -m venv .venv
         ) else (
-            python -m venv .venv
+            python -c "import sys" >nul 2>nul
+            if not errorlevel 1 (
+                python -m venv .venv
+            ) else (
+                echo [HATA] Python 3 bulunamadi.
+                echo Python yoksa https://www.python.org/downloads/ adresinden Python 3 kurun.
+                echo Kurulumda "Add python.exe to PATH" seceneginin isaretli olmasi onerilir.
+                pause
+                exit /b 1
+            )
         )
     )
     if errorlevel 1 (

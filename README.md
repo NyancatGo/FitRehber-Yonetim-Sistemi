@@ -10,12 +10,36 @@ Bartın Üniversitesi · Fen Fakültesi · Bilgisayar Teknolojisi ve Bilişim Si
 
 Bu repository, GitHub'dan indirildikten sonra Windows üzerinde lokal olarak kurulup çalıştırılabilecek şekilde hazırlanmıştır.
 
+### En Kolay Yol
+
+ZIP dosyasını çıkarınca önce şu dosyayı çalıştırın:
+
+```bat
+BASLA.bat
+```
+
+`BASLA.bat` öğretmen/hoca bilgisayarı için en güvenli başlangıç noktasıdır:
+
+- Docker Desktop açık ve çalışır durumdaysa otomatik olarak Docker kurulumunu kullanır.
+- Docker yoksa veya kullanılmayacaksa local MySQL kurulumuna geçer.
+- Docker bulundu ama açık değilse ekranda açıkça söyler; istenirse local MySQL kurulumu denenebilir.
+
+Kurulum bitince panel adresi ekranda yazılır:
+
+```text
+Panel: http://127.0.0.1:8001/yonetim-sistemi/
+Giriş: Nyancat / demo1234
+```
+
+`8001` portu doluysa scriptler otomatik olarak boş port arar. Bu durumda tarayıcıda mutlaka ekranda yazan adres açılmalıdır.
+
 ### Önce Hangi Dosyayı Çalıştırmalıyım?
 
 Bu proje normal bir masaüstü programı gibi tek tıkla açılmaya en yakın hale getirilmiştir. Yine de Django + MySQL kullandığı için ilk çalıştırmada bir defalık veritabanı kurulumu gerekir.
 
 | Durum | Çalıştırılacak dosya | Açıklama |
 |---|---|---|
+| En kolay otomatik başlangıç | `BASLA.bat` | Docker varsa Docker yolunu, yoksa local MySQL yolunu yönlendirir. |
 | MySQL Server / Workbench kurulu ve yönetici şifresi biliniyor | `kurulum.bat` | Önerilen ana kurulum yoludur. Demo veritabanını lokal MySQL içine kurar. |
 | MySQL şifresi bilinmiyor veya lokal MySQL ayarıyla uğraşılmak istenmiyor | `docker-kurulum.bat` | Docker Desktop varsa kendi MySQL container'ını açar; bilgisayardaki MySQL şifresine ihtiyaç duymaz. |
 | Kurulum daha önce tamamlandı, sadece site açılacak | `baslat.bat` | Var olan `.venv`, `.env` ve demo veritabanını kullanarak sunucuyu başlatır. |
@@ -23,6 +47,7 @@ Bu proje normal bir masaüstü programı gibi tek tıkla açılmaya en yakın ha
 PowerShell kullanılıyorsa dosyalar şu şekilde çalıştırılabilir:
 
 ```powershell
+.\BASLA.bat
 .\kurulum.bat
 .\baslat.bat
 ```
