@@ -37,18 +37,15 @@ PowerShell kullanılıyorsa:
 .\baslat.bat
 ```
 
-### Diger Dosyalar (Manuel Kurulum İçin)
+### Tek Giriş Noktası
 
-Tek tık deneyimini bozmadan eski script'ler de elden çıkarılmadı; isteyen doğrudan çağırabilir:
+Repository içinde bilinçli olarak tek `.bat` dosyası bırakılmıştır:
 
-| Dosya | Ne işe yarar |
-|---|---|
-| `baslat.bat` | Tek tık akıllı giriş noktası. Kurulum yoksa yapar, varsa sunucuyu başlatır. |
-| `BASLA.bat` | Geriye dönük uyumluluk için bırakıldı — sadece `baslat.bat`'ı çağırır. |
-| `kurulum.bat` | Yalnızca local MySQL kurulumunu doğrudan yapmak isteyenler için. |
-| `docker-kurulum.bat` | Yalnızca Docker kurulumunu doğrudan yapmak isteyenler için. |
+```text
+baslat.bat
+```
 
-Pratikte tek dosya: **`baslat.bat`**.
+Local MySQL kurulumu, Docker kurulumu, port seçimi, demo veritabanı kurulumu ve sunucu başlatma adımlarının tamamı bu dosyanın içindedir. ZIP'i indiren kişinin başka bir batch dosyası seçmesine gerek yoktur.
 
 > Güvenlik notu: Kurulum scripti yalnızca `fitrehber_yonetim_demo` adlı demo şemasını sıfırlar. Bilgisayardaki diğer MySQL şemalarına dokunmaz. Gerçek `.env`, token, session, cache ve sosyal giriş verileri repository içinde yoktur.
 
@@ -59,10 +56,9 @@ Pratikte tek dosya: **`baslat.bat`**.
 - MySQL Server 8.x veya MySQL Workbench kurulu olmalıdır.
 - MySQL servisinin çalışıyor olması gerekir.
 
-Kurulum:
+Kurulum ve başlatma:
 
 ```bat
-kurulum.bat
 baslat.bat
 ```
 
@@ -73,7 +69,7 @@ MySQL yönetici kullanıcısı: root
 MySQL yönetici şifresi: 123
 ```
 
-Eğer MySQL yönetici şifresi bilinmiyorsa bu adımda tahmin denemek yerine `docker-kurulum.bat` kullanılmalıdır. Docker yolu, bilgisayardaki mevcut MySQL kurulumuna ve root şifresine bağlı değildir.
+Eğer MySQL yönetici şifresi bilinmiyorsa Docker Desktop açık halde `baslat.bat` tekrar çalıştırılmalıdır. Docker yolu, bilgisayardaki mevcut MySQL kurulumuna ve root şifresine bağlı değildir.
 
 Kurulum tamamlanınca:
 
@@ -106,13 +102,13 @@ Kurulum başarılıysa Workbench sol menüsünde `fitrehber_yonetim_demo` şemas
 
 ### 2) Docker Alternatifi
 
-Docker Desktop kuruluysa:
+Docker Desktop kurulu ve açıksa yine aynı dosya kullanılır:
 
 ```bat
-docker-kurulum.bat
+baslat.bat
 ```
 
-Docker kullanımında uygulama varsayılan olarak `http://127.0.0.1:8001/` adresinden açılır. `8001` doluysa `docker-kurulum.bat` boş port arar veya `APP_PORT` ile elle seçilebilir. MySQL container portu dışarıya `3307` olarak açılır:
+Docker kullanımında uygulama varsayılan olarak `http://127.0.0.1:8001/` adresinden açılır. `8001` doluysa `baslat.bat` boş port arar veya `APP_PORT` ile elle seçilebilir. MySQL container portu dışarıya `3307` olarak açılır:
 
 ```text
 Host: 127.0.0.1
@@ -124,7 +120,7 @@ Schema: fitrehber_yonetim_demo
 
 Docker yolunda Workbench ile bağlanmak istenirse port `3307` kullanılmalıdır. Normal lokal MySQL yolunda Workbench portu `3306` olur.
 
-`.env.example` içindeki `MYSQL_ROOT_PASSWORD=123` değeri Docker container kurulumu içindir. Normal MySQL/Workbench kurulumunda `kurulum.bat` sizden gerçek MySQL yönetici şifresini ayrıca ister.
+`.env.example` içindeki `MYSQL_ROOT_PASSWORD=123` değeri Docker container kurulumu içindir. Normal MySQL/Workbench kurulumunda `baslat.bat` sizden gerçek MySQL yönetici şifresini ayrıca ister.
 
 ### Sık Karşılaşılan Durumlar
 
@@ -135,7 +131,7 @@ Docker yolunda Workbench ile bağlanmak istenirse port `3307` kullanılmalıdır
 | `8001` portu dolu | Script otomatik boş port seçer; ekranda yazan URL açılmalıdır. |
 | Python bulunamadı | Python 3 kurulmalı ve PATH'e eklenmelidir. Alternatif olarak `set PYTHON_BOOTSTRAP=C:\Python311\python.exe` komutu ile Python yolu verilebilir. |
 | Kurulum tekrar çalıştırılırsa ne olur? | Sadece `fitrehber_yonetim_demo` demo şeması sıfırlanır ve demo verisi yeniden yüklenir. Diğer veritabanlarına dokunulmaz. |
-| Kurulum yarıda kesilirse | Sorun giderildikten sonra `kurulum.bat` tekrar çalıştırılabilir; demo DB en baştan temiz kurulur. |
+| Kurulum yarıda kesilirse | Sorun giderildikten sonra `baslat.bat` tekrar çalıştırılabilir; demo DB en baştan temiz kurulur. |
 
 ### Paketlenen Demo Verisi
 
@@ -350,7 +346,7 @@ http://127.0.0.1:8001/yonetim-sistemi/
 - 🗂️ [`sql/fitrehber_db.sql`](sql/fitrehber_db.sql) — Çalıştırılabilir tek dosyalık DDL + SP + Function + Trigger betiği.
 - 🗃️ [`sql/demo_data.sql`](sql/demo_data.sql) — Sanitize edilmiş demo verisi.
 - 🎨 `docs/er_diagram.drawio` — diagrams.net görsel ER diyagramı (XML).
-- ⚙️ `kurulum.bat`, `baslat.bat`, `docker-kurulum.bat` — Fresh-install kurulum ve çalıştırma yardımcıları.
+- ⚙️ `baslat.bat` — Fresh-install kurulum ve çalıştırma için tek batch dosyası.
 - 🎥 Sunum videosu (link rapora eklenecek).
 
 ---
