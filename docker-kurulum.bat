@@ -64,12 +64,13 @@ if errorlevel 1 exit /b 1
 docker compose run --rm web python manage.py migrate --noinput
 if errorlevel 1 exit /b 1
 
-docker compose run --rm web python manage.py createcachetable rate_limit_cache_table
-
 docker compose exec -T db mysql -uroot -p%MYSQL_ROOT_PASSWORD% --default-character-set=utf8mb4 %DB_NAME% < "sql\fitrehber_db.sql"
 if errorlevel 1 exit /b 1
 
 docker compose exec -T db mysql -uroot -p%MYSQL_ROOT_PASSWORD% --default-character-set=utf8mb4 %DB_NAME% < "sql\demo_data.sql"
+if errorlevel 1 exit /b 1
+
+docker compose run --rm web python manage.py createcachetable rate_limit_cache_table
 if errorlevel 1 exit /b 1
 
 docker compose up -d web
