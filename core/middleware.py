@@ -12,6 +12,65 @@ from core.models import BannedIP
 from core.security_utils import get_client_ip
 
 
+class AutoLoginMiddleware:
+    """Demo kolayligi: yonetim panelinde belirlenmis kullaniciyi otomatik loglar.
+
+    Sadece settings.AUTO_LOGIN_AS doluyken devreye girer ve settings.py icinde
+    yalnizca DEBUG=True iken MIDDLEWARE listesine eklenir. Production icin
+    hicbir etkisi yoktur.
+
+    Hocanin tek-tik deneyimi icin: baslat.bat -> tarayici -> panel direkt acilir.
+    """
+
+    PANEL_PATH_PREFIX = "/yonetim-sistemi/"
+    LOCAL_HOSTS = {"127.0.0.1", "localhost", "::1"}
+    SKIP_PATH_PREFIXES = (
+        "/accounts/logout/",
+        "/cikis/",
+    )
+
+    BACKEND_PATH = "django.contrib.auth.backends.ModelBackend"
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+        self.username = (getattr(settings, "AUTO_LOGIN_AS", "") or "").strip()
+
+    def __call__(self, request):
+        path = request.path_info or request.path
+        if (
+            self.username
+            and not getattr(request.user, "is_authenticated", False)
+            and path.startswith(self.PANEL_PATH_PREFIX)
+            and self._is_local_request(request)
+            and not any(path.startswith(p) for p in self.SKIP_PATH_PREFIXES)
+        ):
+            self._auto_login(request)
+        return self.get_response(request)
+
+    def _is_local_request(self, request):
+        host = request.get_host().lower()
+        if host.startswith("["):
+            host = host[1:].split("]", 1)[0]
+        else:
+            host = host.split(":", 1)[0]
+        return host in self.LOCAL_HOSTS
+
+    def _auto_login(self, request):
+        from django.contrib.auth import login, get_user_model
+
+        User = get_user_model()
+        try:
+            user = User.objects.get(
+                username=self.username,
+                is_active=True,
+                is_superuser=True,
+            )
+        except (User.DoesNotExist, DatabaseError):
+            # Demo kullanicisi henuz kurulmamis veya DB hazir degil; sessizce gec
+            return
+        login(request, user, backend=self.BACKEND_PATH)
+
+
 class RateLimitMiddleware:
     """Comfort-first rate limiter with manual IP bans and scoped cooldowns."""
 

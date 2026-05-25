@@ -35,6 +35,7 @@ class OnboardingRedirectMiddleware:
         '/media/',
         '/admin/',
         '/yonetim/',
+        '/yonetim-sistemi/',
         '/ckeditor-yukle/',
         '/dogrulama-gonder/',
     )

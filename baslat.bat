@@ -296,6 +296,7 @@ REM 5) DOCKER MEVCUT KURULUMU BASLATMA
 REM ============================================================
 
 :start_docker
+call :ensure_auto_login_env
 call :find_compose
 if errorlevel 1 exit /b 1
 
@@ -324,6 +325,7 @@ REM 6) LOCAL SUNUCU BASLATMA
 REM ============================================================
 
 :start_local
+call :ensure_auto_login_env
 set "PORT=%APP_PORT%"
 call :port_free "%PORT%"
 if errorlevel 1 (
@@ -456,3 +458,13 @@ exit /b 1
 :port_free
 powershell -NoProfile -ExecutionPolicy Bypass -Command "if (Get-NetTCPConnection -LocalAddress '%HOST%' -LocalPort %~1 -State Listen -ErrorAction SilentlyContinue) { exit 1 } else { exit 0 }" >nul 2>nul
 exit /b %ERRORLEVEL%
+
+:ensure_auto_login_env
+REM Mevcut .env'de AUTO_LOGIN_AS yoksa ekle (eski kurulumlarda da otomatik giris)
+if not exist ".env" exit /b 0
+findstr /B /C:"AUTO_LOGIN_AS=" ".env" >nul 2>nul
+if not errorlevel 1 exit /b 0
+echo.>> ".env"
+echo AUTO_LOGIN_AS=Nyancat>> ".env"
+echo [BILGI] .env dosyasina AUTO_LOGIN_AS=Nyancat eklendi (demo otomatik giris).
+exit /b 0

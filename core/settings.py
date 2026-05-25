@@ -141,6 +141,14 @@ MIDDLEWARE = [
     'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
+# ==================== DEMO AUTO-LOGIN ====================
+# Hocanin tek-tik deneyimi icin: AUTO_LOGIN_AS env var doluysa ve DEBUG=True ise
+# yonetim panelinde ilgili superuser otomatik loglanir. Production'da hicbir etkisi yoktur.
+AUTO_LOGIN_AS = os.environ.get('AUTO_LOGIN_AS', '').strip() if DEBUG else ''
+if AUTO_LOGIN_AS:
+    _auth_idx = MIDDLEWARE.index('django.contrib.auth.middleware.AuthenticationMiddleware')
+    MIDDLEWARE.insert(_auth_idx + 1, 'core.middleware.AutoLoginMiddleware')
+
 ROOT_URLCONF = 'core.urls'
 
 TEMPLATES = [

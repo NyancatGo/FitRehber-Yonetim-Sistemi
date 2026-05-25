@@ -23,8 +23,13 @@ STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
 MIDDLEWARE = [
     middleware
     for middleware in MIDDLEWARE
-    if middleware != "whitenoise.middleware.WhiteNoiseMiddleware"
+    if middleware
+    not in {
+        "whitenoise.middleware.WhiteNoiseMiddleware",
+        "core.middleware.AutoLoginMiddleware",
+    }
 ]
+AUTO_LOGIN_AS = ""
 
 # Test ortamı için güvenlik kısıtlamalarını kapat (301 redirect hatalarını önler)
 DEBUG = True

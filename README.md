@@ -21,6 +21,7 @@ ZIP'i çıkardıktan sonra **tek yapılması gereken `baslat.bat`'a çift tıkla
    - Docker Desktop açıksa Docker yolunu kullanır (MySQL şifresi sormaz).
    - Docker yoksa local MySQL yolunu kullanır (root şifresini bir kez sorar, varsayılan `root` / `123`).
 3. Kurulum bitince sunucuyu başlatır ve tarayıcıyı otomatik açar.
+4. Demo modunda `Nyancat` superuser hesabıyla otomatik giriş yapar; hoca login formuyla uğraşmadan doğrudan yönetim panelini görür.
 
 Kurulum bitince panel adresi ekranda yazılır:
 
@@ -28,6 +29,8 @@ Kurulum bitince panel adresi ekranda yazılır:
 Panel: http://127.0.0.1:8001/yonetim-sistemi/
 Giriş: Nyancat / demo1234
 ```
+
+> Demo notu: Fresh kurulumda `AUTO_LOGIN_AS=Nyancat` ayarı açıktır. Bu ayar yalnızca `DEBUG=True` iken ve sadece `/yonetim-sistemi/` rotasında çalışır; canlı/production modunda devreye girmez.
 
 `8001` portu doluysa script otomatik olarak boş port arar. Bu durumda tarayıcıda mutlaka ekranda yazan adres açılır (otomatik açılır).
 
