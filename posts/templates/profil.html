@@ -1304,13 +1304,21 @@
                 {% endif %}
 
                 {% if request.user == profil_sahibi and request.user.is_superuser %}
-                <a href="{% url 'admin_monitor' %}" class="btn-admin-panel mb-3" style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 12px; border-radius: 12px; background: linear-gradient(135deg, #1e1b4b 0%, #4338ca 100%); color: white; text-decoration: none; font-weight: 700; transition: all 0.3s; box-shadow: 0 4px 15px rgba(67, 56, 202, 0.3);">
+                <a href="{% url 'admin_monitor' %}" class="btn-admin-panel mb-2" style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 12px; border-radius: 12px; background: linear-gradient(135deg, #1e1b4b 0%, #4338ca 100%); color: white; text-decoration: none; font-weight: 700; transition: all 0.3s; box-shadow: 0 4px 15px rgba(67, 56, 202, 0.3);">
                     <i class="bi bi-speedometer2"></i> Yönetim Paneli
+                </a>
+                <a href="{% url 'yonetim_dashboard' %}" class="btn-db-yonetim mb-3" style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 12px; border-radius: 12px; background: linear-gradient(135deg, #0f766e 0%, #14b8a6 100%); color: white; text-decoration: none; font-weight: 700; transition: all 0.3s; box-shadow: 0 4px 15px rgba(20, 184, 166, 0.3);">
+                    <i class="bi bi-database-fill-gear"></i> Yönetim Sistemi
                 </a>
                 <style>
                     .btn-admin-panel:hover {
                         transform: translateY(-2px);
                         box-shadow: 0 8px 25px rgba(67, 56, 202, 0.4);
+                        color: white;
+                    }
+                    .btn-db-yonetim:hover {
+                        transform: translateY(-2px);
+                        box-shadow: 0 8px 25px rgba(20, 184, 166, 0.4);
                         color: white;
                     }
                 </style>
