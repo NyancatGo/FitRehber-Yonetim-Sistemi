@@ -1,3 +1,10 @@
+"""
+Ana FitRehber platformunun mevcut kullanıcı arayüzü rotaları.
+
+BTS304 ödev değerlendirme kapsamındaki N-Tier yönetim modülü bu dosya
+değildir; ödev modülü için posts/views_yonetim.py kullanılır.
+"""
+
 from pathlib import Path
 import re
 import secrets

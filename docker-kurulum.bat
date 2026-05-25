@@ -50,31 +50,79 @@ if not exist ".env" copy ".env.example" ".env" >nul
 
 echo Docker DB sifirlaniyor ve servisler hazirlaniyor...
 docker compose up -d db
-if errorlevel 1 exit /b 1
+if errorlevel 1 (
+    echo [HATA] Docker DB servisi baslatilamadi.
+    pause
+    exit /b 1
+)
 
 echo MySQL container hazir olana kadar bekleniyor...
-timeout /t 12 /nobreak >nul
+set "MYSQL_WAIT_TRIES=0"
+:wait_mysql
+docker compose exec -T db mysqladmin ping -uroot -p%MYSQL_ROOT_PASSWORD% --silent >nul 2>nul
+if not errorlevel 1 goto mysql_ready
+set /a MYSQL_WAIT_TRIES+=1
+if %MYSQL_WAIT_TRIES% GEQ 40 goto mysql_wait_failed
+timeout /t 3 /nobreak >nul
+goto wait_mysql
+
+:mysql_wait_failed
+echo [HATA] MySQL container 120 saniye icinde hazir olmadi.
+echo Docker Desktop acik mi ve db container loglarinda hata var mi kontrol edin.
+docker compose logs db --tail=50
+pause
+exit /b 1
+
+:mysql_ready
 
 docker compose exec -T db mysql -uroot -p%MYSQL_ROOT_PASSWORD% --default-character-set=utf8mb4 -e "DROP DATABASE IF EXISTS %DB_NAME%; CREATE DATABASE %DB_NAME% CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-if errorlevel 1 exit /b 1
+if errorlevel 1 (
+    echo [HATA] Docker MySQL demo veritabani sifirlanamadi.
+    pause
+    exit /b 1
+)
 
 docker compose build web
-if errorlevel 1 exit /b 1
+if errorlevel 1 (
+    echo [HATA] Docker web imaji build edilemedi.
+    pause
+    exit /b 1
+)
 
 docker compose run --rm web python manage.py migrate --noinput
-if errorlevel 1 exit /b 1
+if errorlevel 1 (
+    echo [HATA] Docker migration adimi basarisiz oldu.
+    pause
+    exit /b 1
+)
 
 docker compose exec -T db mysql -uroot -p%MYSQL_ROOT_PASSWORD% --default-character-set=utf8mb4 %DB_NAME% < "sql\fitrehber_db.sql"
-if errorlevel 1 exit /b 1
+if errorlevel 1 (
+    echo [HATA] Docker SQL omurgasi uygulanamadi.
+    pause
+    exit /b 1
+)
 
 docker compose exec -T db mysql -uroot -p%MYSQL_ROOT_PASSWORD% --default-character-set=utf8mb4 %DB_NAME% < "sql\demo_data.sql"
-if errorlevel 1 exit /b 1
+if errorlevel 1 (
+    echo [HATA] Docker demo verisi yuklenemedi.
+    pause
+    exit /b 1
+)
 
 docker compose run --rm web python manage.py createcachetable rate_limit_cache_table
-if errorlevel 1 exit /b 1
+if errorlevel 1 (
+    echo [HATA] Docker rate_limit_cache_table olusturulamadi.
+    pause
+    exit /b 1
+)
 
 docker compose up -d web
-if errorlevel 1 exit /b 1
+if errorlevel 1 (
+    echo [HATA] Docker web servisi baslatilamadi.
+    pause
+    exit /b 1
+)
 
 echo.
 echo Docker kurulum tamamlandi.

@@ -32,6 +32,8 @@ if "%MYSQL_ROOT_PASS%"=="" set "MYSQL_ROOT_PASS=123"
 
 set "MYSQL_EXE="
 for /f "delims=" %%I in ('where mysql 2^>nul') do if not defined MYSQL_EXE set "MYSQL_EXE=%%I"
+for /d %%D in ("C:\Program Files\MySQL\MySQL Server *") do if not defined MYSQL_EXE if exist "%%~fD\bin\mysql.exe" set "MYSQL_EXE=%%~fD\bin\mysql.exe"
+for /d %%D in ("C:\Program Files\MySQL\MySQL Workbench *") do if not defined MYSQL_EXE if exist "%%~fD\mysql.exe" set "MYSQL_EXE=%%~fD\mysql.exe"
 if not defined MYSQL_EXE if exist "C:\Program Files\MySQL\MySQL Server 8.0\bin\mysql.exe" set "MYSQL_EXE=C:\Program Files\MySQL\MySQL Server 8.0\bin\mysql.exe"
 if not defined MYSQL_EXE if exist "C:\Program Files\MySQL\MySQL Workbench 8.0\mysql.exe" set "MYSQL_EXE=C:\Program Files\MySQL\MySQL Workbench 8.0\mysql.exe"
 
@@ -75,9 +77,17 @@ set "PYTHON_EXE=%CD%\.venv\Scripts\python.exe"
 echo.
 echo [2/9] Python paketleri kuruluyor...
 "%PYTHON_EXE%" -m pip install --upgrade pip
-if errorlevel 1 exit /b 1
+if errorlevel 1 (
+    echo [HATA] pip guncellenemedi.
+    pause
+    exit /b 1
+)
 "%PYTHON_EXE%" -m pip install -r requirements.txt
-if errorlevel 1 exit /b 1
+if errorlevel 1 (
+    echo [HATA] requirements.txt paketleri kurulamadi.
+    pause
+    exit /b 1
+)
 
 echo.
 echo [3/9] Guvenli local .env hazirlaniyor...
@@ -110,7 +120,11 @@ if errorlevel 1 (
 echo.
 echo [6/9] Django migration kuruluyor...
 "%PYTHON_EXE%" manage.py migrate --noinput
-if errorlevel 1 exit /b 1
+if errorlevel 1 (
+    echo [HATA] Django migration adimi basarisiz oldu.
+    pause
+    exit /b 1
+)
 
 echo.
 echo [7/9] Stored Procedure / Function / Trigger omurgasi uygulaniyor...
@@ -142,7 +156,11 @@ if errorlevel 1 (
 echo.
 echo Son kontrol yapiliyor...
 "%PYTHON_EXE%" manage.py check
-if errorlevel 1 exit /b 1
+if errorlevel 1 (
+    echo [HATA] Django sistem kontrolu basarisiz oldu.
+    pause
+    exit /b 1
+)
 
 echo.
 echo ============================================================
