@@ -322,4 +322,95 @@ OK
 
 ### MySQL Workbench doğrulaması
 
-Kurulumdan sonra 
+Kurulumdan sonra `fitrehber_yonetim_demo` şemasında aşağıdaki sorgular çalıştırılabilir.
+
+```sql
+SELECT COUNT(*) AS procedure_sayisi
+FROM information_schema.ROUTINES
+WHERE ROUTINE_SCHEMA = 'fitrehber_yonetim_demo'
+  AND ROUTINE_TYPE = 'PROCEDURE';
+-- Beklenen: 44
+
+SELECT COUNT(*) AS function_sayisi
+FROM information_schema.ROUTINES
+WHERE ROUTINE_SCHEMA = 'fitrehber_yonetim_demo'
+  AND ROUTINE_TYPE = 'FUNCTION';
+-- Beklenen: 3
+
+SELECT COUNT(*) AS trigger_sayisi
+FROM information_schema.TRIGGERS
+WHERE EVENT_OBJECT_SCHEMA = 'fitrehber_yonetim_demo';
+-- Beklenen: 8
+
+SELECT COUNT(*) AS cache_tablosu
+FROM information_schema.TABLES
+WHERE TABLE_SCHEMA = 'fitrehber_yonetim_demo'
+  AND TABLE_NAME = 'rate_limit_cache_table';
+-- Beklenen: 1
+```
+
+Demo veri sayıları sürüme göre küçük farklılıklar gösterebilir; mevcut paket 100+ kullanıcı, 70+ içerik ve 500+ yorum düzeyinde dolu bir demo ortamı kurar.
+
+## Sorun Giderme
+
+| Durum | Çözüm |
+|---|---|
+| PowerShell `baslat.bat` komutunu tanımıyor | Geçerli klasördeki dosyalar PowerShell'de `./` veya `.\` ile çalıştırılır: `.\baslat.bat` |
+| Docker Desktop kapalı | Docker Desktop uygulamasını açın, çalışır duruma gelmesini bekleyin ve `baslat.bat` dosyasını tekrar çalıştırın |
+| MySQL şifresi bilinmiyor | Docker Desktop kullanın; Docker yolu local MySQL şifresi istemez |
+| Python bulunamadı | Python 3 kurun ve kurulum sırasında PATH seçeneğini etkinleştirin |
+| `8001` portu dolu | Script otomatik olarak `8002-8010` aralığında boş port seçer; ekranda yazan URL kullanılmalıdır |
+| Kurulum yarıda kesildi | Sorun giderildikten sonra `baslat.bat` tekrar çalıştırılabilir; yalnızca `fitrehber_yonetim_demo` demo şeması sıfırlanır |
+| Workbench'te şema görünmüyor | Local MySQL için port `3306`, Docker için port `3307` kullanılmalıdır |
+
+## Proje Dokümantasyonu
+
+| Belge | Açıklama |
+|---|---|
+| [`veritabani_proje_raporu.md`](veritabani_proje_raporu.md) | Detaylı teknik veritabanı raporu (tablolar, kısıtlar, SP/function/trigger açıklamaları) |
+| [`docs/Baran_Atici.docx`](docs/Baran_Atici.docx) | Akademik teslim raporu (senaryo, ER, fiziksel tasarım, uygulama ve video) |
+| [`docs/er_diagram.drawio`](docs/er_diagram.drawio) | ER diyagramı kaynak dosyası |
+| [`docs/relational_schema.png`](docs/relational_schema.png) | İlişkisel şema (MySQL Workbench EER) |
+| [`docs/app_screenshots/`](docs/app_screenshots/) | Yönetim paneli ekran görüntüleri |
+
+## Dosya Yapısı
+
+```text
+FitRehber-Yonetim-Sistemi/
+├─ baslat.bat                    Tek dosyalık Windows kurulum ve başlatma scripti
+├─ docker-compose.yml            Docker tabanlı alternatif çalışma ortamı
+├─ Dockerfile                    Django uygulama container tanımı
+├─ requirements.txt              Python bağımlılıkları
+├─ manage.py                     Django yönetim komutu
+├─ core/                         Django proje ayarları, middleware, servisler
+├─ posts/                        Uygulama, N-Tier yönetim katmanları ve template'ler
+│  ├─ views_yonetim.py           Presentation layer
+│  ├─ bl.py                      Business logic layer
+│  └─ dal.py                     Stored procedure tabanlı data access layer
+├─ sql/
+│  ├─ parcalar/                  Ana SQL paketini oluşturan okunabilir parçalar
+│  ├─ yardimci/                  Zorunlu olmayan rapor/görünüm SQL dosyaları
+│  ├─ fitrehber_db.sql           Parçalardan üretilen çalıştırılabilir SQL paketi
+│  └─ demo_data.sql              Sanitize demo veri paketi
+├─ docs/
+│  ├─ er_diagram.drawio          ER diyagram kaynak dosyası
+│  ├─ er_diagram.png             ER diyagram görseli
+│  ├─ relational_schema.png      İlişkisel (EER) şema görseli
+│  ├─ app_screenshots/           Yönetim paneli ekran görüntüleri
+│  └─ Baran_Atici.docx           Akademik teslim raporu
+├─ media/                        Demo içerik ve profil görselleri
+├─ scripts/                      Yardımcı build ve kurulum scriptleri
+└─ veritabani_proje_raporu.md    Detaylı teknik rapor
+```
+
+## Güvenlik ve Demo Notları
+
+- Gerçek `.env` dosyası repository içine dahil edilmez; yalnızca `.env.example` şablonu paylaşılır.
+- Demo dump içinde session, cache, OAuth token, gerçek e-posta doğrulama tokenı veya production secret bilgisi yoktur.
+- `AUTO_LOGIN_AS=Nyancat` sadece local demo konforu içindir; `DEBUG=False` olduğunda otomatik login devre dışı kalır.
+- Local MySQL yolunda script yalnızca `fitrehber_yonetim_demo` adlı demo şemasını sıfırlar; diğer şemalara dokunmaz.
+- Docker yolu local MySQL kurulumundan bağımsızdır ve kendi izole MySQL container'ını kullanır.
+
+## Lisans ve Kullanım
+
+Bu repository akademik / demo kullanım amacıyla hazırlanmıştır. Canlı sistemlerde kullanılmadan önce production secret yönetimi, kullanıcı yetkilendirme politikaları, HTTPS, e-posta / OAuth anahtarları ve deployment ayarları ayrıca yapılandırılmalıdır.
