@@ -1,9 +1,5 @@
-﻿-- ==========================================
--- FitRehber Turkce Mantiksal Gorunum Katmani
--- ==========================================
--- Bu dosya ana veritabani icinde rapor/sunum icin okunabilir VIEW katmani olusturur.
--- Cekirdek uygulama tablolari Turkce fiziksel adlara tasinmistir.
--- Django sistem tablolari ve auth_user framework uyumlulugu icin korunur.
+-- Yardimci rapor gorunumleri
+-- Zorunlu kurulum dosyasi degildir; sadece SQL tarafinda okunabilir VIEW'lar acmak icin kullanilir.
 
 SET NAMES utf8mb4;
 
@@ -144,4 +140,3 @@ FROM yorum_begenileri yb
 INNER JOIN yorumlar y ON y.id = yb.yorum_id
 INNER JOIN icerikler i ON i.id = y.icerik_id
 INNER JOIN auth_user u ON u.id = yb.user_id;
-

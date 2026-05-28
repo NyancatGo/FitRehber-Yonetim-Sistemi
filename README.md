@@ -160,7 +160,7 @@ Katmanların sorumlulukları:
 | Presentation | `posts/views_yonetim.py`, `posts/templates/yonetim/` | HTTP istekleri, form verileri, ekran çıktısı |
 | Business Logic | `posts/bl.py` | Validasyon, hata yönetimi, iş kuralları |
 | Data Access | `posts/dal.py` | Yalnızca `CALL sp_...` ile stored procedure çağırma |
-| Database | `sql/fitrehber_db.sql` | Tablo DDL, stored procedure, function, trigger |
+| Database | `sql/parcalar/*.sql`, `sql/fitrehber_db.sql` | Parçalı DDL, stored procedure, function, trigger kaynakları ve üretilmiş kurulum paketi |
 
 Yönetim modülü içinde Django ORM kullanılmaz. `views_yonetim.py`, `bl.py` ve `dal.py` zinciri doğrudan stored procedure tabanlıdır. DAL katmanındaki SQL ifadesi MySQL stored procedure çağırma sözdizimi olan `CALL sp_...(...)` biçimindedir.
 
@@ -226,10 +226,12 @@ ER diyagram kaynakları:
 - `sp_AylikEtkilesimAnalizi`
 - `sp_KategoriDagilimiRaporu`
 
-Tüm SQL omurgası tek dosyada bulunur:
+SQL omurgasının bakım yapılan kaynakları parçalara ayrılmıştır; kurulumda kullanılan birleşik dosya bu parçalardan üretilir:
 
 ```text
+sql/parcalar/*.sql
 sql/fitrehber_db.sql
+scripts/build-sql.ps1
 ```
 
 Sanitize demo verisi:
@@ -327,7 +329,9 @@ FitRehber-Yonetim-Sistemi/
 │  ├─ bl.py                       Business logic layer
 │  └─ dal.py                      Stored procedure tabanlı data access layer
 ├─ sql/
-│  ├─ fitrehber_db.sql            DDL, stored procedure, function ve trigger paketi
+│  ├─ parcalar/                   Ana SQL paketini oluşturan okunabilir parçalar
+│  ├─ yardimci/                   Zorunlu olmayan rapor/görünüm SQL dosyaları
+│  ├─ fitrehber_db.sql            Parçalardan üretilen çalıştırılabilir SQL paketi
 │  └─ demo_data.sql               Sanitize demo veri paketi
 ├─ docs/
 │  ├─ er_diagram.drawio           ER diyagram kaynak dosyası

@@ -158,6 +158,17 @@ if errorlevel 1 (
     exit /b 1
 )
 
+if exist "scripts\build-sql.ps1" (
+    echo.
+    echo SQL kurulum paketi parcalardan yenileniyor...
+    powershell -NoProfile -ExecutionPolicy Bypass -File "scripts\build-sql.ps1"
+    if errorlevel 1 (
+        echo [HATA] sql\fitrehber_db.sql parcalardan uretilemedi.
+        pause
+        exit /b 1
+    )
+)
+
 echo.
 echo [7/9] Stored Procedure / Function / Trigger omurgasi uygulaniyor...
 "%MYSQL_EXE%" %MYSQL_ROOT_ARGS% --default-character-set=utf8mb4 "%DB_NAME%" < "sql\fitrehber_db.sql"
@@ -255,6 +266,17 @@ if errorlevel 1 (
     echo [HATA] Docker migration adimi basarisiz oldu.
     pause
     exit /b 1
+)
+
+if exist "scripts\build-sql.ps1" (
+    echo.
+    echo SQL kurulum paketi parcalardan yenileniyor...
+    powershell -NoProfile -ExecutionPolicy Bypass -File "scripts\build-sql.ps1"
+    if errorlevel 1 (
+        echo [HATA] sql\fitrehber_db.sql parcalardan uretilemedi.
+        pause
+        exit /b 1
+    )
 )
 
 %COMPOSE_CMD% exec -T db mysql -uroot -p%MYSQL_ROOT_PASSWORD% --default-character-set=utf8mb4 %DB_NAME% < "sql\fitrehber_db.sql"

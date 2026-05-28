@@ -154,7 +154,7 @@ yorum_begenileri       = {id, +yorum_id, +user_id}       -- UNIQUE(yorum_id, use
 
 ### 3.1 Tablo Oluşturma (20 puan)
 
-DDL tek dosyada toplanmıştır: [`sql/fitrehber_db.sql`](sql/fitrehber_db.sql). Şartların karşılanışı:
+DDL ve rutin kaynakları parçalara ayrılmıştır: [`sql/parcalar`](sql/parcalar). Kurulumda kullanılan birleşik dosya [`sql/fitrehber_db.sql`](sql/fitrehber_db.sql) olarak bu parçalardan üretilir. Şartların karşılanışı:
 
 | Kısıt | Nerede |
 |---|---|
@@ -298,7 +298,9 @@ Video aşağıdaki sırayı izler:
 |---|---|
 | [`README.md`](README.md) | Kısa proje tanıtımı + kurulum + ödev kapsam beyanı |
 | [`veritabani_proje_raporu.md`](veritabani_proje_raporu.md) | Bu dosya (detaylı rapor) |
-| [`sql/fitrehber_db.sql`](sql/fitrehber_db.sql) | Çalıştırılabilir DDL + 44 SP + 3 Function + 8 Trigger |
+| [`sql/parcalar/`](sql/parcalar/) | DDL, SP, Function ve Trigger kaynaklarının parçalı hali |
+| [`sql/fitrehber_db.sql`](sql/fitrehber_db.sql) | Parçalardan üretilen çalıştırılabilir DDL + 44 SP + 3 Function + 8 Trigger |
+| [`scripts/build-sql.ps1`](scripts/build-sql.ps1) | Parçalı SQL kaynaklarını tek kurulum dosyası haline getirir |
 | `docs/er_diagram.drawio` | diagrams.net görsel ER diyagramı (XML) |
 | `docs/er_diagram.png` | ER diyagramı PNG çıktısı (diagrams.net'ten export) |
 

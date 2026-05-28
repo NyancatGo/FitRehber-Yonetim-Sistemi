@@ -1,8 +1,8 @@
-﻿-- ==========================================
--- FitRehber Icerik ve Topluluk Yonetim Sistemi
--- Fiziksel tasarim + Stored Procedures + Functions + Triggers
--- MySQL 8.x uyumlu tek dosyalik uygulama betigi
--- ==========================================
+-- FitRehber ana SQL kurulum dosyasi
+-- Bu dosya baslat.bat tarafindan calistirilir.
+-- Bakim icin sql/parcalar/*.sql dosyalarini duzenle, sonra scripts/build-sql.ps1 calistir.
+
+-- Kaynak: sql/parcalar/00_veritabani.sql
 
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 1;
@@ -13,19 +13,9 @@ CREATE DATABASE IF NOT EXISTS fitrehber_yonetim_demo
 
 USE fitrehber_yonetim_demo;
 
--- ==========================================
--- 1. FIZIKSEL TASARIM: 8 TABLO
--- ==========================================
--- Bu bolum Django migration'larinin olusturdugu temel tablolari
--- biz odev icin yeniden olusturuyoruz; boylece tum CHECK constraint'ler
--- ve diger kisitlar (PK, FK, UNIQUE, NOT NULL, DEFAULT, AUTO_INCREMENT)
--- net bir DDL kaynagindan uygulanmis olur.
 
--- CHECK constraint barındıran app tablolarını once dusur ve sonra
--- CREATE TABLE ile butun kisitlarla birlikte yeniden olustur. Bu sayede
--- Django migrate'in olusturdugu tablolar uzerinde DDL kisitlarimiz
--- (CHECK, NOT NULL, DEFAULT vs) garanti uygulanir.
--- FK sirasi: once junction -> yorum -> icerik -> profil.
+-- Kaynak: sql/parcalar/01_tablolar.sql
+
 SET FOREIGN_KEY_CHECKS = 0;
 DROP TABLE IF EXISTS yorum_begenileri;
 DROP TABLE IF EXISTS icerik_kaydetmeleri;
@@ -164,9 +154,8 @@ CREATE TABLE IF NOT EXISTS yorum_begenileri (
         FOREIGN KEY (user_id) REFERENCES auth_user (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- ==========================================
--- 2. MEVCUT RUTINLERI TEMIZLE
--- ==========================================
+
+-- Kaynak: sql/parcalar/02_rutin_temizligi.sql
 
 DROP TRIGGER IF EXISTS tg_icerik_ekle_engelle;
 DROP TRIGGER IF EXISTS tg_yorum_ekle_engelle;
@@ -234,11 +223,10 @@ DROP PROCEDURE IF EXISTS sp_YorumBegeniSil;
 DROP PROCEDURE IF EXISTS sp_AylikEtkilesimAnalizi;
 DROP PROCEDURE IF EXISTS sp_KategoriDagilimiRaporu;
 
-DELIMITER $$
 
--- ==========================================
--- 3. FUNCTIONS
--- ==========================================
+-- Kaynak: sql/parcalar/03_fonksiyonlar.sql
+
+DELIMITER $$
 
 CREATE FUNCTION fn_IcerikYorumSayisi(p_icerik_id BIGINT)
 RETURNS INT
@@ -294,9 +282,12 @@ BEGIN
     RETURN (v_yorum * 2) + v_begeni + v_kaydetme;
 END$$
 
--- ==========================================
--- 4. AUTH_USER CRUD PROCEDURES
--- ==========================================
+DELIMITER ;
+
+
+-- Kaynak: sql/parcalar/04_sp_kullanicilar.sql
+
+DELIMITER $$
 
 CREATE PROCEDURE sp_KullaniciListele()
 BEGIN
@@ -437,9 +428,12 @@ BEGIN
     DELETE FROM auth_user WHERE id = p_id;
 END$$
 
--- ==========================================
--- 5. POSTS_PROFIL CRUD PROCEDURES
--- ==========================================
+DELIMITER ;
+
+
+-- Kaynak: sql/parcalar/05_sp_profiller.sql
+
+DELIMITER $$
 
 CREATE PROCEDURE sp_ProfilListele()
 BEGIN
@@ -544,9 +538,12 @@ BEGIN
      WHERE id = p_id;
 END$$
 
--- ==========================================
--- 6. POSTS_KATEGORI CRUD PROCEDURES
--- ==========================================
+DELIMITER ;
+
+
+-- Kaynak: sql/parcalar/06_sp_kategoriler.sql
+
+DELIMITER $$
 
 CREATE PROCEDURE sp_KategoriListele()
 BEGIN
@@ -580,9 +577,12 @@ BEGIN
     DELETE FROM kategoriler WHERE id = p_id;
 END$$
 
--- ==========================================
--- 7. POSTS_ICERIK CRUD PROCEDURES
--- ==========================================
+DELIMITER ;
+
+
+-- Kaynak: sql/parcalar/07_sp_icerikler.sql
+
+DELIMITER $$
 
 CREATE PROCEDURE sp_IcerikListele()
 BEGIN
@@ -677,9 +677,12 @@ BEGIN
     DELETE FROM icerikler WHERE id = p_id;
 END$$
 
--- ==========================================
--- 8. POSTS_YORUM CRUD PROCEDURES
--- ==========================================
+DELIMITER ;
+
+
+-- Kaynak: sql/parcalar/08_sp_yorumlar.sql
+
+DELIMITER $$
 
 CREATE PROCEDURE sp_YorumListele()
 BEGIN
@@ -747,9 +750,12 @@ BEGIN
     DELETE FROM yorumlar WHERE id = p_id;
 END$$
 
--- ==========================================
--- 9. ICERIK BEGENI CRUD PROCEDURES
--- ==========================================
+DELIMITER ;
+
+
+-- Kaynak: sql/parcalar/09_sp_icerik_begenileri.sql
+
+DELIMITER $$
 
 CREATE PROCEDURE sp_IcerikBegeniListele()
 BEGIN
@@ -792,9 +798,12 @@ BEGIN
     DELETE FROM icerik_begenileri WHERE id = p_id;
 END$$
 
--- ==========================================
--- 10. ICERIK KAYDETME CRUD PROCEDURES
--- ==========================================
+DELIMITER ;
+
+
+-- Kaynak: sql/parcalar/10_sp_icerik_kaydetmeleri.sql
+
+DELIMITER $$
 
 CREATE PROCEDURE sp_IcerikKaydetmeListele()
 BEGIN
@@ -837,9 +846,12 @@ BEGIN
     DELETE FROM icerik_kaydetmeleri WHERE id = p_id;
 END$$
 
--- ==========================================
--- 11. YORUM BEGENI CRUD PROCEDURES
--- ==========================================
+DELIMITER ;
+
+
+-- Kaynak: sql/parcalar/11_sp_yorum_begenileri.sql
+
+DELIMITER $$
 
 CREATE PROCEDURE sp_YorumBegeniListele()
 BEGIN
@@ -886,9 +898,12 @@ BEGIN
     DELETE FROM yorum_begenileri WHERE id = p_id;
 END$$
 
--- ==========================================
--- 12. RAPORLAMA / BI PROCEDURES
--- ==========================================
+DELIMITER ;
+
+
+-- Kaynak: sql/parcalar/12_sp_raporlar.sql
+
+DELIMITER $$
 
 CREATE PROCEDURE sp_AylikEtkilesimAnalizi()
 BEGIN
@@ -964,9 +979,12 @@ BEGIN
      ORDER BY icerik_sayisi DESC, kategori_adi ASC;
 END$$
 
--- ==========================================
--- 13. TRIGGERS
--- ==========================================
+DELIMITER ;
+
+
+-- Kaynak: sql/parcalar/13_triggerlar.sql
+
+DELIMITER $$
 
 CREATE TRIGGER tg_icerik_ekle_engelle
 BEFORE INSERT ON icerikler
@@ -1129,4 +1147,3 @@ BEGIN
 END$$
 
 DELIMITER ;
-
